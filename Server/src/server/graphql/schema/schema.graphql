@@ -1,0 +1,6 @@
+type Tmp {
+  id: ID
+}
+
+scalar Date
+scalar Long

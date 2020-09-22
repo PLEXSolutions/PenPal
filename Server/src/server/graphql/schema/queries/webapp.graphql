@@ -1,0 +1,4 @@
+type Query {
+  currentUser: WebappUser
+  getUsers(filter: WebappUserFilterInput): [WebappUser]
+}

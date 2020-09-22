@@ -1,0 +1,4 @@
+type Query {
+  getPlugins: [Plugin]
+  getPluginConfigurationSettings(plugin_id: ID!): PluginConfigurationSettings
+}

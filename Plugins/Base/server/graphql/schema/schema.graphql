@@ -1,0 +1,16 @@
+type Plugin {
+  id: ID!
+  name: String!
+  version: String!
+  settings: PluginSettings
+}
+
+type PluginSettings {
+  configuration: PluginConfigurationSettings
+}
+
+type PluginConfigurationSettings {
+  schema_root: String!
+  getter: String!
+  setter: String!
+}

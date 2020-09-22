@@ -1,0 +1,19 @@
+version: "2"
+services:
+    penpal-server:
+        build: ./Server
+        volumes:
+            - npm-cache:/home/node/.npm
+        ports:
+            - "3000:3000"
+        command: npm run start
+        networks:
+            - public
+
+volumes:
+    npm-cache:
+        external: false
+
+networks:
+    public:
+        driver: bridge

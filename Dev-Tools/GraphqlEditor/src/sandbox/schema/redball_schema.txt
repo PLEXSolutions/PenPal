@@ -1,0 +1,3 @@
+"""
+Default Schema -- you must mount the schema from Precog into this container in order to use this
+"""
