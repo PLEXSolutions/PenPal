@@ -1,15 +1,164 @@
-import React from "react";
+import React, { useState } from "react";
+import Grid from "@material-ui/core/Grid";
+import Paper from "@material-ui/core/Paper";
+import Select from "@material-ui/core/Select";
+import MenuItem from "@material-ui/core/MenuItem";
+import FormControl from "@material-ui/core/FormControl";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import { makeStyles } from "@material-ui/core/styles";
+import { indigo } from "@material-ui/core/colors";
+import cx from "classnames";
+
+import { useQuery } from "@apollo/react-hooks";
+
+import GetConfigurablePluginsQuery from "./queries/get-configurable-plugins.js";
 
 import { Components, registerComponent } from "../../../components.js";
 import Hooks from "../../../hooks.js";
 const { useIntrospection } = Hooks;
 
+const useStyles = makeStyles(theme => ({
+  main: {
+    width: "100%",
+    height: "100%",
+    padding: theme.spacing(2)
+  },
+  select: {
+    minWidth: 200,
+    background: "white",
+    color: indigo[75],
+    fontWeight: 200,
+    borderStyle: "none",
+    borderWidth: 2,
+    borderRadius: 12,
+    paddingLeft: 24,
+    paddingTop: 14,
+    paddingBottom: 15,
+    boxShadow: "0px 5px 8px -3px rgba(0,0,0,0.14)",
+    "&:focus": {
+      borderRadius: 12,
+      background: "white",
+      borderColor: indigo[100]
+    }
+  },
+  icon: {
+    color: indigo[300],
+    right: 12,
+    position: "absolute",
+    userSelect: "none",
+    pointerEvents: "none"
+  },
+  paper: {
+    borderRadius: 12,
+    marginTop: 8
+  },
+  list: {
+    paddingTop: 0,
+    paddingBottom: 0,
+    background: "white",
+    "& li": {
+      fontWeight: 200,
+      paddingTop: 12,
+      paddingBottom: 12
+    },
+    "& li:hover": {
+      background: indigo[100]
+    },
+    "& li.Mui-selected": {
+      color: "white",
+      background: indigo[400]
+    },
+    "& li.Mui-selected:hover": {
+      background: indigo[500]
+    }
+  }
+}));
+
 const Selector = () => {
-  const { loading, types, queries, mutations } = useIntrospection();
+  // ---------------------- Hooks ---------------------- //
 
-  console.log(loading, types, queries, mutations);
+  const classes = useStyles();
 
-  return null;
+  const {
+    loading: introspection_loading,
+    types,
+    queries,
+    mutations
+  } = useIntrospection();
+
+  const {
+    loading: plugins_loading,
+    data: { getConfigurablePlugins } = {}
+  } = useQuery(GetConfigurablePluginsQuery);
+
+  const [selected, setSelected] = useState(0);
+
+  // ---------------------- Hooks ---------------------- //
+
+  const loading = introspection_loading || plugins_loading;
+
+  if (loading) {
+    return "Loading....";
+  }
+
+  const handleChange = event => setSelected(event.target.value);
+
+  const iconComponent = props => {
+    return <ExpandMoreIcon className={cx(props.className, classes.icon)} />;
+  };
+
+  const menuProps = {
+    classes: {
+      paper: classes.paper,
+      list: classes.list
+    },
+    anchorOrigin: {
+      vertical: "bottom",
+      horizontal: "left"
+    },
+    transformOrigin: {
+      vertical: "top",
+      horizontal: "left"
+    },
+    getContentAnchorEl: null
+  };
+
+  return (
+    <>
+      <Grid item xs={12}>
+        <FormControl>
+          <Select
+            disableUnderline
+            classes={{ root: classes.select }}
+            MenuProps={menuProps}
+            IconComponent={iconComponent}
+            value={selected}
+            onChange={handleChange}
+          >
+            {getConfigurablePlugins.map((plugin, index) => (
+              <MenuItem key={plugin.id} value={index}>
+                {plugin.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Grid>
+      <Grid item xs={12}>
+        <Paper square className={classes.main}>
+          {selected === "" ? (
+            "Select Plugin to configure...."
+          ) : (
+            <Components.ConfigurationPage
+              plugin={getConfigurablePlugins[selected]}
+              types={types}
+              queries={queries}
+              mutations={mutations}
+            />
+          )}
+        </Paper>
+      </Grid>
+    </>
+  );
 };
 
 registerComponent("ConfigurationSelector", Selector);

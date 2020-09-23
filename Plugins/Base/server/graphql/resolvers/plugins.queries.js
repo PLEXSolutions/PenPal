@@ -9,6 +9,19 @@ export default {
     }));
   },
 
+  async getConfigurablePlugins(root, args, context) {
+    const plugins_name_version = Object.keys(PenPal.LoadedPlugins);
+    return plugins_name_version
+      .filter(
+        plugin_name_version =>
+          PenPal.LoadedPlugins[plugin_name_version].settings?.configuration !==
+          undefined
+      )
+      .map(plugin_name_version => ({
+        id: plugin_name_version
+      }));
+  },
+
   async getPluginConfigurationSettings(root, { plugin_id }, context) {
     const plugin = PenPal.LoadedPlugins[plugin_id];
     if (plugin === undefined) {

@@ -6,18 +6,15 @@ export default gql`
       types {
         name
         description
-        kind
         fields {
           name
           type {
             name
-          }
-        }
-        inputFields {
-          name
-          description
-          type {
-            name
+            kind
+            ofType {
+              name
+              kind
+            }
           }
         }
       }
