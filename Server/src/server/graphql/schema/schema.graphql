@@ -4,3 +4,4 @@ type Tmp {
 
 scalar Date
 scalar Long
+scalar JSON

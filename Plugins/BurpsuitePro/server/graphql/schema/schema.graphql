@@ -388,7 +388,12 @@ type BurpsuiteProConfigProjectOptions {
   connections: BurpsuiteProConfigConnections
 }
 
+type BurpsuiteProPenPalSettings {
+  rest_url: String
+}
+
 type BurpsuiteProConfiguration {
+  penpal_settings: BurpsuiteProPenPalSettings
   target: BurpsuiteProConfigTarget
   sequencer: BurpsuiteProConfigSequencer
   repeater: BurpsuiteProConfigRepeater

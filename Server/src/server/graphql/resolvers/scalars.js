@@ -1,3 +1,3 @@
-import { LongResolver } from "graphql-scalars";
+import { LongResolver, JSONResolver } from "graphql-scalars";
 
-export default [{ Long: LongResolver }];
+export default [{ Long: LongResolver }, { JSON: JSONResolver }];

@@ -21,7 +21,14 @@ const useStyles = makeStyles(theme => ({
   main: {
     width: "100%",
     height: "100%",
-    padding: theme.spacing(2)
+    display: "flex",
+    flexDirection: "column"
+  },
+  selectBox: {
+    marginBottom: theme.spacing(2)
+  },
+  flex: {
+    flex: 1
   },
   select: {
     minWidth: 200,
@@ -124,8 +131,8 @@ const Selector = () => {
   };
 
   return (
-    <>
-      <Grid item xs={12}>
+    <div className={classes.main}>
+      <div className={classes.selectBox}>
         <FormControl>
           <Select
             disableUnderline
@@ -142,22 +149,20 @@ const Selector = () => {
             ))}
           </Select>
         </FormControl>
-      </Grid>
-      <Grid item xs={12}>
-        <Paper square className={classes.main}>
-          {selected === "" ? (
-            "Select Plugin to configure...."
-          ) : (
-            <Components.ConfigurationPage
-              plugin={getConfigurablePlugins[selected]}
-              types={types}
-              queries={queries}
-              mutations={mutations}
-            />
-          )}
-        </Paper>
-      </Grid>
-    </>
+      </div>
+      <Paper square className={classes.flex}>
+        {selected === "" ? (
+          "Select Plugin to configure...."
+        ) : (
+          <Components.ConfigurationPage
+            plugin={getConfigurablePlugins[selected]}
+            types={types}
+            queries={queries}
+            mutations={mutations}
+          />
+        )}
+      </Paper>
+    </div>
   );
 };
 

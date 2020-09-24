@@ -5,7 +5,12 @@ const settings = {
     schema_root: 'BurpsuiteProConfiguration',
     getter: 'getBurpsuiteProConfiguration',
     setter: 'setBurpsuiteProConfiguration'
-  }
+  },
+  datastores: [
+    {
+      name: 'settings'
+    }
+  ]
 };
 
 const BurpsuiteProPlugin = {
