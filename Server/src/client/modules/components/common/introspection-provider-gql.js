@@ -30,6 +30,10 @@ export default gql`
         fields {
           name
           description
+          type {
+            name
+            description
+          }
           args {
             name
             type {

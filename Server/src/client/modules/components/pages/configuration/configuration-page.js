@@ -1,65 +1,84 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import _ from "lodash";
 import Paper from "@material-ui/core/Paper";
 import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
+import TextField from "@material-ui/core/TextField";
 import { makeStyles } from "@material-ui/core/styles";
 
 import { Components, registerComponent } from "../../../components.js";
-import { generateGqlFromSchema } from "../../../graphql-helpers.js";
-import Hooks from "../../../hooks.js";
-const { useImperativeQuery } = Hooks;
 
 const useStyles = makeStyles(theme => ({
   main: {
     padding: theme.spacing(1)
+  },
+  label: {
+    textTransform: "capitalize"
   }
 }));
 
-const ConfigurationPageTab = ({
-  types,
-  queries,
-  mutations,
-  plugin,
-  config: { __typename, ...rest } = {}
-}) => {
-  return <pre>{JSON.stringify(rest, null, 4)}</pre>;
-};
+const transform_key = key => key.replace("_", " ");
 
-const ConfigurationPage = ({
-  types,
-  queries,
-  mutations,
-  plugin: {
-    settings: { configuration }
-  }
+const ConfigurationPageSection = ({
+  handleConfigChange,
+  path,
+  config: { __typename, ...rest },
+  depth = 0
 }) => {
   const classes = useStyles();
-  const query = generateGqlFromSchema(
-    types,
-    configuration.schema_root,
-    configuration.getter
+  const keys = Object.keys(rest);
+  const changeHandlers = _.chain(keys)
+    .map(key => {
+      return {
+        key,
+        handler: event => {
+          handleConfigChange(`${path}.${key}`, event.target.value);
+        }
+      };
+    })
+    .keyBy("key")
+    .value();
+
+  return _.map(keys, key => {
+    const key_path = `${path}.${key}`;
+    switch (typeof rest[key]) {
+      case "string":
+        return (
+          <TextField
+            InputLabelProps={{ className: classes.label }}
+            label={transform_key(key)}
+            value={rest[key]}
+            onChange={changeHandlers[key].handler}
+            key={key_path}
+          ></TextField>
+        );
+      case "boolean":
+        return <p key={key_path}>{`${key}: Checkbox`}</p>;
+      case "number":
+        return <p key={key_path}>{`${key}: Number input`}</p>;
+      case "object":
+        return (
+          <ConfigurationPageSection
+            key={key_path}
+            handleConfigChange={handleConfigChange}
+            path={key_path}
+            depth={depth + 1}
+            config={rest[key]}
+          />
+        );
+      default:
+        return <p>'Unknown'</p>;
+    }
+  });
+};
+
+const ConfigurationPage = ({ localConfig, handleConfigChange }) => {
+  const classes = useStyles();
+  const [selectedTab, setSelectedTab] = useState(
+    Object.keys(localConfig)?.[0] ?? ""
   );
-
-  console.log(mutations);
-
-  const getConfig = useImperativeQuery(query);
-  const [localConfig, setLocalConfig] = useState({});
-  const [selectedTab, setSelectedTab] = useState("");
-
   const handleChange = (event, newValue) => setSelectedTab(newValue);
-
-  useEffect(() => {
-    (async () => {
-      const config =
-        (await getConfig())?.data?.getBurpsuiteProConfiguration ?? {};
-      delete config.__typename;
-      setLocalConfig(config);
-      const tab_names = Object.keys(config);
-      setSelectedTab(tab_names.length > 0 ? tab_names[0] : "");
-    })();
-  }, []);
-
   const config_items = Object.keys(localConfig);
 
   return (
@@ -87,11 +106,9 @@ const ConfigurationPage = ({
       {config_items.map(item => (
         <div key={item} hidden={selectedTab !== item} className={classes.main}>
           {selectedTab === item && (
-            <ConfigurationPageTab
-              types={types}
-              queries={queries}
-              mutations={mutations}
-              setter={configuration.setter}
+            <ConfigurationPageSection
+              handleConfigChange={handleConfigChange}
+              path={item}
               config={localConfig[item]}
             />
           )}

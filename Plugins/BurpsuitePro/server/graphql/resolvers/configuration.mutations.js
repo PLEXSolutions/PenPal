@@ -1,3 +1,5 @@
+import Burpsuite from "../../burpsuite.js";
+
 export default {
   async setBurpsuiteProConfiguration(
     root,
@@ -6,7 +8,7 @@ export default {
   ) {
     const configuration = JSON.parse(jsonConfiguration);
     const { penpal_settings } = configuration;
-    console.log(penpal_settings);
-    return {};
+    Burpsuite.config.rest_url = penpal_settings.rest_url;
+    return { configuration };
   }
 };

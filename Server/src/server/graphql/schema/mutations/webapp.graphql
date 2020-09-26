@@ -5,4 +5,5 @@ type Mutation {
   sendVerificationEmail(email: String!): Boolean
   verifyEmail(token: String!): WebappAuthResult
   updateUser(user_id: ID!, update: WebappUserUpdateInput): WebappUser
+  nop: Boolean
 }

@@ -36,5 +36,9 @@ export default {
     }
 
     return users;
+  },
+
+  async nop() {
+    return false;
   }
 };
