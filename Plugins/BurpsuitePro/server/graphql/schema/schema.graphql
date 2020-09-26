@@ -390,6 +390,8 @@ type BurpsuiteProConfigProjectOptions {
 
 type BurpsuiteProPenPalSettings {
   rest_url: String
+  rest_timeout: Milliseconds
+  rest_error: PenPalError
 }
 
 type BurpsuiteProConfiguration {

@@ -12,6 +12,7 @@ import { indigo } from "@material-ui/core/colors";
 import cx from "classnames";
 
 import { useQuery } from "@apollo/react-hooks";
+import { useSnackbar } from "notistack";
 
 import GetConfigurablePluginsQuery from "./queries/get-configurable-plugins.js";
 
@@ -98,6 +99,7 @@ const Selector = () => {
   // ---------------------- Hooks ---------------------- //
 
   const classes = useStyles();
+  const { enqueueSnackbar } = useSnackbar();
 
   const {
     loading: introspection_loading,
@@ -141,10 +143,15 @@ const Selector = () => {
   useEffect(() => {
     (async () => {
       if (!loading) {
-        const config = (await getConfig())?.data?.[configuration.getter] ?? {};
-        delete config.__typename;
-        setLocalConfig(config);
-        setConfigSinceLastSave(config);
+        try {
+          const config =
+            (await getConfig())?.data?.[configuration.getter] ?? {};
+          delete config.__typename;
+          setLocalConfig(config);
+          setConfigSinceLastSave(config);
+        } catch (e) {
+          enqueueSnackbar(`Error: ${e.message}`, { variant: "error" });
+        }
       }
     })();
   }, [loading]);
@@ -163,9 +170,19 @@ const Selector = () => {
 
   const handleSave = async () => {
     setConfigSinceLastSave(localConfig);
-    await setConfig({
-      variables: { configuration: JSON.stringify(localConfig) }
-    });
+    try {
+      const newLocalConfig =
+        (
+          await setConfig({
+            variables: { configuration: JSON.stringify(localConfig) }
+          })
+        )?.data?.[configuration.setter] ?? {};
+      delete newLocalConfig.__typename;
+      setLocalConfig(newLocalConfig);
+      setConfigSinceLastSave(newLocalConfig);
+    } catch (e) {
+      enqueueSnackbar(`Error: ${e.message}`, { variant: "error" });
+    }
   };
 
   const iconComponent = props => {
