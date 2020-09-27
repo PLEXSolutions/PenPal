@@ -115,7 +115,7 @@ const Selector = () => {
 
   const loading = introspection_loading || plugins_loading;
 
-  const [selected, setSelected] = useState(0);
+  const [selected, setSelected] = useState("");
 
   const { configuration } = getConfigurablePlugins?.[selected]?.settings ?? {
     configuration: {
@@ -124,6 +124,7 @@ const Selector = () => {
       setter: false
     }
   };
+
   const query = generateQueryFromSchema(
     types,
     configuration.schema_root,
@@ -142,7 +143,7 @@ const Selector = () => {
 
   useEffect(() => {
     (async () => {
-      if (!loading) {
+      if (!loading && configuration.getter !== false) {
         try {
           const config =
             (await getConfig())?.data?.[configuration.getter] ?? {};
@@ -154,7 +155,7 @@ const Selector = () => {
         }
       }
     })();
-  }, [loading]);
+  }, [loading, selected]);
 
   // ---------------------- Hooks ---------------------- //
 
