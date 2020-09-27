@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import _ from "lodash";
+import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
@@ -19,8 +20,9 @@ const useStyles = makeStyles(theme => ({
   label: {
     textTransform: "capitalize"
   },
-  configuration_option: {
-    margin: theme.spacing(2)
+  configuration_option: {},
+  section: {
+    width: "100%"
   }
 }));
 
@@ -50,80 +52,71 @@ const ConfigurationPageSection = ({
   }, messageEffectConditions);
 
   const keys = Object.keys(rest);
-  const changeHandlers = _.chain(keys)
-    .map(key => {
-      return {
-        key,
-        handler: event => {
-          if (event.target.checked !== undefined) {
-            handleConfigChange(`${path}.${key}`, event.target.checked);
-          } else {
-            handleConfigChange(`${path}.${key}`, event.target.value);
-          }
-        }
-      };
-    })
-    .keyBy("key")
-    .value();
-
-  return is_error
-    ? null
-    : _.map(keys, key => {
-        const key_path = `${path}.${key}`;
-        switch (typeof rest[key]) {
-          case "string":
-            return (
-              <TextField
-                className={classes.configuration_option}
-                InputLabelProps={{ className: classes.label }}
-                label={transform_key(key)}
-                value={rest[key]}
-                onChange={changeHandlers[key].handler}
-                key={key_path}
-              ></TextField>
-            );
-          case "boolean":
-            return (
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={rest[key]}
-                    onChange={changeHandlers[key].handler}
-                  />
+  const children = _.map(keys, key => {
+    const key_path = `${path}.${key}`;
+    switch (typeof rest[key]) {
+      case "string":
+        return (
+          <TextField
+            fullWidth
+            className={classes.configuration_option}
+            InputLabelProps={{ className: classes.label }}
+            label={transform_key(key)}
+            value={rest[key]}
+            onChange={event => handleConfigChange(key_path, event.target.value)}
+            key={key_path}
+          ></TextField>
+        );
+      case "boolean":
+        return (
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={rest[key]}
+                onChange={event =>
+                  handleConfigChange(key_path, event.target.checked)
                 }
-                classes={{ label: classes.label }}
-                label={transform_key(key)}
               />
-            );
-          case "number":
-            return (
-              <TextField
-                className={classes.configuration_option}
-                InputLabelProps={{ className: classes.label }}
-                type="number"
-                label={transform_key(key)}
-                value={rest[key]}
-                onChange={changeHandlers[key].handler}
-                key={key_path}
-              ></TextField>
-            );
-          case "object":
-            if (rest[key] === null) {
-              return null;
             }
-            return (
-              <ConfigurationPageSection
-                key={key_path}
-                handleConfigChange={handleConfigChange}
-                path={key_path}
-                depth={depth + 1}
-                config={rest[key]}
-              />
-            );
-          default:
-            return <p>'Unknown'</p>;
+            classes={{ label: classes.label }}
+            label={transform_key(key)}
+          />
+        );
+      case "number":
+        return (
+          <TextField
+            fullWidth
+            className={classes.configuration_option}
+            InputLabelProps={{ className: classes.label }}
+            type="number"
+            label={transform_key(key)}
+            value={rest[key]}
+            onChange={event => handleConfigChange(key_path, event.target.value)}
+            key={key_path}
+          ></TextField>
+        );
+      case "object":
+        if (rest[key] === null) {
+          return null;
         }
-      });
+        return (
+          <div className={classes.section}>
+            <h3>{transform_key(key)}</h3>
+            <ConfigurationPageSection
+              key={key_path}
+              handleConfigChange={handleConfigChange}
+              path={key_path}
+              depth={depth + 1}
+              config={rest[key]}
+            />
+          </div>
+        );
+      default:
+        return <p>'Unknown'</p>;
+    }
+  });
+
+  return is_error ? null : children;
 };
 
 const ConfigurationPage = ({ localConfig, handleConfigChange }) => {
@@ -159,11 +152,13 @@ const ConfigurationPage = ({ localConfig, handleConfigChange }) => {
       {config_items.map(item => (
         <div key={item} hidden={selectedTab !== item} className={classes.main}>
           {selectedTab === item && (
-            <ConfigurationPageSection
-              handleConfigChange={handleConfigChange}
-              path={item}
-              config={localConfig[item]}
-            />
+            <Grid container>
+              <ConfigurationPageSection
+                handleConfigChange={handleConfigChange}
+                path={item}
+                config={localConfig[item]}
+              />
+            </Grid>
           )}
         </div>
       ))}
