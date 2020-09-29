@@ -1,6 +1,8 @@
-type Tmp {
-  id: ID
+type PenPalError {
+  code: Int!
+  message: String!
 }
 
 scalar Date
 scalar Long
+scalar JSON

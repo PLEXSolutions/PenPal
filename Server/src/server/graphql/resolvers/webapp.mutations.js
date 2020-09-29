@@ -175,5 +175,9 @@ export default {
     await Meteor.users.update({ _id: updated_user.id }, { $set: update });
 
     return updated_user;
+  },
+
+  async nop() {
+    return false
   }
 };
