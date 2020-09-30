@@ -12,6 +12,8 @@ const generateNodes = async () => {
     const { settings: { n8n } = {} } = PenPal.LoadedPlugins[key];
     if (n8n === undefined) continue;
 
+    const output_dir = path.join(N8N_NODES_DIR, n8n.name);
+
     const output_ts_file = path.join(
       N8N_NODES_DIR,
       n8n.name,
@@ -26,7 +28,9 @@ const generateNodes = async () => {
 
     try {
       await fs.mkdir(output_dir);
-    } catch (e) {}
+    } catch (e) {
+      console.error(e);
+    }
 
     console.log(`[.] Generating n8n node ${n8n.name}`);
 
