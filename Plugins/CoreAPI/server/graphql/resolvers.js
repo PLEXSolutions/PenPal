@@ -13,5 +13,4 @@ export default [
     },
   },
   ...resolvers.default_resolvers,
-  ...resolvers.scalars,
 ];

@@ -1,5 +1,4 @@
 import { types, resolvers, loaders } from "./graphql";
-import PenPal from "meteor/penpal";
 import _ from "lodash";
 
 const settings = {
