@@ -114,7 +114,7 @@ export default {
     // if we have net-new add them...
     if (toInsert.length > 0) {
       _.each(toInsert, (host) => {
-        host.projectID = new Mongo.ObjectID(args.projectID);
+        host.projectID = args.projectID;
       });
       let res = await PenPal.DataStore.insertMany("CoreAPI", "Hosts", toInsert);
       _.each(res.insertedIds, (k, v) => {
@@ -150,12 +150,18 @@ export default {
       });
       // at this point we have the host data to add and the existing host data.... need to diff the objects to figure out what fields need to be set....
       // ok so merge will work but make it so that we can't remove fields... need to find out way to intelligently find the difference and adjust accordingly...
-      let storedHostnames = [].concat(storedHost.hostnames);
+      let storedHostnames = [];
+      if (storedHost.hostnames) {
+        storedHostnames = [].concat(storedHost.hostnames);
+      }
       let mergedObject = _.merge(storedHost, host);
       let ID = mergedObject._id;
       delete mergedObject._id;
       _.each(storedHostnames, (hostname) => {
-        if (mergedObject.hostnames && !mergedObject.hostnames.includes(hostname)) {
+        if (
+          mergedObject.hostnames &&
+          !mergedObject.hostnames.includes(hostname)
+        ) {
           mergedObject.hostnames.push(hostname);
         }
       });
@@ -165,7 +171,7 @@ export default {
         console.log("HAVE SERVICES TO HANDLE....");
         delete mergedObject.services;
       }
-      mergedObject.projectID = new Mongo.ObjectID(args.projectID);
+      mergedObject.projectID = args.projectID;
       let res = PenPal.DataStore.update(
         "CoreAPI",
         "Hosts",
@@ -191,7 +197,7 @@ export default {
 
     let idArray = [];
     _.each(args.hostIDs, (hostId) => {
-      idArray.push(new Mongo.ObjectID(hostId));
+      idArray.push(hostId);
     });
 
     let res = PenPal.DataStore.delete("CoreAPI", "Hosts", {
@@ -310,7 +316,7 @@ export default {
 
     let idArray = [];
     _.each(args.projectIDs, (projectId) => {
-      idArray.push(new Mongo.ObjectID(projectId));
+      idArray.push(projectId);
     });
 
     let res = PenPal.DataStore.delete("CoreAPI", "Projects", {
