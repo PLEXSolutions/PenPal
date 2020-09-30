@@ -1,0 +1,28 @@
+Philosophical question
+----------------------
+
+Does PenPal expose a trigger node AND a "send data to PenPal" node? Without the send data to PenPal, the workflow agents need to know how to send data back, which may be more complicated than we want. Does this impact us being able to save intermediate states?
+
+
+Option 1
+--------
+
+- Have PP plugin authors write TypeScript nodes for n8n and then describe where they are in the manifest so PenPal can package them up and send them to n8n
+
+Pros:
+- It's really easy to do this on PP side
+
+Cons:
+- It requires that authors learn two different APIs, and the n8n one is actually really convoluted
+
+
+Option 2
+--------
+
+- Have PP plugin authors write mutations for GraphQL for processing data from agents and then pass the names of those functions to PP. PP can package them up in a boilerplate n8n node that just calls the function. 
+
+Pros:
+- This keeps all code internal to the plugin so that authors don't even have to think about how to write a node.
+
+Cons:
+- We maybe lose some flexibility on the nodes

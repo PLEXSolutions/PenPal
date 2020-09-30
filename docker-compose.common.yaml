@@ -4,14 +4,18 @@ services:
         build: ./Server
         volumes:
             - npm-cache:/home/node/.npm
+            - ./N8n-Nodes/:/home/node/custom-n8n-nodes/
         ports:
             - "3000:3000"
+            - "5678:5678"
         command: npm run start
         networks:
             - public
 
 volumes:
     npm-cache:
+        external: false
+    n8n-cache:
         external: false
 
 networks:

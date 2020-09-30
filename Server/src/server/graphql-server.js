@@ -13,6 +13,7 @@ const startGraphQLServer = (
   plugins_resolvers = {},
   plugins_buildLoaders = () => null
 ) => {
+  console.log("[.] Starting GraphQL Server");
   const _resolvers = _.merge(resolvers, plugins_resolvers);
   const _typeDefs = mergeTypeDefs([types, plugins_types]);
 
@@ -47,7 +48,6 @@ const startGraphQLServer = (
     }
   });
 
-  console.log("Starting GraphQL Server");
   server.applyMiddleware({
     app: WebApp.connectHandlers,
     path: "/graphql"
@@ -58,6 +58,8 @@ const startGraphQLServer = (
       res.end();
     }
   });
+
+  console.log("[+] GraphQL Server is running!");
 };
 
 export default startGraphQLServer;

@@ -50,6 +50,29 @@ const check_plugin = plugin => {
 
 // ----------------------------------------------------------------------------
 
+const check_n8n = n8n => {
+  let n8n_accept = true;
+
+  const try_check = (value, type, repr_value, repr_type) => {
+    try {
+      check(value, type);
+    } catch (e) {
+      console.log(`settings.n8n.${repr_value} must be of type ${repr_type}`);
+      n8n_accept = false;
+    }
+  };
+
+  try_check(n8n.displayName, String, "displayName", "String");
+  try_check(n8n.name, String, "name", "String");
+  try_check(n8n.icon, String, "icon", "String");
+  try_check(n8n.description, String, "description", "String");
+  try_check(n8n.properties, Match.Where(Array.isArray), "properties", "Array");
+
+  return n8n_accept;
+};
+
+// ----------------------------------------------------------------------------
+
 const PenPal = {};
 PenPal.RegisteredPlugins = {};
 PenPal.LoadedPlugins = {};
@@ -88,6 +111,7 @@ PenPal.loadPlugins = () => {
   let plugins_types = {};
   let plugins_resolvers = [{ Query: {} }, { Mutation: {} }];
   let plugins_loaders = {};
+  let plugins_n8n_configs = {};
 
   const plugins_to_load = Object.keys(PenPal.RegisteredPlugins);
   while (plugins_to_load.length > 0) {
@@ -106,6 +130,7 @@ PenPal.loadPlugins = () => {
       console.error(
         `[!] Failed to load ${plugin_name}. Not all dependencies met.`
       );
+      delete PenPal.RegisteredPlugins[plugin_name];
       continue;
     }
 
@@ -122,6 +147,17 @@ PenPal.loadPlugins = () => {
 
     // Now merge the types from this plugin into the schema
     const { types, resolvers, loaders, settings } = plugin.loadPlugin();
+
+    if (settings.n8n !== undefined) {
+      if (!check_n8n(settings.n8n)) {
+        console.error(
+          `[!] Failed to load ${plugin_name}. N8n config is improper`
+        );
+        delete PenPal.RegisteredPlugins[plugin_name];
+        continue;
+      }
+    }
+
     plugins_types = mergeTypeDefs([plugins_types, types]);
     plugins_resolvers = _.merge(plugins_resolvers, resolvers);
     plugins_loaders = _.merge(plugins_loaders, loaders);

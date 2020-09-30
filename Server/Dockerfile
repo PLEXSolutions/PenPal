@@ -35,16 +35,59 @@ RUN echo 'node ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
 RUN mkdir /app
 RUN chown node:node /app
 
-# Make /app the working directory
-WORKDIR /app
+# Make the working directory
+RUN mkdir /n8n
+RUN chown node:node /n8n
+RUN chown -R node:node /usr/lib/node_modules
 
 # Also setup the environment for "production"
 RUN mkdir /app-production
 RUN chown node:node /app-production
+
+# Chown the mongo datastore
 RUN chown -R node:node /data/db
 
 # Drop privs to the node user
 USER node
+
+# Install lerna
+RUN sudo npm install -g lerna
+
+# Install n8n
+WORKDIR n8n
+
+# Clone n8n
+RUN git clone https://github.com/n8n-io/n8n.git .
+
+# Now reduce the number of modules to only the whitelist. Requires some messy code
+RUN sudo npm install -g any-json
+COPY --chown=node:node ./node-whitelist-remove.sh /tmp
+COPY --chown=node:node ./node-whitelist.txt /tmp
+RUN chmod +x /tmp/node-whitelist-remove.sh && /tmp/node-whitelist-remove.sh
+
+# This repairs a broken package.json file from us removing unnecessary packages
+RUN any-json --input-format=hjson /n8n/packages/nodes-base/package.json > /n8n/packages/nodes-base/package.json.bak
+RUN mv /n8n/packages/nodes-base/package.json.bak /n8n/packages/nodes-base/package.json
+
+# Bootstrap with lerna
+RUN lerna bootstrap --hoist
+
+# Build n8n
+RUN npm run build
+
+# Install dev tools for n8n-nodes
+RUN sudo npm install -g n8n-node-dev
+
+# Some more configuration for n8n-node-dev
+RUN sudo npm install -g oauth-1.0a
+RUN cat /usr/lib/node_modules/n8n-node-dev/src/tsconfig-build.json | sed -e 's!"types": \[\],!"types": \[\],\n\t\t"resolveJsonModule": true,!g' > /tmp/tsconfig-buid.json; mv /tmp/tsconfig-buid.json /usr/lib/node_modules/n8n-node-dev/src/tsconfig-build.json
+
+# Expose n8n port
+EXPOSE 5678
+
+# Now install PenPal dependencies
+# Make /app the working directory
+WORKDIR /app
 
 # Install meteor
 RUN curl https://install.meteor.com/ | sh
