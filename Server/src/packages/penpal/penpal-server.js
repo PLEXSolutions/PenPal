@@ -163,6 +163,10 @@ PenPal.loadPlugins = () => {
     plugins_loaders = _.merge(plugins_loaders, loaders);
 
     PenPal.LoadedPlugins[plugin_name].loaded = true;
+    if(settings.datastores) {
+      console.log(`[+] Creating DataStores ${plugin_name}`);
+      PenPal.DataStore.createStorage(PenPal.LoadedPlugins[plugin_name].name,settings.datastores)
+    }
     PenPal.LoadedPlugins[plugin_name].settings = settings;
     console.log(`[+] Loaded ${plugin_name}`);
   }

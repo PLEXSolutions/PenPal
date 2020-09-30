@@ -1,0 +1,9 @@
+type Query {
+  getCoreAPIConfiguration: CoreAPIConfiguration!
+  getHosts(projectID: ID!): [Host]!
+  getHost (id: ID!): Host!
+  getProjects: [Project]!
+  getProject (id: ID!): Project!
+  getServices(projectID: ID!): [Service]!
+  getService (id: ID!): Service!
+}

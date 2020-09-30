@@ -1,0 +1,137 @@
+type CoreAPIConfiguration {
+  hookURL: String
+}
+
+input ProjectInput {
+  id: ID
+  name: String!
+  industry: String
+  description: String
+}
+
+type Project {
+  id: ID
+  name: String
+  industry: String
+  createdAt: Date
+  description: String
+  owner: User
+  contributors: [User]
+  commands:[String]
+  notes:[Note]
+  files:[File]
+}
+
+input HostInput {
+  id: ID
+  project: ProjectInput
+  ipv4: String
+  mac: String
+  hostnames: [String]
+  os: OSInput
+  notes: [NoteInput]
+  status_message: String
+  tags: [String]
+  status: String
+  last_modified_by: UserInput
+  is_flagged: Boolean
+  files: [FileInput]
+  services: [ServiceInput]
+}
+
+type Host {
+  id: ID
+  project: Project
+  ipv4: String
+  mac: String
+  hostnames: [String]
+  os: OS
+  notes: [Note]
+  status_message: String
+  tags: [String]
+  status: String
+  last_modified_by: User
+  is_flagged: Boolean
+  files: [File]
+  services: [Service]
+}
+
+input UserInput {
+  username: String
+  email: String
+} 
+type User {
+  id: ID
+  username: String
+  email: String
+} 
+
+input NoteInput {
+  title: String
+  content: String
+  last_modified_by: UserInput
+}
+type Note {
+  id: ID
+  title: String
+  content: String
+  last_modified_by: User
+}
+
+input FileInput {
+  filename: String
+  url: String
+}
+
+type File {
+  id: ID
+  filename: String
+  url: String
+}
+
+input OSInput {
+  tool: String
+  fingerprint: String
+  weight: Int
+}
+
+type OS {
+  id: ID
+  tool: String
+  fingerprint: String
+  weight: Int
+}
+
+input ServiceInput { 
+  project: ProjectInput
+  hostID: ID!
+  port: Int!
+  protocol: String!
+  service: String
+  product: String
+  status: String
+  is_flagged: Boolean
+  notes: [NoteInput]
+  files: [FileInput]
+}
+
+type Service { 
+  id: ID
+  project: Project
+  host: Host
+  port: Int
+  protocol: String
+  service: String
+  product: String
+  status: String
+  is_flagged: Boolean
+  last_modified_by: User
+  notes: [Note]
+  files: [File]
+}
+
+type MutationResponse {
+  status: String
+  was_success: Boolean
+  affected_records: [ID]
+ }

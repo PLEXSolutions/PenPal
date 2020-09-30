@@ -1,0 +1,9 @@
+type Mutation {
+  setCoreAPIConfiguration(hookURL: String!): CoreAPIConfiguration!
+  upsertHosts(projectID: ID!, hosts: [HostInput]!): MutationResponse!
+  removeHosts(hostIDs: [ID]!): MutationResponse!
+  upsertProjects(projects: [ProjectInput]!): MutationResponse!
+  removeProjects(projectIDs:[ID]!): MutationResponse!
+  upsertServices(projectID: ID!, services: [ServiceInput]!): MutationResponse!
+  removeServices(serviceIDs: [ID]!): MutationResponse!
+}
