@@ -6,7 +6,6 @@ export default {
       return PenPal.API.Hosts.Get({ id: service.hostID });
     },
     project(service) {
-      console.log(service.projectID);
       return PenPal.API.Projects.Get({ id: service.projectID });
     },
   },
