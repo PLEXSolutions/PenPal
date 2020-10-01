@@ -1,41 +1,86 @@
 import { types, resolvers, loaders } from "./graphql";
 import _ from "lodash";
+import PenPal from "meteor/penpal";
+import {
+  getHosts,
+  getProjects,
+  getServices,
+  removeHosts,
+  removeProjects,
+  removeServices,
+  upsertHosts,
+  upsertProjects,
+  upsertServices,
+} from "./api-functions";
 
 const settings = {
   configuration: {
-    schema_root: 'CoreAPIConfiguration',
-    getter: 'getCoreAPIConfiguration',
-    setter: 'setCoreAPIConfiguration'
+    schema_root: "CoreAPIConfiguration",
+    getter: "getCoreAPIConfiguration",
+    setter: "setCoreAPIConfiguration",
   },
   datastores: [
     {
-      name: "Projects"
+      name: "Projects",
     },
     {
-      name: "Hosts"
+      name: "Hosts",
     },
     {
-      name: "Services"
+      name: "Services",
     },
     {
-      name: "Netblocks"
+      name: "Netblocks",
     },
     {
-      name: "Configuration"
+      name: "Configuration",
     },
-  ]
+  ],
 };
 
 const CoreAPIPlugin = {
-  loadPlugin() { 
-    // Create datastores
+  loadPlugin() {
+    // Register API Hooks
+    PenPal.API.Hosts = {
+      Upsert: (args) => {
+        return upsertHosts(args);
+      },
+      Remove: (args) => {
+        return removeHosts(args);
+      },
+      Get: (args) => {
+        return getHosts(args);
+      },
+    };
+    PenPal.API.Projects = {
+      Upsert: (args) => {
+        return upsertProjects(args);
+      },
+      Remove: (args) => {
+        return removeProjects(args);
+      },
+      Get: (args) => {
+        return getProjects(args);
+      },
+    };
+    PenPal.API.Services = {
+      Upsert: (args) => {
+        return upsertServices(args);
+      },
+      Remove: (args) => {
+        return removeServices(args);
+      },
+      Get: (args) => {
+        return getServices(args);
+      },
+    };
     return {
       types,
       resolvers,
       loaders: {},
-      settings
+      settings,
     };
-  }
+  },
 };
 
 export default CoreAPIPlugin;
