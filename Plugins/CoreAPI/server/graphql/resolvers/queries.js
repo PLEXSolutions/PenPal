@@ -11,32 +11,27 @@ export default {
     };
   },
   async getHosts(root, args, context) {
-    return PenPal.DataStore.fetch("CoreAPI", "Hosts", {
-      "projectID": args.projectID,
-    });
+    let res = PenPal.API.Hosts.Get(args);
+    return res;
   },
   async getHost(root, args, context) {
-    return PenPal.DataStore.fetch("CoreAPI", "Hosts", {
-      _id: `${args.id}`,
-    })[0];
+    let res = PenPal.API.Hosts.Get(args);
+    return res;
   },
   async getProjects(root, args, context) {
-    let projects =  PenPal.DataStore.fetch("CoreAPI", "Projects", {});
-    _.each(projects, (project) => {
-      project.id = project._id
-      delete project._id
-    })
-    return projects
+    let res = PenPal.API.Projects.Get(args);
+    return res;
   },
   async getProject(root, args, context) {
-    return PenPal.DataStore.fetch("CoreAPI", "Projects", {
-      _id: `${args.id}`,
-    })[0];
+    let res = PenPal.API.Projects.Get(args);
+    return res;
   },
   async getServices(root, args, context) {
-    return PenPal.DataStore.fetch("CoreAPI", "Services", {});
+    let res = PenPal.API.Services.Get(args);
+    return res;
   },
   async getService(root, args, context) {
-    return PenPal.DataStore.fetch("CoreAPI","Services",{"_id":`${args.id}`})[0]
+    let res = PenPal.API.Services.Get(args);
+    return res;
   },
 };
