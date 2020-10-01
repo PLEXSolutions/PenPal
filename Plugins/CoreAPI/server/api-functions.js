@@ -435,7 +435,6 @@ export async function removeServices(args) {
 export async function getHosts(args) {
   // we abstracted GET an additional level, possible inputs are a ProjectID or a HostID...
   // could just get both and return the results from whichever result has data.... Lazy but efficient? (otherwise we check if the ID is a project ID which is a DB call anyway...)
-  console.log(args);
   let hostsToReturn = [];
   if (args.projectID) {
     if (args.hostIDs && args.hostIDs.length > 0) {
