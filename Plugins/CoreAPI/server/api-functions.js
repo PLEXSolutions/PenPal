@@ -435,11 +435,23 @@ export async function removeServices(args) {
 export async function getHosts(args) {
   // we abstracted GET an additional level, possible inputs are a ProjectID or a HostID...
   // could just get both and return the results from whichever result has data.... Lazy but efficient? (otherwise we check if the ID is a project ID which is a DB call anyway...)
+  console.log(args);
   let hostsToReturn = [];
   if (args.projectID) {
-    hostsToReturn = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
-      projectID: args.projectID,
-    });
+    if (args.hostIDs && args.hostIDs.length > 0) {
+      let hostIds = [];
+      _.each(args.hostIDs, (hostID) => {
+        hostIds.push(new Mongo.ObjectID(hostID));
+      });
+      hostsToReturn = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
+        projectID: args.projectID,
+        _id: { $in: hostIds },
+      });
+    } else {
+      hostsToReturn = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
+        projectID: args.projectID,
+      });
+    }
   } else if (args.id) {
     hostsToReturn = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
       _id: new Mongo.ObjectID(args.id),
