@@ -3,14 +3,14 @@ import { Mongo } from "meteor/mongo";
 import _ from "lodash";
 
 export default {
-  async setCoreAPIConfiguration(root, args, context) {
+  async setCoreAPIConfiguration(root, { configuration }, context) {
     let currConfig = PenPal.DataStore.fetch("CoreAPI", "Configuration", {});
     if (currConfig.length > 0) {
       PenPal.DataStore.update(
         "CoreAPI",
         "Configuration",
         { _id: `${currConfig[0]._id}` },
-        { $set: { hookURL: args.hookURL } }
+        { $set: { hookURL: configuration.hookURL } }
       );
       return {
         status: "Updated Configuration",
@@ -19,7 +19,7 @@ export default {
       };
     } else {
       let addedConfig = PenPal.DataStore.insert("CoreAPI", "Configuration", {
-        hookURL: args.hookURL,
+        hookURL: configuration.hookURL,
       });
       if (addedConfig) {
         return {

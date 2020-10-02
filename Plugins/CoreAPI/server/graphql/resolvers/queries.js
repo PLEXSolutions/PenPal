@@ -4,8 +4,8 @@ import _ from "lodash";
 
 export default {
   async getCoreAPIConfiguration(root, args, context) {
-    let hookURL = PenPal.DataStore.fetch("CoreAPI", "Configuration", {})[0]
-      .hookURL;
+    let hookURL =
+      PenPal.DataStore.fetch("CoreAPI", "Configuration", {})[0]?.hookURL ?? "";
     return {
       hookURL,
     };

@@ -8,9 +8,7 @@ import {
     NodeParameterValue
 } from "n8n-workflow";
 
-import { displayName, name, icon, description, properties } from "./settings.json";
-
-console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", <INodeProperties[]>properties);
+import { displayName, name, icon, description, properties } from "./NODE_NAME_REPLACE_ME-settings.json";
 
 export class NODE_NAME_REPLACE_ME implements INodeType {
     description: INodeTypeDescription = {
