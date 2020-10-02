@@ -45,6 +45,13 @@ const check_plugin = plugin => {
     "Function"
   );
 
+  try_check(
+    plugin.startupHook,
+    Match.Optional(isFunction),
+    "startupHook",
+    "Function"
+  );
+
   return plugin_accept;
 };
 
@@ -239,6 +246,14 @@ PenPal.loadPlugins = () => {
     plugins_resolvers,
     plugins_loaders
   };
+};
+
+// ----------------------------------------------------------------------------
+
+PenPal.runStartupHooks = () => {
+  _.each(PenPal.LoadedPlugins, (plugin, plugin_name) => {
+    console.log(plugin_name, plugin);
+  });
 };
 
 // ----------------------------------------------------------------------------

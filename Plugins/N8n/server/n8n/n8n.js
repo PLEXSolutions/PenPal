@@ -4,8 +4,8 @@ import { promises as fs } from "fs";
 import path from "path";
 import fetch from "node-fetch";
 
-import template_workflow_ts_file from "./n8n/WorkflowTemplate.node.ts.js";
-import template_trigger_ts_file from "./n8n/TriggerTemplate.node.ts.js";
+import template_workflow_ts_file from "./templates/WorkflowTemplate.node.ts.js";
+import template_trigger_ts_file from "./templates/TriggerTemplate.node.ts.js";
 
 const N8N_DIR = "/n8n";
 const N8N_NODES_DIR = "/home/node/custom-n8n-nodes/";

@@ -24,7 +24,7 @@ const settings = {
       {
         displayName: "New Host",
         name: "BaseNewHost",
-        icon: "fa:network-wired",
+        icon: "fa:desktop",
         description:
           "Webhook that will get called when a new host is added to PenPal",
         properties: [],
