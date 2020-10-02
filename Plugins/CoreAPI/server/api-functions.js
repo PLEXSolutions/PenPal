@@ -35,7 +35,11 @@ export async function upsertHosts(args) {
       { hostname: { $in: hostnames } },
     ],
   };
-  let existingRecords = PenPal.DataStore.fetch("CoreAPI", "Hosts", searchDoc);
+  let existingRecords = await PenPal.DataStore.fetch(
+    "CoreAPI",
+    "Hosts",
+    searchDoc
+  );
   let updatedRecords = [];
   // short circuit check if all new hosts...
   if (existingRecords.length === 0) {
@@ -84,7 +88,7 @@ export async function upsertHosts(args) {
     });
     let res = await PenPal.DataStore.insertMany("CoreAPI", "Hosts", toInsert);
     _.each(res.insertedIds, (k, v) => {
-      updatedRecords.push(k);
+      updatedRecords.push(k.toString());
     });
   }
 
@@ -96,13 +100,13 @@ export async function upsertHosts(args) {
     let foundHost = false;
     _.each(existingRecords, (existingHost) => {
       if (!foundHost) {
-        if (existingHost.ipv4 === host.ipv4) {
+        if (existingHost.ipv4 && existingHost.ipv4 === host.ipv4) {
           storedHost = existingHost;
           foundHost = true;
-        } else if (existingHost.mac === host.mac) {
+        } else if (existingHost.mac && existingHost.mac === host.mac) {
           storedHost = existingHost;
           foundHost = true;
-        } else if (exhistingHost.hostnames) {
+        } else if (existingHost.hostnames) {
           if (
             existingHost.hostnames.join(",").includes(host.hostnames.join(","))
           ) {
@@ -120,7 +124,7 @@ export async function upsertHosts(args) {
     }
     let mergedObject = _.merge(storedHost, host);
     let ID = mergedObject._id;
-    delete mergedObject._id;
+    // delete mergedObject._id;
     _.each(storedHostnames, (hostname) => {
       if (
         mergedObject.hostnames &&
@@ -323,7 +327,6 @@ export async function upsertServices(args) {
   let searchDoc = {
     $or: orArray,
   };
-  console.log(searchDoc);
   let existingRecords = PenPal.DataStore.fetch(
     "CoreAPI",
     "Services",
@@ -376,7 +379,11 @@ export async function upsertServices(args) {
     let foundService = false;
     _.each(existingRecords, (existingService) => {
       if (!foundService) {
-        if (existingService.hostID === service.hostID) {
+        if (
+          existingService.hostID === service.hostID &&
+          existingService.port === service.port &&
+          existingService.protocol === service.protocol
+        ) {
           storedService = existingService;
           foundService = true;
         }

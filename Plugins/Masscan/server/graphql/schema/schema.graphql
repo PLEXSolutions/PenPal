@@ -1,0 +1,11 @@
+input MasscanUpload {
+  projectID: ID!
+  format: String!
+  base64_content: String!
+}
+
+type MasscanUploadResponse {
+  status: String
+  was_success: Boolean
+  affected_records: [ID]
+}
