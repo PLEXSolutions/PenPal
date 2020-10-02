@@ -1,5 +1,5 @@
 {
-    "name": "Base",
+    "name": "N8n",
     "version": "0.1.0",
-    "dependsOn": []
+    "dependsOn": ["CoreAPI@0.1.0"]
 }

@@ -1,4 +1,4 @@
-//import { types, resolvers, loaders } from "./graphql";
+import { types, resolvers, loaders } from "./graphql";
 import startN8nServer from "./n8n/n8n.js";
 
 const settings = {};
@@ -6,8 +6,8 @@ const settings = {};
 const N8nPlugin = {
   loadPlugin() {
     return {
-      types: {},
-      resolvers: {},
+      types,
+      resolvers,
       loaders: {},
       settings
     };

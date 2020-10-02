@@ -19,11 +19,7 @@ import {
 } from "n8n-workflow";
 
 import {
-    displayName,
-    name,
-    icon,
-    description,
-    properties,
+    node,
     trigger_name
 } from "./NODE_NAME_REPLACE_ME-settings.json";
 
@@ -63,14 +59,14 @@ async function penpalGraphqlRequest(
 
 export class NODE_NAME_REPLACE_ME implements INodeType {
     description: INodeTypeDescription = {
-        displayName: displayName,
-        name: name,
-        icon: icon, // file:lambda.png   OR   fa:font-awesome-name
+        displayName: node.displayName,
+        name: node.name,
+        icon: node.icon, // file:lambda.png   OR   fa:font-awesome-name
         group: ["trigger", "penpal"],
         version: 1,
-        description: description,
+        description: node.description,
         defaults: {
-            name: displayName,
+            name: node.displayName,
             color: "#3471eb"
         },
         inputs: [],
@@ -83,7 +79,7 @@ export class NODE_NAME_REPLACE_ME implements INodeType {
                 path: "webhook"
             }
         ],
-        properties: <INodeProperties[]>properties
+        properties: <INodeProperties[]>node.properties
     };
 
     webhookMethods = {

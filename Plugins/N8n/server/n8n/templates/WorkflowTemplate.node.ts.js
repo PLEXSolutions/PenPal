@@ -1,4 +1,15 @@
-export default `import { IExecuteFunctions } from "n8n-core";
+export default `import {
+	OptionsWithUri
+} from 'request';
+
+import {
+    IHookFunctions,
+    IWebhookFunctions,
+    IExecuteFunctions,
+    IExecuteSingleFunctions,
+    ILoadOptionsFunctions,
+} from "n8n-core";
+
 import {
     INodeExecutionData,
     INodeParameters,
@@ -8,23 +19,60 @@ import {
     NodeParameterValue
 } from "n8n-workflow";
 
-import { displayName, name, icon, description, properties } from "./NODE_NAME_REPLACE_ME-settings.json";
+import {
+  node,
+  executeHandler
+} from "./NODE_NAME_REPLACE_ME-settings.json";
+
+async function penpalGraphqlRequest(
+    this:
+        IHookFunctions |
+        IExecuteFunctions |
+        IExecuteSingleFunctions |
+        ILoadOptionsFunctions,
+    graphql_query: string,
+    variables: any = {},
+    uri?: string
+): Promise<any> {
+    // TODO: Add credentials? Maybe running this on loopback is sufficient
+    //const credentials = this.getCredentials('penpalApiCredentials');
+
+    let body = {
+        query: graphql_query,
+        variables
+    };
+
+    const options: OptionsWithUri = {
+        method: 'POST',
+        headers: {
+            'Accept': 'applications/json',
+        },
+        uri: uri || 'http://localhost:3000/graphql',
+        json: true,
+        body
+    };
+
+    console.log('Making request', options);
+
+    let responseData = await this.helpers.request!(options);
+    return responseData;
+}
 
 export class NODE_NAME_REPLACE_ME implements INodeType {
     description: INodeTypeDescription = {
-        displayName: displayName,
-        name: name,
-        icon: icon,            // file:lambda.png   OR   fa:font-awesome-name
+        displayName: node.displayName,
+        name: node.name,
+        icon: node.icon,            // file:lambda.png   OR   fa:font-awesome-name
         group: ["transform", "penpal"],
         version: 1,
-        description: description,
+        description: node.description,
         defaults: {
-            name: displayName,
+            name: node.displayName,
             color: "#3471eb"
         },
         inputs: ["main"],
         outputs: ["main"],
-        properties: <INodeProperties[]>properties
+        properties: <INodeProperties[]>node.properties
     };
 
     async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -32,7 +80,7 @@ export class NODE_NAME_REPLACE_ME implements INodeType {
         const items = this.getInputData();
 
         // Fill in the function later
-        console.log(\`Executing \${displayName} node\`);
+        console.log(\`Executing \${node.displayName} node\`);
 
         returnData = items;
         return this.prepareOutputData(returnData);
