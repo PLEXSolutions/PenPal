@@ -38,6 +38,8 @@ export const generateQueryFromSchema = (types, schema_root, query_name) => {
       }
     `;
   }
+
+  console.log(types, types[schema_root]);
   const query_config = process_schema(types, types[schema_root]);
   query_config.operation = query_name;
   const { query } = queryBuilder(query_config);
@@ -54,6 +56,7 @@ export const generateMutationFromSchema = (types, mutations, mutation_name) => {
       }
     `;
   }
+
   const mutation_schema = mutations[mutation_name];
   const variables = _.chain(mutation_schema.args)
     .keyBy("name")
@@ -62,6 +65,8 @@ export const generateMutationFromSchema = (types, mutations, mutation_name) => {
       type: variable.type.name
     }))
     .value();
+
+  console.log(types, mutation_schema);
   const { fields } = process_schema(types, types[mutation_schema.type.name]);
 
   const mutation_config = {

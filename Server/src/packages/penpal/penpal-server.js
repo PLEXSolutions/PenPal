@@ -62,11 +62,65 @@ const check_n8n = n8n => {
     }
   };
 
-  try_check(n8n.displayName, String, "displayName", "String");
-  try_check(n8n.name, String, "name", "String");
-  try_check(n8n.icon, String, "icon", "String");
-  try_check(n8n.description, String, "description", "String");
-  try_check(n8n.properties, Match.Where(Array.isArray), "properties", "Array");
+  if (n8n.workflow_nodes !== undefined) {
+    if (!Array.isArray(n8n.workflow_nodes)) {
+      console.log(`settings.n8n.workflow_nodes must be of type Array`);
+    } else {
+      for (let i = 0; i < n8n.workflow_nodes.length; i++) {
+        const node = n8n.workflow_nodes[i];
+        try_check(
+          node.displayName,
+          String,
+          `workflow_nodes.${i}.displayName`,
+          "String"
+        );
+        try_check(node.name, String, `workflow_nodes.${i}.name`, "String");
+        try_check(node.icon, String, `workflow_nodes.${i}.icon`, "String");
+        try_check(
+          node.description,
+          String,
+          `workflow_nodes.${i}.description`,
+          "String"
+        );
+        try_check(
+          node.properties,
+          Match.Where(Array.isArray),
+          `workflow_nodes.${i}.properties`,
+          "Array"
+        );
+      }
+    }
+  }
+
+  if (n8n.trigger_nodes !== undefined) {
+    if (!Array.isArray(n8n.trigger_nodes)) {
+      console.log(`settings.n8n.trigger_nodes must be of type Array`);
+    } else {
+      for (let i = 0; i < n8n.trigger_nodes.length; i++) {
+        const node = n8n.trigger_nodes[i];
+        try_check(
+          node.displayName,
+          String,
+          `trigger_nodes.${i}.displayName`,
+          "String"
+        );
+        try_check(node.name, String, `trigger_nodes.${i}.name`, "String");
+        try_check(node.icon, String, `trigger_nodes.${i}.icon`, "String");
+        try_check(
+          node.description,
+          String,
+          `trigger_nodes.${i}.description`,
+          "String"
+        );
+        try_check(
+          node.properties,
+          Match.Where(Array.isArray),
+          `trigger_nodes.${i}.properties`,
+          "Array"
+        );
+      }
+    }
+  }
 
   return n8n_accept;
 };
@@ -163,9 +217,12 @@ PenPal.loadPlugins = () => {
     plugins_loaders = _.merge(plugins_loaders, loaders);
 
     PenPal.LoadedPlugins[plugin_name].loaded = true;
-    if(settings.datastores) {
+    if (settings.datastores) {
       console.log(`[+] Creating DataStores ${plugin_name}`);
-      PenPal.DataStore.createStorage(PenPal.LoadedPlugins[plugin_name].name,settings.datastores)
+      PenPal.DataStore.createStorage(
+        PenPal.LoadedPlugins[plugin_name].name,
+        settings.datastores
+      );
     }
     PenPal.LoadedPlugins[plugin_name].settings = settings;
     console.log(`[+] Loaded ${plugin_name}`);

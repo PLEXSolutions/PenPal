@@ -1,4 +1,5 @@
 import { types, resolvers, loaders } from "./graphql";
+import { SETTINGS_STORE } from "./constants.js";
 
 const settings = {
   configuration: {
@@ -28,7 +29,7 @@ const settings = {
   },*/
   datastores: [
     {
-      name: "settings"
+      name: SETTINGS_STORE
     }
   ]
 };

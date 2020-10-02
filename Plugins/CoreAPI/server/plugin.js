@@ -3,9 +3,9 @@ import _ from "lodash";
 
 const settings = {
   configuration: {
-    schema_root: 'CoreAPIConfiguration',
-    getter: 'getCoreAPIConfiguration',
-    setter: 'setCoreAPIConfiguration'
+    schema_root: "CoreAPIConfiguration",
+    getter: "getCoreAPIConfiguration",
+    setter: "setCoreAPIConfiguration"
   },
   datastores: [
     {
@@ -22,12 +22,12 @@ const settings = {
     },
     {
       name: "Configuration"
-    },
+    }
   ]
 };
 
 const CoreAPIPlugin = {
-  loadPlugin() { 
+  loadPlugin() {
     // Create datastores
     return {
       types,
