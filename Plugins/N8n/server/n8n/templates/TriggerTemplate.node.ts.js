@@ -20,7 +20,7 @@ import {
 
 import {
     node,
-    trigger_name
+    trigger
 } from "./NODE_NAME_REPLACE_ME-settings.json";
 
 async function penpalGraphqlRequest(
@@ -50,8 +50,6 @@ async function penpalGraphqlRequest(
         json: true,
         body
     };
-
-    console.log('Making request', options);
 
     let responseData = await this.helpers.request!(options);
     return responseData;
@@ -85,7 +83,6 @@ export class NODE_NAME_REPLACE_ME implements INodeType {
     webhookMethods = {
         default: {
             async checkExists(this: IHookFunctions): Promise<boolean> {
-                console.log('Checking to see if webhook exists');
                 const webhookData = this.getWorkflowStaticData("node");
 
                 if (webhookData.webhookId === undefined) {
@@ -94,7 +91,7 @@ export class NODE_NAME_REPLACE_ME implements INodeType {
                 }
 
                 // Webhook got created before so check if it still exists
-                const webhook_name = trigger_name;
+                const webhook_name = trigger.name;
 
                 const checkN8nWebhook: string = \`query CheckN8nWebhookQuery($id: ID!) {
                     checkN8nWebhook(id: $id) {
@@ -104,13 +101,11 @@ export class NODE_NAME_REPLACE_ME implements INodeType {
                 }\`;
 
                 try {
-                    await penpalGraphqlRequest.call(this, checkN8nWebhook, { id: trigger_name });
+                    await penpalGraphqlRequest.call(this, checkN8nWebhook, { id: trigger.name });
                 } catch (e) {
                     if (e.message.includes("[404]:")) {
                         // Webhook does not exist
                         delete webhookData.webhookId;
-
-                        console.log('Webhook did not exist');
                         return false;
                     }
 
@@ -118,24 +113,20 @@ export class NODE_NAME_REPLACE_ME implements INodeType {
                     throw e;
                 }
 
-                console.log('Webhook already existed');
-
                 // If it did not error then the webhook exists
                 return true;
             },
             async create(this: IHookFunctions): Promise<boolean> {
-                console.log('Creating new webhook');
                 const webhookUrl = this.getNodeWebhookUrl("default") as string;
                 const webhookData = this.getWorkflowStaticData("node");
 
-                console.log(webhookData);
-
                 let responseData;
-
-                const createN8nWebhook: string = \`mutation CreateN8nWebhookMutation($id: ID!, $url: String!) {
-                    createN8nWebhook(id: $id, url: $url) {
+                const createN8nWebhook: string = \`mutation CreateN8nWebhookMutation($id: ID!, $url: String!, $type: String!, $trigger: String!) {
+                    createN8nWebhook(id: $id, url: $url, type: $type, trigger: $trigger) {
                         id
                         url
+                        type
+                        trigger
                     }
                 }\`;
 
@@ -143,7 +134,7 @@ export class NODE_NAME_REPLACE_ME implements INodeType {
                     responseData = await penpalGraphqlRequest.call(
                         this,
                         createN8nWebhook,
-                        { id: trigger_name, url: webhookUrl }
+                        { id: trigger.name, url: webhookUrl, type: trigger.type, trigger: trigger.trigger }
                     );
                 } catch (e) {
                     throw e;
@@ -163,7 +154,6 @@ export class NODE_NAME_REPLACE_ME implements INodeType {
                 return true;
             },
             async delete(this: IHookFunctions): Promise<boolean> {
-                console.log('Deleting webhook');
                 const webhookData = this.getWorkflowStaticData("node");
 
                 const deleteN8nWebhook: string = \`mutation DeleteN8nWebhookMutation($id: ID!) {

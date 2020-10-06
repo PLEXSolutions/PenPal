@@ -21,7 +21,8 @@ import {
 
 import {
   node,
-  executeHandler
+  executeHandler,
+  executeHandlerType
 } from "./NODE_NAME_REPLACE_ME-settings.json";
 
 async function penpalGraphqlRequest(
@@ -52,8 +53,6 @@ async function penpalGraphqlRequest(
         body
     };
 
-    console.log('Making request', options);
-
     let responseData = await this.helpers.request!(options);
     return responseData;
 }
@@ -82,6 +81,21 @@ export class NODE_NAME_REPLACE_ME implements INodeType {
         // Fill in the function later
         console.log(\`Executing \${node.displayName} node\`);
 
+        const executeHandlerEndpoint: string = \`\${executeHandlerType} \${executeHandler}\${executeHandlerType} ($data: JSON!) {
+            \${executeHandler}(data: $data) {
+                id
+            }
+        }\`;
+
+        let result = {};
+        try {
+            result = await penpalGraphqlRequest.call(this, executeHandlerEndpoint, { data: items });
+        } catch (e) {
+            // Some error occured
+            throw e;
+        }
+
+        items.push({ json: result });
         returnData = items;
         return this.prepareOutputData(returnData);
     }

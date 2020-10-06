@@ -10,8 +10,11 @@ import {
   removeServices,
   upsertHosts,
   upsertProjects,
-  upsertServices
+  upsertServices,
+  registerHook as apiRegisterHook
 } from "./api-functions";
+
+import { mocks } from "./test/";
 
 const settings = {
   configuration: {
@@ -35,44 +38,7 @@ const settings = {
     {
       name: "Configuration"
     }
-  ],
-  n8n: {
-    workflow_nodes: [
-      {
-        executeHandler: "coreAPIUpdateHost",
-        node: {
-          displayName: "PenPal Update Host",
-          name: "CoreAPIUpdateHost",
-          icon: "fa:edit",
-          description:
-            "Send information to the PenPal server for the given host",
-          properties: [
-            {
-              displayName: "Host",
-              name: "host",
-              type: "string",
-              default: "",
-              description: "The host ID that the new data belongs to",
-              required: true
-            }
-          ]
-        }
-      }
-    ],
-    trigger_nodes: [
-      {
-        trigger_name: "CoreAPINewHost",
-        node: {
-          displayName: "PenPal New Host Trigger",
-          name: "CoreAPINewHost",
-          icon: "fa:desktop",
-          description:
-            "Webhook that will get called when a new host is added to PenPal",
-          properties: []
-        }
-      }
-    ]
-  }
+  ]
 };
 
 const CoreAPIPlugin = {
@@ -89,6 +55,7 @@ const CoreAPIPlugin = {
         return getHosts(args);
       }
     };
+
     PenPal.API.Projects = {
       Upsert: args => {
         return upsertProjects(args);
@@ -100,6 +67,7 @@ const CoreAPIPlugin = {
         return getProjects(args);
       }
     };
+
     PenPal.API.Services = {
       Upsert: args => {
         return upsertServices(args);
@@ -111,6 +79,10 @@ const CoreAPIPlugin = {
         return getServices(args);
       }
     };
+
+    PenPal.API.registerHook = apiRegisterHook;
+
+    PenPal.Test.CoreAPI = { ...mocks };
 
     return {
       types,

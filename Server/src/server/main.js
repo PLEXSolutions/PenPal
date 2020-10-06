@@ -26,7 +26,7 @@ Meteor.startup(async function() {
     plugins_types,
     plugins_resolvers,
     plugins_buildLoaders
-  } = PenPal.loadPlugins();
+  } = await PenPal.loadPlugins();
 
   // Startup Hooks
   PenPal.runStartupHooks();

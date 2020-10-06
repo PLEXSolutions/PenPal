@@ -19,7 +19,7 @@ const settings = {
 const MongoDataStorePlugin = {
   loadPlugin() {
     PenPal.MongoCollections = {};
-    PenPal.DataStore = {};
+    PenPal.DataStore = {}; // TODO: need this to exist in a general DataStore plugin once we move past Mongo
 
     PenPal.DataStore.update = (plugin_name, table, selector, update) => {
       return PenPal.MongoCollections[`${plugin_name}${table}`].update(
@@ -51,7 +51,6 @@ const MongoDataStorePlugin = {
     };
 
     PenPal.DataStore.delete = (plugin_name, table, selector) => {
-      console.log(selector);
       return PenPal.MongoCollections[`${plugin_name}${table}`].remove(selector);
     };
 

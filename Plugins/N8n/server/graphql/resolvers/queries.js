@@ -1,37 +1,9 @@
-import PenPal from "meteor/penpal";
-import { Mongo } from "meteor/mongo";
-import _ from "lodash";
+import WebhookManager from "../../n8n/webhook.js";
 
 export default {
-  async getCoreAPIConfiguration(root, args, context) {
-    let hookURL =
-      PenPal.DataStore.fetch("CoreAPI", "Configuration", {})[0]?.hookURL ?? "";
-    return {
-      hookURL
-    };
-  },
-  async getHosts(root, args, context) {
-    let res = PenPal.API.Hosts.Get(args);
-    return res;
-  },
-  async getHost(root, args, context) {
-    let res = PenPal.API.Hosts.Get(args);
-    return res;
-  },
-  async getProjects(root, args, context) {
-    let res = PenPal.API.Projects.Get(args);
-    return res;
-  },
-  async getProject(root, args, context) {
-    let res = PenPal.API.Projects.Get(args);
-    return res;
-  },
-  async getServices(root, args, context) {
-    let res = PenPal.API.Services.Get(args);
-    return res;
-  },
-  async getService(root, args, context) {
-    let res = PenPal.API.Services.Get(args);
-    return res;
+  async checkN8nWebhook(root, { id }, context) {
+    console.log(`[.] Checking for n8n webhook ${id}`);
+
+    return WebhookManager.getWebhook(id);
   }
 };

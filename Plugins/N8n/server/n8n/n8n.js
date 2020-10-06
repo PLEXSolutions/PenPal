@@ -104,16 +104,6 @@ const startN8nServer = () => {
   });
 };
 
-export const executeWebhook = async (url, args = {}) => {
-  console.log(`[.] Executing webhook: ${url}`);
-  const result = await fetch(url, {
-    method: "POST",
-    body: JSON.stringify(args),
-    headers: { "Content-Type": "application/json" }
-  });
-  return await result.json();
-};
-
 export default async () => {
   killOldServer();
   await generateNodes();

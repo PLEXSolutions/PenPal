@@ -116,13 +116,13 @@ const check_n8n = n8n => {
       console.log(`settings.n8n.trigger_nodes must be of type Array`);
     } else {
       for (let i = 0; i < n8n.trigger_nodes.length; i++) {
-        const { trigger_name, node } = n8n.trigger_nodes[i];
+        const { trigger, node } = n8n.trigger_nodes[i];
 
         try_check(
-          trigger_name,
-          String,
-          `trigger_nodes.${i}.trigger_name`,
-          "String"
+          trigger,
+          { name: String, type: String, trigger: String },
+          `trigger_nodes.${i}.trigger`,
+          "{ name: String, type: String, trigger: String }"
         );
 
         try_check(
@@ -185,7 +185,7 @@ PenPal.registerPlugin = (manifest, plugin) => {
 
 // ----------------------------------------------------------------------------
 
-PenPal.loadPlugins = () => {
+PenPal.loadPlugins = async () => {
   PenPal.LoadedPlugins = _.mapValues(PenPal.RegisteredPlugins, plugin => ({
     loaded: false,
     name: plugin.name,
@@ -229,7 +229,7 @@ PenPal.loadPlugins = () => {
     }
 
     // Now merge the types from this plugin into the schema
-    const { types, resolvers, loaders, settings } = plugin.loadPlugin();
+    const { types, resolvers, loaders, settings } = await plugin.loadPlugin();
 
     if (settings.n8n !== undefined) {
       if (!check_n8n(settings.n8n)) {
