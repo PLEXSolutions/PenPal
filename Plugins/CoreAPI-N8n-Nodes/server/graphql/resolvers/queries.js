@@ -4,7 +4,7 @@ import _ from "lodash";
 
 export default {
   async coreAPIGetHostData(root, { data }, context) {
-    console.log("CoreAPIGetHostData", data);
+    console.log("[.] CoreAPIGetHostData executeHandler:", data);
     return [];
   }
 };

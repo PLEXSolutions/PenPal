@@ -78,9 +78,6 @@ export class NODE_NAME_REPLACE_ME implements INodeType {
         let returnData: INodeExecutionData[];
         const items = this.getInputData();
 
-        // Fill in the function later
-        console.log(\`Executing \${node.displayName} node\`);
-
         const executeHandlerEndpoint: string = \`\${executeHandlerType} \${executeHandler}\${executeHandlerType} ($data: JSON!) {
             \${executeHandler}(data: $data) {
                 id
