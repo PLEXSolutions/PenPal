@@ -69,6 +69,10 @@ RUN chmod +x /tmp/node-whitelist-remove.sh && /tmp/node-whitelist-remove.sh
 RUN any-json --input-format=hjson /n8n/packages/nodes-base/package.json > /n8n/packages/nodes-base/package.json.bak
 RUN mv /n8n/packages/nodes-base/package.json.bak /n8n/packages/nodes-base/package.json
 
+# And finally replace all of the individual font awesome imports with importing all icons
+RUN cat /n8n/packages/editor-ui/src/main.ts | perl -0777 -pe 's/import \{\n(.*\n)*.*free-solid.*/import { fas } from "\@fortawesome\/free-solid-svg-icons";/g' | perl -0777 -pe 's/library.add(.*\n)*library.add.*/library.add(fas);/g' > /n8n/packages/editor-ui/src/main.ts.bak
+RUN mv /n8n/packages/editor-ui/src/main.ts.bak /n8n/packages/editor-ui/src/main.ts
+
 # Bootstrap with lerna
 RUN lerna bootstrap --hoist
 

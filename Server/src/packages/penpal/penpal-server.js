@@ -45,6 +45,13 @@ const check_plugin = plugin => {
     "Function"
   );
 
+  try_check(
+    plugin.startupHook,
+    Match.Optional(Match.Where(isFunction)),
+    "startupHook",
+    "Function"
+  );
+
   return plugin_accept;
 };
 
@@ -57,16 +64,93 @@ const check_n8n = n8n => {
     try {
       check(value, type);
     } catch (e) {
-      console.log(`settings.n8n.${repr_value} must be of type ${repr_type}`);
+      console.error(
+        `[!] settings.n8n.${repr_value} must be of type ${repr_type}`
+      );
       n8n_accept = false;
     }
   };
 
-  try_check(n8n.displayName, String, "displayName", "String");
-  try_check(n8n.name, String, "name", "String");
-  try_check(n8n.icon, String, "icon", "String");
-  try_check(n8n.description, String, "description", "String");
-  try_check(n8n.properties, Match.Where(Array.isArray), "properties", "Array");
+  if (n8n.workflow_nodes !== undefined) {
+    if (!Array.isArray(n8n.workflow_nodes)) {
+      console.log(`settings.n8n.workflow_nodes must be of type Array`);
+    } else {
+      for (let i = 0; i < n8n.workflow_nodes.length; i++) {
+        const { executeHandler, node } = n8n.workflow_nodes[i];
+        try_check(
+          executeHandler,
+          String,
+          `workflow_nodes.${i}.executeHandler`,
+          "String"
+        );
+
+        try_check(
+          node.displayName,
+          String,
+          `workflow_nodes.${i}.node.displayName`,
+          "String"
+        );
+
+        try_check(node.name, String, `workflow_nodes.${i}.node.name`, "String");
+        try_check(node.icon, String, `workflow_nodes.${i}.node.icon`, "String");
+
+        try_check(
+          node.description,
+          String,
+          `workflow_nodes.${i}.node.description`,
+          "String"
+        );
+
+        try_check(
+          node.properties,
+          Match.Where(Array.isArray),
+          `workflow_nodes.${i}.node.properties`,
+          "Array"
+        );
+      }
+    }
+  }
+
+  if (n8n.trigger_nodes !== undefined) {
+    if (!Array.isArray(n8n.trigger_nodes)) {
+      console.log(`settings.n8n.trigger_nodes must be of type Array`);
+    } else {
+      for (let i = 0; i < n8n.trigger_nodes.length; i++) {
+        const { trigger, node } = n8n.trigger_nodes[i];
+
+        try_check(
+          trigger,
+          { name: String, type: String, trigger: String },
+          `trigger_nodes.${i}.trigger`,
+          "{ name: String, type: String, trigger: String }"
+        );
+
+        try_check(
+          node.displayName,
+          String,
+          `trigger_nodes.${i}.node.displayName`,
+          "String"
+        );
+
+        try_check(node.name, String, `trigger_nodes.${i}.node.name`, "String");
+        try_check(node.icon, String, `trigger_nodes.${i}.node.icon`, "String");
+
+        try_check(
+          node.description,
+          String,
+          `trigger_nodes.${i}.node.description`,
+          "String"
+        );
+
+        try_check(
+          node.properties,
+          Match.Where(Array.isArray),
+          `trigger_nodes.${i}.node.properties`,
+          "Array"
+        );
+      }
+    }
+  }
 
   return n8n_accept;
 };
@@ -101,7 +185,7 @@ PenPal.registerPlugin = (manifest, plugin) => {
 
 // ----------------------------------------------------------------------------
 
-PenPal.loadPlugins = () => {
+PenPal.loadPlugins = async () => {
   PenPal.LoadedPlugins = _.mapValues(PenPal.RegisteredPlugins, plugin => ({
     loaded: false,
     name: plugin.name,
@@ -116,7 +200,6 @@ PenPal.loadPlugins = () => {
   const plugins_to_load = Object.keys(PenPal.RegisteredPlugins);
   while (plugins_to_load.length > 0) {
     const plugin_name = plugins_to_load.shift();
-    console.log(`[.] Loading ${plugin_name}`);
     const { dependsOn, plugin } = PenPal.RegisteredPlugins[plugin_name];
 
     // Ensure that all prerequisites are available.  If not, it's impossible to load
@@ -146,7 +229,7 @@ PenPal.loadPlugins = () => {
     }
 
     // Now merge the types from this plugin into the schema
-    const { types, resolvers, loaders, settings } = plugin.loadPlugin();
+    const { types, resolvers, loaders, settings } = await plugin.loadPlugin();
 
     if (settings.n8n !== undefined) {
       if (!check_n8n(settings.n8n)) {
@@ -162,12 +245,19 @@ PenPal.loadPlugins = () => {
     plugins_resolvers = _.merge(plugins_resolvers, resolvers);
     plugins_loaders = _.merge(plugins_loaders, loaders);
 
-    PenPal.LoadedPlugins[plugin_name].loaded = true;
-    if(settings.datastores) {
-      console.log(`[+] Creating DataStores ${plugin_name}`);
-      PenPal.DataStore.createStorage(PenPal.LoadedPlugins[plugin_name].name,settings.datastores)
+    if (settings.datastores) {
+      PenPal.DataStore.createStorage(
+        PenPal.LoadedPlugins[plugin_name].name,
+        settings.datastores
+      );
     }
+
+    PenPal.LoadedPlugins[plugin_name].loaded = true;
     PenPal.LoadedPlugins[plugin_name].settings = settings;
+    if (plugin.startupHook !== undefined) {
+      PenPal.LoadedPlugins[plugin_name].startupHook = plugin.startupHook;
+    }
+
     console.log(`[+] Loaded ${plugin_name}`);
   }
 
@@ -182,6 +272,17 @@ PenPal.loadPlugins = () => {
     plugins_resolvers,
     plugins_loaders
   };
+};
+
+// ----------------------------------------------------------------------------
+
+PenPal.runStartupHooks = () => {
+  _.each(PenPal.LoadedPlugins, ({ startupHook }, plugin_name) => {
+    if (startupHook !== undefined) {
+      console.log(`[.] Executing ${plugin_name} startup hook`);
+      startupHook();
+    }
+  });
 };
 
 // ----------------------------------------------------------------------------

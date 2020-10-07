@@ -4,10 +4,10 @@ import _ from "lodash";
 
 export default {
   async getCoreAPIConfiguration(root, args, context) {
-    let hookURL = PenPal.DataStore.fetch("CoreAPI", "Configuration", {})[0]
-      .hookURL;
+    let hookURL =
+      PenPal.DataStore.fetch("CoreAPI", "Configuration", {})[0]?.hookURL ?? "";
     return {
-      hookURL,
+      hookURL
     };
   },
   async getHosts(root, args, context) {
@@ -33,5 +33,5 @@ export default {
   async getService(root, args, context) {
     let res = PenPal.API.Services.Get(args);
     return res;
-  },
+  }
 };

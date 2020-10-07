@@ -1,3 +1,5 @@
 type Mutation {
-  setMongoDataStoreConfiguration(configuration: MongoDataStoreConfigurationInput!): MongoDataStoreConfiguration!
+  setMongoDataStoreConfiguration(
+    configuration: MongoDataStoreConfigurationInput
+  ): MongoDataStoreConfiguration
 }

@@ -2,6 +2,8 @@ import PenPal from "meteor/penpal";
 import { Mongo } from "meteor/mongo";
 import _ from "lodash";
 
+import { hosts as mockHosts } from "./test/mock-hosts.json";
+
 export async function upsertHosts(args) {
   // Check if we already have the host
   // args: projectId: ID!, hosts: [HostInput]!
@@ -19,7 +21,7 @@ export async function upsertHosts(args) {
   // anything with provided ID is implied update all else are default insert
   // but we build arrays to search for to then further remove from the insert
   // group
-  _.each(args.hosts, (host) => {
+  _.each(args.hosts, host => {
     if (host.id) {
       toUpdate.push(host);
     } else {
@@ -32,8 +34,8 @@ export async function upsertHosts(args) {
     $or: [
       { ipv4: { $in: ipv4s } },
       { mac: { $in: macs } },
-      { hostname: { $in: hostnames } },
-    ],
+      { hostname: { $in: hostnames } }
+    ]
   };
   let existingRecords = PenPal.DataStore.fetch("CoreAPI", "Hosts", searchDoc);
   let updatedRecords = [];
@@ -49,13 +51,13 @@ export async function upsertHosts(args) {
     let existingHostMacs = [];
     let existingHostIPs = [];
     let existingHostHostnames = [];
-    _.each(existingRecords, (existingRecord) => {
+    _.each(existingRecords, existingRecord => {
       if (existingRecord.ipv4) existingHostIPs.push(existingRecord.ipv4);
       if (existingRecord.mac) existingHostMacs.push(existingRecord.mac);
       if (existingRecord.hostname)
         existingHostHostnames.concat(existingRecord.hostnames);
     });
-    _.each(args.hosts, (host) => {
+    _.each(args.hosts, host => {
       if (
         existingHostIPs.includes(host.ipv4) ||
         existingHostMacs.includes(host.mac)
@@ -63,7 +65,7 @@ export async function upsertHosts(args) {
         toUpdate.push(host);
       } else {
         let hadHostname = false;
-        _.each(host.hostnames, (hostname) => {
+        _.each(host.hostnames, hostname => {
           if (existingHostHostnames.includes(hostname)) {
             hadHostname = true;
           }
@@ -79,22 +81,25 @@ export async function upsertHosts(args) {
 
   // if we have net-new add them...
   if (toInsert.length > 0) {
-    _.each(toInsert, (host) => {
+    _.each(toInsert, host => {
       host.projectID = args.projectID;
     });
     let res = await PenPal.DataStore.insertMany("CoreAPI", "Hosts", toInsert);
     _.each(res.insertedIds, (k, v) => {
       updatedRecords.push(k);
     });
+
+    // Now execute the "new host" hooks
+    newHostHooks(res.insertedIds);
   }
 
   // if we have ones to update update them....
-  _.each(toUpdate, (host) => {
+  _.each(toUpdate, host => {
     // this is the host to add
     // and this is the existing db entry
     let storedHost = {};
     let foundHost = false;
-    _.each(existingRecords, (existingHost) => {
+    _.each(existingRecords, existingHost => {
       if (!foundHost) {
         if (existingHost.ipv4 === host.ipv4) {
           storedHost = existingHost;
@@ -121,7 +126,7 @@ export async function upsertHosts(args) {
     let mergedObject = _.merge(storedHost, host);
     let ID = mergedObject._id;
     delete mergedObject._id;
-    _.each(storedHostnames, (hostname) => {
+    _.each(storedHostnames, hostname => {
       if (
         mergedObject.hostnames &&
         !mergedObject.hostnames.includes(hostname)
@@ -149,7 +154,7 @@ export async function upsertHosts(args) {
   return {
     status: "Hosts Updated",
     was_success: true,
-    affected_records: updatedRecords,
+    affected_records: updatedRecords
   };
 }
 
@@ -157,16 +162,16 @@ export async function removeHosts(args) {
   const response = {
     status: "Error During Removal",
     was_success: false,
-    affected_records: [],
+    affected_records: []
   };
 
   let idArray = [];
-  _.each(args.hostIDs, (hostId) => {
+  _.each(args.hostIDs, hostId => {
     idArray.push(hostId);
   });
 
   let res = PenPal.DataStore.delete("CoreAPI", "Hosts", {
-    _id: { $in: idArray },
+    _id: { $in: idArray }
   });
 
   if (res > 0) {
@@ -187,7 +192,7 @@ export async function upsertProjects(args) {
   let potentialToUpdate = [];
   let toInsert = [];
   let names = [];
-  _.each(args.projects, (project) => {
+  _.each(args.projects, project => {
     if (project.id) {
       toUpdate.push(project);
     } else {
@@ -195,7 +200,7 @@ export async function upsertProjects(args) {
     }
   });
   let searchDoc = {
-    name: { $in: names },
+    name: { $in: names }
   };
   let existingRecords = PenPal.DataStore.fetch(
     "CoreAPI",
@@ -214,10 +219,10 @@ export async function upsertProjects(args) {
     // mix of new and old... what we need to do is find which of the included projects were already present...
     // make array of project names from the returned existingRecords...
     let existingProjects = [];
-    _.each(existingRecords, (existingProject) => {
+    _.each(existingRecords, existingProject => {
       existingProjects.push(existingProject.name);
     });
-    _.each(args.projects, (project) => {
+    _.each(args.projects, project => {
       if (existingProjects.includes(project.name)) {
         toUpdate.push(project);
       } else {
@@ -239,12 +244,12 @@ export async function upsertProjects(args) {
   }
 
   // if we have ones to update update them....
-  _.each(toUpdate, (project) => {
+  _.each(toUpdate, project => {
     // this is the project to add
     // and this is the existing db entry
     let storedProject = {};
     let foundProject = false;
-    _.each(existingRecords, (existingProject) => {
+    _.each(existingRecords, existingProject => {
       if (!foundProject) {
         if (existingProject.name === project.name) {
           storedProject = existingProject;
@@ -270,7 +275,7 @@ export async function upsertProjects(args) {
   return {
     status: "Projects Updated",
     was_success: true,
-    affected_records: updatedRecords,
+    affected_records: updatedRecords
   };
 }
 
@@ -278,16 +283,16 @@ export async function removeProjects(args) {
   const response = {
     status: "Error During Removal",
     was_success: false,
-    affected_records: [],
+    affected_records: []
   };
 
   let idArray = [];
-  _.each(args.projectIDs, (projectId) => {
+  _.each(args.projectIDs, projectId => {
     idArray.push(projectId);
   });
 
   let res = PenPal.DataStore.delete("CoreAPI", "Projects", {
-    _id: { $in: idArray },
+    _id: { $in: idArray }
   });
   if (res > 0) {
     response.status = "Successfully removed records";
@@ -306,7 +311,7 @@ export async function upsertServices(args) {
   let toUpdate = [];
   let toInsert = [];
   let orArray = [];
-  _.each(args.services, (service) => {
+  _.each(args.services, service => {
     if (service.id) {
       toUpdate.push(service);
     } else {
@@ -315,13 +320,13 @@ export async function upsertServices(args) {
           { port: service.port },
           { protocol: service.protocol },
           { hostID: service.hostID },
-          { projectID: args.projectID },
-        ],
+          { projectID: args.projectID }
+        ]
       });
     }
   });
   let searchDoc = {
-    $or: orArray,
+    $or: orArray
   };
   console.log(searchDoc);
   let existingRecords = PenPal.DataStore.fetch(
@@ -341,10 +346,10 @@ export async function upsertServices(args) {
     // mix of new and old... what we need to do is find which of the included projects were already present...
     // make array of project names from the returned existingRecords...
     let existingServices = [];
-    _.each(existingRecords, (existingService) => {
+    _.each(existingRecords, existingService => {
       existingServices.push(existingService.hostID);
     });
-    _.each(args.services, (service) => {
+    _.each(args.services, service => {
       if (existingServices.includes(service.hostID)) {
         toUpdate.push(service);
       } else {
@@ -355,7 +360,7 @@ export async function upsertServices(args) {
 
   // if we have net-new add them...
   if (toInsert.length > 0) {
-    _.each(toInsert, (service) => {
+    _.each(toInsert, service => {
       service.projectID = args.projectID;
     });
     let res = await PenPal.DataStore.insertMany(
@@ -369,12 +374,12 @@ export async function upsertServices(args) {
   }
 
   // if we have ones to update update them....
-  _.each(toUpdate, (service) => {
+  _.each(toUpdate, service => {
     // this is the project to add
     // and this is the existing db entry
     let storedService = {};
     let foundService = false;
-    _.each(existingRecords, (existingService) => {
+    _.each(existingRecords, existingService => {
       if (!foundService) {
         if (existingService.hostID === service.hostID) {
           storedService = existingService;
@@ -400,7 +405,7 @@ export async function upsertServices(args) {
   return {
     status: "Services Updated",
     was_success: true,
-    affected_records: updatedRecords,
+    affected_records: updatedRecords
   };
 }
 
@@ -408,16 +413,16 @@ export async function removeServices(args) {
   const response = {
     status: "Error During Removal",
     was_success: false,
-    affected_records: [],
+    affected_records: []
   };
 
   let idArray = [];
-  _.each(args.servicesIDs, (serviceId) => {
+  _.each(args.servicesIDs, serviceId => {
     idArray.push(serviceId);
   });
 
   let res = PenPal.DataStore.delete("CoreAPI", "Services", {
-    _id: { $in: idArray },
+    _id: { $in: idArray }
   });
   if (res > 0) {
     response.status = "Successfully removed records";
@@ -435,32 +440,54 @@ export async function removeServices(args) {
 export async function getHosts(args) {
   // we abstracted GET an additional level, possible inputs are a ProjectID or a HostID...
   // could just get both and return the results from whichever result has data.... Lazy but efficient? (otherwise we check if the ID is a project ID which is a DB call anyway...)
+  const is_test = isTestData(args);
+
   let hostsToReturn = [];
-  if (args.projectID) {
-    hostsToReturn = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
-      projectID: args.projectID,
-    });
-  } else if (args.id) {
-    hostsToReturn = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
-      _id: new Mongo.ObjectID(args.id),
-    });
+
+  if (!Array.isArray(args)) {
+    if (args.projectID) {
+      // TODO: Test data should never get here but handle it anyways
+      hostsToReturn = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
+        projectID: args.projectID
+      });
+    } else if (args.id) {
+      if (is_test) {
+        return _.find(mockHosts, host => host.id === args.id);
+      } else {
+        hostsToReturn =
+          PenPal.DataStore.fetch("CoreAPI", "Hosts", {
+            _id: new Mongo.ObjectID(args.id)
+          })?.[0] ?? [];
+      }
+    }
+  } else {
+    // Pass in an array of host IDs
+    if (is_test) {
+      return _.map(args, arg => _.find(mockHosts, host => host.id === arg));
+    } else {
+      hostsToReturn = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
+        _id: { $in: args.map(arg => new Mongo.ObjectID(arg)) }
+      });
+    }
   }
-  _.each(hostsToReturn, (host) => {
+
+  _.each(hostsToReturn, host => {
     host.id = host._id._str;
   });
-  return typeof args.id !== "undefined" ? hostsToReturn[0] : hostsToReturn;
+
+  return hostsToReturn;
 }
 
 export async function getProjects(args) {
   let projectsToReturn = [];
   if (args.id) {
     projectsToReturn = PenPal.DataStore.fetch("CoreAPI", "Projects", {
-      _id: new Mongo.ObjectID(args.id),
+      _id: new Mongo.ObjectID(args.id)
     });
   } else {
     projectsToReturn = PenPal.DataStore.fetch("CoreAPI", "Projects", {});
   }
-  _.each(projectsToReturn, (project) => {
+  _.each(projectsToReturn, project => {
     project.id = project._id;
   });
   return typeof args.id !== "undefined"
@@ -472,17 +499,89 @@ export async function getServices(args) {
   let servicesToReturn = [];
   if (args.id) {
     servicesToReturn = PenPal.DataStore.fetch("CoreAPI", "Services", {
-      _id: new Mongo.ObjectID(args.id),
+      _id: new Mongo.ObjectID(args.id)
     });
   } else {
     servicesToReturn = PenPal.DataStore.fetch("CoreAPI", "Services", {
-      projectID: args.projectID,
+      projectID: args.projectID
     });
   }
-  _.each(servicesToReturn, (service) => {
+  _.each(servicesToReturn, service => {
     service.id = service._id._str;
   });
   return typeof args.id !== "undefined"
     ? servicesToReturn[0]
     : servicesToReturn;
+}
+
+// ---------------------------------------------------------
+
+// This function will search for the word "test" in the id field of any passed in object and return true or false
+const isTestData = arg => {
+  if (Array.isArray(arg)) {
+    return _.some(arg, isTestData);
+  } else {
+    if (typeof arg === "string") {
+      return /test/.test(arg);
+    } else {
+      return /test/.test(arg.id ?? "");
+    }
+  }
+};
+
+// ---------------------------------------------------------
+// Hooks for getting IDs
+
+const HOOKS = {
+  PROJECT: {
+    NEW: [],
+    UPDATE: [],
+    DELETE: []
+  },
+  HOST: {
+    NEW: [],
+    UPDATE: [],
+    DELETE: []
+  },
+  SERVICE: {
+    NEW: [],
+    UPDATE: [],
+    DELETE: []
+  }
+};
+
+// Register a hook
+// target = 'project' | 'host' | 'service'
+// trigger = 'new' | 'update' | 'delete'
+// name = 'unique hook name'
+// func = a function to call that takes a single argument that is an array of type IDs
+export function registerHook(target, trigger, name, func, is_test = false) {
+  switch (target) {
+    case "project":
+      console.log("Project hooks not yet implemented");
+      break;
+    case "host":
+      switch (trigger) {
+        case "new":
+          HOOKS.HOST.NEW.push({ name, hook: func });
+          break;
+        case "update":
+          console.log("Host.update hook not yet implemented");
+          break;
+        case "delete":
+          console.log("Host.delete hook not yet implemented");
+          break;
+      }
+      break;
+    case "service":
+      console.log("Service hooks not yet implemented");
+      break;
+  }
+}
+
+export async function newHostHooks(host_ids) {
+  for (let { name, hook } of HOOKS.HOST.NEW) {
+    console.log(`Executing new host hook ${name}`);
+    hook(host_ids);
+  }
 }

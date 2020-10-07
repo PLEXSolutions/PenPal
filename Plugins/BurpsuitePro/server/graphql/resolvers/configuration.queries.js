@@ -1,17 +1,20 @@
+import PenPal from "meteor/penpal";
 import _ from "lodash";
 import fetch from "node-fetch";
 import AbortController from "abort-controller";
-
-// Temporary until PenPal.Datastore.get() is implemented
-import Burpsuite from "../../burpsuite.js";
+import {
+  PLUGIN_NAME,
+  SETTINGS_STORE,
+  DEFAULT_PENPAL_SETTINGS
+} from "../../constants.js";
 
 export default {
   async getBurpsuiteProConfiguration(root, args, context) {
-    const penpal_settings = {
-      ...Burpsuite.config
-    };
+    const penpal_settings =
+      PenPal.DataStore.fetch(PLUGIN_NAME, SETTINGS_STORE, {})[0] ??
+      DEFAULT_PENPAL_SETTINGS;
 
-    if (Burpsuite.config.rest_url === "") {
+    if (penpal_settings.rest_url === "") {
       // We can't query the REST API until this is set
       return {
         penpal_settings

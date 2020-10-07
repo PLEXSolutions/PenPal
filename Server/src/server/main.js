@@ -4,7 +4,6 @@ import _ from "lodash";
 
 import setAppSettings from "./settings.js";
 import startGraphQLServer from "./graphql-server.js";
-import startN8nServer from "./n8n.js";
 
 // Import the migrations to make sure they are available
 import "./migrations";
@@ -27,10 +26,10 @@ Meteor.startup(async function() {
     plugins_types,
     plugins_resolvers,
     plugins_buildLoaders
-  } = PenPal.loadPlugins();
+  } = await PenPal.loadPlugins();
 
-  // Start n8n
-  startN8nServer();
+  // Startup Hooks
+  PenPal.runStartupHooks();
 
   // Start the graphql server
   startGraphQLServer(plugins_types, plugins_resolvers, plugins_buildLoaders);
