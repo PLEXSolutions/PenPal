@@ -59,5 +59,5 @@ export default {
   async removeServices(root, args, context) {
     let res = PenPal.API.Services.Remove(args);
     return res;
-  },
+  }
 };

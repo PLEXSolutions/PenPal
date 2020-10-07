@@ -1,4 +1,5 @@
 import resolvers from "./resolvers/";
+import PenPal from "meteor/penpal";
 
 export default [
   {

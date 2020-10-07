@@ -33,5 +33,5 @@ export default {
   async getService(root, args, context) {
     let res = PenPal.API.Services.Get(args);
     return res;
-  },
+  }
 };

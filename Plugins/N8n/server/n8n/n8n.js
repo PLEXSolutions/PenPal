@@ -4,40 +4,43 @@ import { promises as fs } from "fs";
 import path from "path";
 import fetch from "node-fetch";
 
-import template_workflow_ts_file from "./n8n/WorkflowTemplate.node.ts.js";
-import template_trigger_ts_file from "./n8n/TriggerTemplate.node.ts.js";
+import template_workflow_ts_file from "./templates/WorkflowTemplate.node.ts.js";
+import template_trigger_ts_file from "./templates/TriggerTemplate.node.ts.js";
 
 const N8N_DIR = "/n8n";
 const N8N_NODES_DIR = "/home/node/custom-n8n-nodes/";
 
-const generateNode = async (node, is_trigger_node) => {
-  const output_dir = path.join(N8N_NODES_DIR, node.name);
+const generateNode = async (options, is_trigger_node) => {
+  const output_dir = path.join(N8N_NODES_DIR, options.node.name);
 
   const output_ts_file = path.join(
     N8N_NODES_DIR,
-    node.name,
-    `${node.name}.node.ts`
+    options.node.name,
+    `${options.node.name}.node.ts`
   );
 
   const output_json_file = path.join(
     N8N_NODES_DIR,
-    node.name,
-    `${node.name}-settings.json`
+    options.node.name,
+    `${options.node.name}-settings.json`
   );
 
   try {
     await fs.mkdir(output_dir);
   } catch (e) {}
 
-  console.log(`[.] Generating n8n node ${node.name}`);
+  console.log(`[.] Generating n8n node ${options.node.name}`);
 
   try {
     const template_file = is_trigger_node
       ? template_trigger_ts_file
       : template_workflow_ts_file;
-    const data = template_file.replace(/NODE_NAME_REPLACE_ME/gi, node.name);
+    const data = template_file.replace(
+      /NODE_NAME_REPLACE_ME/gi,
+      options.node.name
+    );
     await fs.writeFile(output_ts_file, data);
-    await fs.writeFile(output_json_file, JSON.stringify(node, null, 4));
+    await fs.writeFile(output_json_file, JSON.stringify(options, null, 4));
   } catch (e) {
     console.error(e);
   }
@@ -99,16 +102,6 @@ const startN8nServer = () => {
     shell: true,
     cwd: N8N_DIR
   });
-};
-
-export const executeWebhook = async (url, args = {}) => {
-  console.log(`[.] Executing webhook: ${url}`);
-  const result = await fetch(url, {
-    method: "POST",
-    body: JSON.stringify(args),
-    headers: { "Content-Type": "application/json" }
-  });
-  return await result.json();
 };
 
 export default async () => {
