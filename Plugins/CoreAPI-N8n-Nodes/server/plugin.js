@@ -8,6 +8,8 @@ const settings = {
       {
         executeHandler: "coreAPIGetHostData",
         executeHandlerType: "query", // 'query' | 'mutation'
+        variables: ["host_ids"],
+        fields: ["ipv4", "mac", "hostnames"],
         node: {
           displayName: "(PenPal) Get Host Data",
           name: "CoreAPIGetHost",
@@ -16,9 +18,9 @@ const settings = {
             "Retrieve information for hosts from the PenPal server. This is best used to retrieve details for things like sending Slack notification.",
           properties: [
             {
-              displayName: "Host ID",
-              name: "host_id",
-              type: "json",
+              displayName: "Host IDs",
+              name: "host_ids",
+              type: "string",
               default: "",
               description:
                 "The field that represents the host ID coming into this node",
@@ -44,13 +46,6 @@ const settings = {
               type: "boolean",
               default: true,
               description: "One or more hostnames"
-            },
-            {
-              displayName: "Operating System",
-              name: "os",
-              type: "boolean",
-              default: false,
-              description: "Host Operating System"
             }
           ]
         }

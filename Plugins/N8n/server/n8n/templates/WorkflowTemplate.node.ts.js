@@ -22,7 +22,9 @@ import {
 import {
   node,
   executeHandler,
-  executeHandlerType
+  executeHandlerType,
+  variables,
+  fields
 } from "./NODE_NAME_REPLACE_ME-settings.json";
 
 async function penpalGraphqlRequest(
@@ -78,22 +80,43 @@ export class NODE_NAME_REPLACE_ME implements INodeType {
         let returnData: INodeExecutionData[];
         const items = this.getInputData();
 
+        let input_data = {};
+        for (let variable of variables) {
+          let variable_value = this.getNodeParameter(variable, 0);
+          input_data[variable] = variable_value;
+        }
+
+        let requested_fields = [];
+        for (let field of fields) {
+          let field_value = this.getNodeParameter(field, 0);
+          if (field_value === true) {
+            requested_fields.push(field);
+          }
+        }
+
         const executeHandlerEndpoint: string = \`\${executeHandlerType} \${executeHandler}\${executeHandlerType} ($data: JSON!) {
-            \${executeHandler}(data: $data) {
-                id
-            }
-        }\`;
+    \${executeHandler}(data: $data) {
+        id
+        \${requested_fields.join('\\n        ')}
+    }
+}\`;
 
         let result = {};
         try {
-            result = await penpalGraphqlRequest.call(this, executeHandlerEndpoint, { data: items });
+            result = await penpalGraphqlRequest.call(this, executeHandlerEndpoint, { data: input_data });
         } catch (e) {
             // Some error occured
             throw e;
         }
 
-        items.push({ json: result });
-        returnData = items;
+        let newItem = {
+          json: {
+            ...items[0].json,
+            ...result['data'],
+          },
+        };
+
+        returnData = [newItem];
         return this.prepareOutputData(returnData);
     }
 }`;

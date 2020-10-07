@@ -186,7 +186,7 @@ export class NODE_NAME_REPLACE_ME implements INodeType {
         const returnData: IDataObject[] = [];
 
         returnData.push({
-          data: bodyData
+          [trigger.type]: bodyData[trigger.type]
         });
 
         return {

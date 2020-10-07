@@ -2,6 +2,8 @@ import PenPal from "meteor/penpal";
 import { Mongo } from "meteor/mongo";
 import _ from "lodash";
 
+import { hosts as mockHosts } from "./test/mock-hosts.json";
+
 export async function upsertHosts(args) {
   // Check if we already have the host
   // args: projectId: ID!, hosts: [HostInput]!
@@ -438,20 +440,42 @@ export async function removeServices(args) {
 export async function getHosts(args) {
   // we abstracted GET an additional level, possible inputs are a ProjectID or a HostID...
   // could just get both and return the results from whichever result has data.... Lazy but efficient? (otherwise we check if the ID is a project ID which is a DB call anyway...)
+  const is_test = isTestData(args);
+
   let hostsToReturn = [];
-  if (args.projectID) {
-    hostsToReturn = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
-      projectID: args.projectID
-    });
-  } else if (args.id) {
-    hostsToReturn = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
-      _id: new Mongo.ObjectID(args.id)
-    });
+
+  if (!Array.isArray(args)) {
+    if (args.projectID) {
+      // TODO: Test data should never get here but handle it anyways
+      hostsToReturn = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
+        projectID: args.projectID
+      });
+    } else if (args.id) {
+      if (is_test) {
+        return _.find(mockHosts, host => host.id === args.id);
+      } else {
+        hostsToReturn =
+          PenPal.DataStore.fetch("CoreAPI", "Hosts", {
+            _id: new Mongo.ObjectID(args.id)
+          })?.[0] ?? [];
+      }
+    }
+  } else {
+    // Pass in an array of host IDs
+    if (is_test) {
+      return _.map(args, arg => _.find(mockHosts, host => host.id === arg));
+    } else {
+      hostsToReturn = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
+        _id: { $in: args.map(arg => new Mongo.ObjectID(arg)) }
+      });
+    }
   }
+
   _.each(hostsToReturn, host => {
     host.id = host._id._str;
   });
-  return typeof args.id !== "undefined" ? hostsToReturn[0] : hostsToReturn;
+
+  return hostsToReturn;
 }
 
 export async function getProjects(args) {
@@ -489,6 +513,21 @@ export async function getServices(args) {
     ? servicesToReturn[0]
     : servicesToReturn;
 }
+
+// ---------------------------------------------------------
+
+// This function will search for the word "test" in the id field of any passed in object and return true or false
+const isTestData = arg => {
+  if (Array.isArray(arg)) {
+    return _.some(arg, isTestData);
+  } else {
+    if (typeof arg === "string") {
+      return /test/.test(arg);
+    } else {
+      return /test/.test(arg.id ?? "");
+    }
+  }
+};
 
 // ---------------------------------------------------------
 // Hooks for getting IDs

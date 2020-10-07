@@ -1,10 +1,7 @@
 import PenPal from "meteor/penpal";
-import { Mongo } from "meteor/mongo";
-import _ from "lodash";
 
 export default {
   async coreAPIGetHostData(root, { data }, context) {
-    console.log("[.] CoreAPIGetHostData executeHandler:", data);
-    return [];
+    return await PenPal.API.Hosts.Get(data.host_ids);
   }
 };
