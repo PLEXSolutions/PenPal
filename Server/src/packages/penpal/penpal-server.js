@@ -25,8 +25,8 @@ const check_manifest = ({ name, version, dependsOn }) => {
 
 // ----------------------------------------------------------------------------
 
-const isFunction = obj => !!(obj && obj.constructor && obj.call && obj.apply);
-const check_plugin = plugin => {
+const isFunction = (obj) => !!(obj && obj.constructor && obj.call && obj.apply);
+const check_plugin = (plugin) => {
   let plugin_accept = true;
 
   const try_check = (value, type, repr_value, repr_type) => {
@@ -50,7 +50,7 @@ const check_plugin = plugin => {
 
 // ----------------------------------------------------------------------------
 
-const check_n8n = n8n => {
+const check_n8n = (n8n) => {
   let n8n_accept = true;
 
   const try_check = (value, type, repr_value, repr_type) => {
@@ -126,6 +126,13 @@ const check_n8n = n8n => {
 };
 
 // ----------------------------------------------------------------------------
+const build_docker = async (docker) => {
+  if (docker) {
+    await PenPal.API.Docker.Build(docker);
+  }
+};
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 const PenPal = {};
 PenPal.RegisteredPlugins = {};
@@ -149,17 +156,17 @@ PenPal.registerPlugin = (manifest, plugin) => {
     dependsOn,
     name,
     version,
-    plugin
+    plugin,
   };
 };
 
 // ----------------------------------------------------------------------------
 
 PenPal.loadPlugins = () => {
-  PenPal.LoadedPlugins = _.mapValues(PenPal.RegisteredPlugins, plugin => ({
+  PenPal.LoadedPlugins = _.mapValues(PenPal.RegisteredPlugins, (plugin) => ({
     loaded: false,
     name: plugin.name,
-    version: plugin.version
+    version: plugin.version,
   }));
 
   let plugins_types = {};
@@ -212,6 +219,17 @@ PenPal.loadPlugins = () => {
       }
     }
 
+    // Now check and build Dockerfile if applicable
+    if (settings.docker !== undefined) {
+      build_docker(settings.docker).then((err, res) => {
+        if (err) {
+          console.error(`[!] Failed to load ${plugin_name}. Docker issue`);
+          delete PenPal.RegisteredPlugins[plugin_name];
+          delete PenPal.LoadedPlugins[plugin_name];
+        }
+      });
+    }
+
     plugins_types = mergeTypeDefs([plugins_types, types]);
     plugins_resolvers = _.merge(plugins_resolvers, resolvers);
     plugins_loaders = _.merge(plugins_loaders, loaders);
@@ -237,7 +255,7 @@ PenPal.loadPlugins = () => {
   return {
     plugins_types,
     plugins_resolvers,
-    plugins_loaders
+    plugins_loaders,
   };
 };
 

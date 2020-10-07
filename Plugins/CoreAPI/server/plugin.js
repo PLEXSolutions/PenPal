@@ -12,6 +12,11 @@ import {
   upsertProjects,
   upsertServices,
 } from "./api-functions";
+import { dockerExec, dockerBuild, dockerRun } from "./api/docker";
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 const settings = {
   configuration: {
@@ -73,6 +78,17 @@ const CoreAPIPlugin = {
       Get: (args) => {
         return getServices(args);
       },
+    };
+    PenPal.API.Docker = {
+      Exec: async (args) => {
+        return dockerExec(args);
+      },
+      Build: async (args) => {
+        return dockerBuild(args);
+      },
+    };
+    PenPal.API.AsyncNOOP = async () => {
+      await delay(0);
     };
     return {
       types,

@@ -9,3 +9,8 @@ type MasscanUploadResponse {
   was_success: Boolean
   affected_records: [ID]
 }
+
+type MasscanExecutionResponse {
+  status: String
+  was_success: Boolean
+}
