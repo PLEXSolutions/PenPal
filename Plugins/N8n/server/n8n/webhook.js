@@ -30,13 +30,35 @@ const executeTestWebhook = (type, url) => {
 };
 
 const WebhookManager = {
-  registerWebhook({ type, trigger, name, url }, skip_insert = false) {
+  registerWebhook(
+    { _id = null, type, trigger, name, url },
+    skip_insert = false
+  ) {
     console.log(`[.] Registering ${type} webhook: ${url}`);
+
+    let webhook_id = _id;
+    if (!skip_insert) {
+      webhook_id = PenPal.DataStore.insert(
+        PLUGIN_NAME,
+        WebhooksCollectionName,
+        {
+          type,
+          trigger,
+          name,
+          url
+        }
+      );
+    }
 
     if (!/webhook-test/.test(url)) {
       // If it's a test webhook, don't register with CoreAPI
       // Register the webhook so that it's actually going to get events
-      PenPal.API.registerHook(type, trigger, name, webhookGenerator(url, type));
+      PenPal.API.registerHook(
+        type,
+        trigger,
+        webhook_id,
+        webhookGenerator(url, type)
+      );
     } else {
       console.log(
         "[.] N8n webhook identified as test webhook. Executing with mock data in 3 seconds..."
@@ -47,21 +69,14 @@ const WebhookManager = {
       }, 3000);
     }
 
-    if (!skip_insert) {
-      PenPal.DataStore.insert(PLUGIN_NAME, WebhooksCollectionName, {
-        type,
-        trigger,
-        name,
-        url
-      });
-    }
+    return webhook_id;
   },
 
-  getWebhook(name) {
+  getWebhook(id) {
     const stored_webhook = PenPal.DataStore.fetch(
       PLUGIN_NAME,
       WebhooksCollectionName,
-      { name }
+      { _id: id }
     );
 
     if (stored_webhook.length > 0) {
@@ -71,8 +86,19 @@ const WebhookManager = {
     return null;
   },
 
-  deleteWebhook(name) {
-    PenPal.DataStore.delete(PLUGIN_NAME, WebhooksCollectionName, { name });
+  deleteWebhook(id) {
+    const stored_webhook = PenPal.DataStore.fetch(
+      PLUGIN_NAME,
+      WebhooksCollectionName,
+      { _id: id }
+    )?.[0];
+    PenPal.DataStore.delete(PLUGIN_NAME, WebhooksCollectionName, { _id: id });
+
+    if (!/webhook-test/.test(stored_webhook?.url ?? "")) {
+      console.log("Deleting webhook from API");
+      PenPal.API.deleteHook(id);
+    }
+
     return true;
   },
 

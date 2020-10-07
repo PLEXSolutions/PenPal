@@ -91,17 +91,16 @@ export class NODE_NAME_REPLACE_ME implements INodeType {
                 }
 
                 // Webhook got created before so check if it still exists
-                const webhook_name = trigger.name;
-
                 const checkN8nWebhook: string = \`query CheckN8nWebhookQuery($id: ID!) {
                     checkN8nWebhook(id: $id) {
                         id
                         url
                     }
                 }\`;
-
+                
+                let responseData;
                 try {
-                    await penpalGraphqlRequest.call(this, checkN8nWebhook, { id: trigger.name });
+                    responseData = await penpalGraphqlRequest.call(this, checkN8nWebhook, { id: webhookData.webhookId });
                 } catch (e) {
                     if (e.message.includes("[404]:")) {
                         // Webhook does not exist
@@ -113,6 +112,12 @@ export class NODE_NAME_REPLACE_ME implements INodeType {
                     throw e;
                 }
 
+                if (responseData?.data?.checkN8nWebhook === null) {
+                    // Webhook does not exist
+                    delete webhookData.webhookId;
+                    return false;
+                }
+
                 // If it did not error then the webhook exists
                 return true;
             },
@@ -121,10 +126,11 @@ export class NODE_NAME_REPLACE_ME implements INodeType {
                 const webhookData = this.getWorkflowStaticData("node");
 
                 let responseData;
-                const createN8nWebhook: string = \`mutation CreateN8nWebhookMutation($id: ID!, $url: String!, $type: String!, $trigger: String!) {
-                    createN8nWebhook(id: $id, url: $url, type: $type, trigger: $trigger) {
+                const createN8nWebhook: string = \`mutation CreateN8nWebhookMutation($name: String!, $url: String!, $type: String!, $trigger: String!) {
+                    createN8nWebhook(name: $name, url: $url, type: $type, trigger: $trigger) {
                         id
                         url
+                        name
                         type
                         trigger
                     }
@@ -134,7 +140,7 @@ export class NODE_NAME_REPLACE_ME implements INodeType {
                     responseData = await penpalGraphqlRequest.call(
                         this,
                         createN8nWebhook,
-                        { id: trigger.name, url: webhookUrl, type: trigger.type, trigger: trigger.trigger }
+                        { name: trigger.name, url: webhookUrl, type: trigger.type, trigger: trigger.trigger }
                     );
                 } catch (e) {
                     throw e;

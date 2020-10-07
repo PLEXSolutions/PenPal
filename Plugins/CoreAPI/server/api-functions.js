@@ -85,12 +85,15 @@ export async function upsertHosts(args) {
       host.projectID = args.projectID;
     });
     let res = await PenPal.DataStore.insertMany("CoreAPI", "Hosts", toInsert);
-    _.each(res.insertedIds, (k, v) => {
-      updatedRecords.push(k);
+
+    let new_hosts = [];
+    _.each(res.insertedIds, (value, key) => {
+      updatedRecords.push(value);
+      new_hosts.push(value);
     });
 
     // Now execute the "new host" hooks
-    newHostHooks(res.insertedIds);
+    newHostHooks(new_hosts);
   }
 
   // if we have ones to update update them....
@@ -555,7 +558,7 @@ const HOOKS = {
 // trigger = 'new' | 'update' | 'delete'
 // name = 'unique hook name'
 // func = a function to call that takes a single argument that is an array of type IDs
-export function registerHook(target, trigger, name, func, is_test = false) {
+export function registerHook(target, trigger, id, func) {
   switch (target) {
     case "project":
       console.log("Project hooks not yet implemented");
@@ -563,7 +566,7 @@ export function registerHook(target, trigger, name, func, is_test = false) {
     case "host":
       switch (trigger) {
         case "new":
-          HOOKS.HOST.NEW.push({ name, hook: func });
+          HOOKS.HOST.NEW.push({ id, hook: func });
           break;
         case "update":
           console.log("Host.update hook not yet implemented");
@@ -579,9 +582,16 @@ export function registerHook(target, trigger, name, func, is_test = false) {
   }
 }
 
+export function deleteHook(id) {
+  _.each(HOOKS, (hook_type, key1) => {
+    _.each(hook_type, (hook_array, key2) => {
+      HOOKS[key1][key2] = hook_array.filter(hook => hook.id !== id);
+    });
+  });
+}
+
 export async function newHostHooks(host_ids) {
   for (let { name, hook } of HOOKS.HOST.NEW) {
-    console.log(`Executing new host hook ${name}`);
     hook(host_ids);
   }
 }

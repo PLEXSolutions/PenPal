@@ -11,7 +11,8 @@ import {
   upsertHosts,
   upsertProjects,
   upsertServices,
-  registerHook as apiRegisterHook
+  registerHook as apiRegisterHook,
+  deleteHook as apiDeleteHook
 } from "./api-functions";
 
 import { mocks } from "./test/";
@@ -81,6 +82,7 @@ const CoreAPIPlugin = {
     };
 
     PenPal.API.registerHook = apiRegisterHook;
+    PenPal.API.deleteHook = apiDeleteHook;
 
     PenPal.Test.CoreAPI = { ...mocks };
 
