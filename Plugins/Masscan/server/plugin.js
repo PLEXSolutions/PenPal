@@ -35,37 +35,44 @@ CMD ["/bin/bash"]
   n8n: {
     workflow_nodes: [
       {
-        displayName: "Masscan",
-        name: "MasscanPlugin",
-        icon: "fa:question-circle",
-        description: "Perform masscan for specified host(s)",
-        properties: [
-          {
-            displayName: "IP Addresses",
-            name: "ips",
-            type: "string",
-            default: "",
-            description: "A comma seperated list of IPv4 addresses to scan",
-            required: true,
-          },
-          {
-            displayName: "Ports",
-            name: "ports",
-            type: "string",
-            default: "80,443",
-            description: "A comma seperated list of ports to scan on each host",
-            required: true,
-          },
-          {
-            displayName: "Scan Rate",
-            name: "rate",
-            type: "number",
-            default: "1000",
-            description:
-              "Rate of scan to perform (provided in packets per second (pps))",
-            required: true,
-          },
-        ],
+        executeHandler: "performMasscan",
+        executeHandlerType: "mutation",
+        variables: ["projectID", "data"],
+        fields: ["status", "was_successful"],
+        node: {
+          displayName: "Masscan",
+          name: "MasscanPlugin",
+          icon: "fa:question-circle",
+          description: "Perform masscan for specified host(s)",
+          properties: [
+            {
+              displayName: "IP Addresses",
+              name: "ips",
+              type: "string",
+              default: "",
+              description: "A comma seperated list of IPv4 addresses to scan",
+              required: true,
+            },
+            {
+              displayName: "Ports",
+              name: "ports",
+              type: "string",
+              default: "80,443",
+              description:
+                "A comma seperated list of ports to scan on each host",
+              required: true,
+            },
+            {
+              displayName: "Scan Rate",
+              name: "rate",
+              type: "number",
+              default: "1000",
+              description:
+                "Rate of scan to perform (provided in packets per second (pps))",
+              required: true,
+            },
+          ],
+        },
       },
     ],
   },
