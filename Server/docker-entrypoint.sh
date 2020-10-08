@@ -1,5 +1,5 @@
 #!/bin/bash
-
+sudo chown -R node:node /home/node/custom-n8n-nodes
 if [ -z $PRODUCTION ]
 then
     exec "$@"

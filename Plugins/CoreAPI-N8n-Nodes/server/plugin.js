@@ -24,39 +24,39 @@ const settings = {
               default: "",
               description:
                 "The field that represents the host ID coming into this node",
-              required: true
+              required: true,
             },
             {
               displayName: "IP Address",
               name: "ipv4",
               type: "boolean",
               default: true,
-              description: "Host IP Address"
+              description: "Host IP Address",
             },
             {
               displayName: "MAC Address",
               name: "mac",
               type: "boolean",
               default: false,
-              description: "Host MAC Address"
+              description: "Host MAC Address",
             },
             {
               displayName: "Hostname(s)",
               name: "hostnames",
               type: "boolean",
               default: true,
-              description: "One or more hostnames"
-            }
-          ]
-        }
-      }
+              description: "One or more hostnames",
+            },
+          ],
+        },
+      },
     ],
     trigger_nodes: [
       {
         trigger: {
           name: "CoreAPI.new.host",
           type: "host",
-          trigger: "new"
+          trigger: "new",
         },
         node: {
           displayName: "(PenPal) New Host Trigger",
@@ -64,11 +64,11 @@ const settings = {
           icon: "fa:desktop",
           description:
             "Webhook that will get called when a new host is added to PenPal",
-          properties: []
-        }
-      }
-    ]
-  }
+          properties: [],
+        },
+      },
+    ],
+  },
 };
 
 const CoreAPIN8nNodesPlugin = {
@@ -77,9 +77,9 @@ const CoreAPIN8nNodesPlugin = {
       types,
       resolvers,
       loaders: {},
-      settings
+      settings,
     };
-  }
+  },
 };
 
 export default CoreAPIN8nNodesPlugin;
