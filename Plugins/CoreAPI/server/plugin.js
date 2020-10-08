@@ -11,7 +11,8 @@ import {
   upsertHosts,
   upsertProjects,
   upsertServices,
-  registerHook as apiRegisterHook
+  registerHook as apiRegisterHook,
+  deleteHook as apiDeleteHook,
 } from "./api-functions";
 import { dockerExec, dockerBuild, dockerRun } from "./api/docker";
 
@@ -25,66 +26,66 @@ const settings = {
   configuration: {
     schema_root: "CoreAPIConfiguration",
     getter: "getCoreAPIConfiguration",
-    setter: "setCoreAPIConfiguration"
+    setter: "setCoreAPIConfiguration",
   },
   datastores: [
     {
-      name: "Projects"
+      name: "Projects",
     },
     {
-      name: "Hosts"
+      name: "Hosts",
     },
     {
-      name: "Services"
+      name: "Services",
     },
     {
-      name: "Netblocks"
+      name: "Netblocks",
     },
     {
-      name: "Configuration"
-    }
-  ]
+      name: "Configuration",
+    },
+  ],
 };
 
 const CoreAPIPlugin = {
   loadPlugin() {
     // Register API Hooks
     PenPal.API.Hosts = {
-      Upsert: args => {
+      Upsert: (args) => {
         return upsertHosts(args);
       },
-      Remove: args => {
+      Remove: (args) => {
         return removeHosts(args);
       },
-      Get: args => {
+      Get: (args) => {
         return getHosts(args);
-      }
+      },
     };
 
     PenPal.API.Projects = {
-      Upsert: args => {
+      Upsert: (args) => {
         return upsertProjects(args);
       },
-      Remove: args => {
+      Remove: (args) => {
         return removeProjects(args);
       },
-      Get: args => {
+      Get: (args) => {
         return getProjects(args);
-      }
+      },
     };
 
     PenPal.API.Services = {
-      Upsert: args => {
+      Upsert: (args) => {
         return upsertServices(args);
       },
-      Remove: args => {
+      Remove: (args) => {
         return removeServices(args);
       },
-      Get: args => {
+      Get: (args) => {
         return getServices(args);
-      }
+      },
     };
-     
+
     PenPal.API.Docker = {
       Exec: async (args) => {
         return dockerExec(args);
@@ -99,6 +100,7 @@ const CoreAPIPlugin = {
     };
 
     PenPal.API.registerHook = apiRegisterHook;
+    PenPal.API.deleteHook = apiDeleteHook;
 
     PenPal.Test.CoreAPI = { ...mocks };
 
@@ -106,9 +108,9 @@ const CoreAPIPlugin = {
       types,
       resolvers,
       loaders: {},
-      settings
+      settings,
     };
-  }
+  },
 };
 
 export default CoreAPIPlugin;

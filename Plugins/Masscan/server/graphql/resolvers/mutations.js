@@ -13,7 +13,7 @@ function delay(ms) {
 async function parseMasscan(projectID, jsonData) {
   let res = {
     status: "Error Uploading Data",
-    was_successful: false,
+    was_success: false,
     affected_records: [],
   };
   let parsedJson = hjson.parse(jsonData.toString());
@@ -38,7 +38,6 @@ async function parseMasscan(projectID, jsonData) {
     hosts: hosts,
   });
   let ids = [];
-  console.log(upsertHostResp);
   _.each(upsertHostResp.affected_records, (record) => {
     if (typeof record._str !== "undefined") {
       ids.push(record._str);
@@ -69,7 +68,7 @@ async function parseMasscan(projectID, jsonData) {
   if (servicesResp.affected_records.length > 0) {
     res = {
       status: "Services Created",
-      was_successful: true,
+      was_success: true,
       affected_records: servicesResp.affected_records,
     };
   }
@@ -80,7 +79,7 @@ export default {
   async parseMasscanFile(root, args, context) {
     let res = {
       status: "Error Uploading Data",
-      was_successful: false,
+      was_success: false,
       affected_records: [],
     };
     if (args.submissionDoc.format !== "JSON") {
@@ -91,28 +90,27 @@ export default {
     res = await parseMasscan(args.submissionDoc.projectID, jsonData);
     return res;
   },
-  async performMasscan(root, args, context) {
+  async performMasscan(root, { data: args }, context) {
     await delay(0);
     let response = {
       status: "Masscan Failed",
-      was_successful: false,
+      was_success: false,
     };
-    let { ips, ports, rate } = args.data;
-    if (!ips || !ports || !rate || !args.projectID) {
-      return response;
-    }
     PenPal.API.Docker.Exec(
-      `masscan bash -c "masscan -oJ res.json --rate=${rate} -p${ports} ${ips} 1>&2 2>/dev/null && cat res.json"`
+      `masscan bash -c "masscan -oJ res.json --rate=${args.scanRate} -p${
+        args.ports
+      } ${args.ips.join(" ")} 1>&2 2>/dev/null && cat res.json"`
     ).then((res, err) => {
       if (err) {
         console.log(err);
         return response;
       }
+      console.log(res);
       const buff = Buffer.from(res, "utf-8");
       parseMasscan(args.projectID, buff.toString());
     });
     response.status = "Masscan Started";
-    response.was_successful = true;
+    response.was_success = true;
     return response;
   },
 };

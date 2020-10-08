@@ -3,65 +3,86 @@ import { name as PLUGIN_NAME } from "../manifest.json";
 import { WebhooksCollectionName } from "../constants.js";
 import fetch from "node-fetch";
 
-const webhookGenerator = (url, arg_field_name) => {
-  return async data => {
-    WebhookManager.executeWebhook(url, { [arg_field_name]: data });
+const webhookGenerator = (id, url, arg_field_name) => {
+  return async (data) => {
+    WebhookManager.executeWebhook(id, url, data);
   };
 };
 
-const executeTestWebhook = (type, url) => {
+const executeTestWebhook = (id, type, url) => {
   let mockDataFunc = () => null;
 
   switch (type) {
     case "project":
       //mockDataFunc = PenPal.Test.CoreAPI.mockHost;
+      //WebhookManager.executeWebhook(id, url, {
+      //  [type]: mockDataFunc().map((datum) => datum.id),
+      //});
       break;
     case "host":
       mockDataFunc = PenPal.Test.CoreAPI.mockHosts;
+      WebhookManager.executeWebhook(id, url, {
+        hostIDs: mockDataFunc().map((datum) => datum.id),
+        projectID: mockDataFunc()[0].project,
+      });
       break;
     case "service":
       //mockDataFunc = PenPal.Test.CoreAPI.mockHost;
+      //WebhookManager.executeWebhook(id, url, {
+      //  [type]: mockDataFunc().map((datum) => datum.id),
+      //});
       break;
   }
-
-  WebhookManager.executeWebhook(url, {
-    [type]: mockDataFunc().map(datum => datum.id)
-  });
 };
 
 const WebhookManager = {
-  registerWebhook({ type, trigger, name, url }, skip_insert = false) {
+  registerWebhook(
+    { _id = null, type, trigger, name, url },
+    skip_insert = false
+  ) {
     console.log(`[.] Registering ${type} webhook: ${url}`);
+
+    let webhook_id = _id;
+    if (!skip_insert) {
+      webhook_id = PenPal.DataStore.insert(
+        PLUGIN_NAME,
+        WebhooksCollectionName,
+        {
+          type,
+          trigger,
+          name,
+          url,
+        }
+      );
+    }
 
     if (!/webhook-test/.test(url)) {
       // If it's a test webhook, don't register with CoreAPI
       // Register the webhook so that it's actually going to get events
-      PenPal.API.registerHook(type, trigger, name, webhookGenerator(url, type));
+      PenPal.API.registerHook(
+        type,
+        trigger,
+        webhook_id,
+        webhookGenerator(webhook_id, url, type)
+      );
     } else {
       console.log(
         "[.] N8n webhook identified as test webhook. Executing with mock data in 3 seconds..."
       );
       setTimeout(() => {
         console.log("[.] Executing test webhook mock data");
-        executeTestWebhook(type, url);
+        executeTestWebhook(webhook_id, type, url);
       }, 3000);
     }
 
-    if (!skip_insert) {
-      PenPal.DataStore.insert(PLUGIN_NAME, WebhooksCollectionName, {
-        type,
-        trigger,
-        name,
-        url
-      });
-    }
+    return webhook_id;
   },
 
-  getWebhook(name) {
+  getWebhook(id) {
     const stored_webhook = PenPal.DataStore.fetch(
       PLUGIN_NAME,
       WebhooksCollectionName,
-      { name }
+      { _id: id }
     );
 
     if (stored_webhook.length > 0) {
@@ -71,20 +92,37 @@ const WebhookManager = {
     return null;
   },
 
-  deleteWebhook(name) {
-    PenPal.DataStore.delete(PLUGIN_NAME, WebhooksCollectionName, { name });
+  deleteWebhook(id) {
+    const stored_webhook = PenPal.DataStore.fetch(
+      PLUGIN_NAME,
+      WebhooksCollectionName,
+      { _id: id }
+    )?.[0];
+    PenPal.DataStore.delete(PLUGIN_NAME, WebhooksCollectionName, { _id: id });
+
+    if (!/webhook-test/.test(stored_webhook?.url ?? "")) {
+      PenPal.API.deleteHook(id);
+    }
+
     return true;
   },
 
-  async executeWebhook(url, args = {}) {
+  async executeWebhook(id, url, args = {}) {
     console.log(`[.] Executing webhook: ${url}`);
+    console.log(args);
     const result = await fetch(url, {
       method: "POST",
       body: JSON.stringify(args),
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
     });
+    if (result.status === 404) {
+      // 404 so remove the webhook
+      console.log(`[!] URL not registered: ${url} --- deleting webhook`);
+      WebhookManager.deleteWebhook(id);
+      return null;
+    }
     return await result.json();
-  }
+  },
 };
 
 export default WebhookManager;

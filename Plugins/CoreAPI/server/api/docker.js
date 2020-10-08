@@ -1,17 +1,26 @@
-import { execSync } from "child_process";
+import { exec } from "child_process";
 import PenPal from "meteor/penpal";
 
 const runCommand = async (args) => {
-  try {
-    let stdout = execSync(`${args}`);
-    return stdout.toString().trim();
-  } catch {
-    return false;
-  }
+  return new Promise((resolutionFunc, rejectionFunc) => {
+    try {
+      exec(`${args}`, (error, stdout, stderr) => {
+        if (error) {
+          console.error(`exec error: ${error}`);
+          rejectionFunc("YEET");
+        }
+        resolutionFunc(`${stdout}`);
+      });
+    } catch (e) {
+      console.log(e);
+      rejectionFunc("YEET");
+    }
+  });
 };
 export const dockerExec = async (args) => {
   await PenPal.API.AsyncNOOP();
-  return runCommand(`sudo docker run --rm ${args}`);
+  let res = await runCommand(`sudo docker run --rm ${args}`);
+  return res;
 };
 export const dockerBuild = async (args) => {
   await PenPal.API.AsyncNOOP();

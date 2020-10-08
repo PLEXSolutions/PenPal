@@ -37,14 +37,22 @@ CMD ["/bin/bash"]
       {
         executeHandler: "performMasscan",
         executeHandlerType: "mutation",
-        variables: ["projectID", "data"],
-        fields: ["status", "was_successful"],
+        variables: ["projectID", "ips", "ports", "scanRate"],
+        fields: ["was_success"],
         node: {
           displayName: "Masscan",
           name: "MasscanPlugin",
           icon: "fa:question-circle",
           description: "Perform masscan for specified host(s)",
           properties: [
+            {
+              displayName: "Project ID",
+              name: "projectID",
+              type: "string",
+              default: "",
+              description: "Project ID of Host to Masscan",
+              required: true,
+            },
             {
               displayName: "IP Addresses",
               name: "ips",
@@ -64,11 +72,20 @@ CMD ["/bin/bash"]
             },
             {
               displayName: "Scan Rate",
-              name: "rate",
+              name: "scanRate",
               type: "number",
               default: "1000",
               description:
                 "Rate of scan to perform (provided in packets per second (pps))",
+              required: true,
+            },
+            {
+              displayName: "Successful",
+              name: "was_success",
+              type: "boolean",
+              default: true,
+              description:
+                "Masscan tasked successfully",
               required: true,
             },
           ],
