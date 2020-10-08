@@ -1,4 +1,5 @@
 import PenPal from "meteor/penpal";
+import { Meteor } from "meteor/meteor";
 import { Mongo } from "meteor/mongo";
 import _ from "lodash";
 
@@ -96,6 +97,8 @@ export async function upsertHosts(args) {
     newHostHooks(new_hosts);
   }
 
+  // This variable is purely for updated hosts (vs inserted) and is used for hooks
+  let updated_hosts = [];
   // if we have ones to update update them....
   _.each(toUpdate, host => {
     // this is the host to add
@@ -151,7 +154,12 @@ export async function upsertHosts(args) {
       mergedObject
     );
     if (res > 0) updatedRecords.push(ID);
+    updated_hosts.push(ID);
   });
+
+  if (updated_hosts.length > 0) {
+    updatedHostHooks(updated_hosts);
+  }
 
   // TODO - Transactions?
   return {
@@ -170,7 +178,12 @@ export async function removeHosts(args) {
 
   let idArray = [];
   _.each(args.hostIDs, hostId => {
-    idArray.push(hostId);
+    idArray.push(new Mongo.ObjectID(hostId));
+  });
+
+  // Get all the host data for hooks so the deleted host hook has some info for notifications and such
+  let hosts = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
+    _id: { $in: idArray }
   });
 
   let res = PenPal.DataStore.delete("CoreAPI", "Hosts", {
@@ -178,6 +191,8 @@ export async function removeHosts(args) {
   });
 
   if (res > 0) {
+    deletedHostHooks(hosts);
+
     response.status = "Successfully removed records";
     response.was_success = true;
     response.affected_records = args.projectIDs;
@@ -559,20 +574,23 @@ const HOOKS = {
 // name = 'unique hook name'
 // func = a function to call that takes a single argument that is an array of type IDs
 export function registerHook(target, trigger, id, func) {
+  const hook = { id, hook: func };
+  let hook_location = null;
+
   switch (target) {
     case "project":
       console.log("Project hooks not yet implemented");
       break;
     case "host":
       switch (trigger) {
+        case "delete":
+          hook_location = HOOKS.HOST.DELETE;
+          break;
         case "new":
-          HOOKS.HOST.NEW.push({ id, hook: func });
+          hook_location = HOOKS.HOST.NEW;
           break;
         case "update":
-          console.log("Host.update hook not yet implemented");
-          break;
-        case "delete":
-          console.log("Host.delete hook not yet implemented");
+          hook_location = HOOKS.HOST.UPDATE;
           break;
       }
       break;
@@ -580,6 +598,15 @@ export function registerHook(target, trigger, id, func) {
       console.log("Service hooks not yet implemented");
       break;
   }
+
+  if (hook_location === null) {
+    throw new Meteor.Error(
+      404,
+      `${target}.${trigger} trigger not yet implemented`
+    );
+  }
+
+  hook_location.push(hook);
 }
 
 export function deleteHook(id) {
@@ -590,8 +617,20 @@ export function deleteHook(id) {
   });
 }
 
-export async function newHostHooks(host_ids) {
-  for (let { name, hook } of HOOKS.HOST.NEW) {
+async function newHostHooks(host_ids) {
+  for (let { hook } of HOOKS.HOST.NEW) {
     hook(host_ids);
+  }
+}
+
+async function updatedHostHooks(host_ids) {
+  for (let { hook } of HOOKS.HOST.UPDATE) {
+    hook(host_ids);
+  }
+}
+
+async function deletedHostHooks(hosts) {
+  for (let { hook } of HOOKS.HOST.DELETE) {
+    hook(hosts);
   }
 }

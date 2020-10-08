@@ -3,13 +3,13 @@ import { name as PLUGIN_NAME } from "../manifest.json";
 import { WebhooksCollectionName } from "../constants.js";
 import fetch from "node-fetch";
 
-const webhookGenerator = (url, arg_field_name) => {
+const webhookGenerator = (id, url, arg_field_name) => {
   return async data => {
-    WebhookManager.executeWebhook(url, { [arg_field_name]: data });
+    WebhookManager.executeWebhook(id, url, { [arg_field_name]: data });
   };
 };
 
-const executeTestWebhook = (type, url) => {
+const executeTestWebhook = (id, type, url) => {
   let mockDataFunc = () => null;
 
   switch (type) {
@@ -24,7 +24,7 @@ const executeTestWebhook = (type, url) => {
       break;
   }
 
-  WebhookManager.executeWebhook(url, {
+  WebhookManager.executeWebhook(id, {
     [type]: mockDataFunc().map(datum => datum.id)
   });
 };
@@ -57,7 +57,7 @@ const WebhookManager = {
         type,
         trigger,
         webhook_id,
-        webhookGenerator(url, type)
+        webhookGenerator(webhook_id, url, type)
       );
     } else {
       console.log(
@@ -65,7 +65,7 @@ const WebhookManager = {
       );
       setTimeout(() => {
         console.log("[.] Executing test webhook mock data");
-        executeTestWebhook(type, url);
+        executeTestWebhook(webhook_id, type, url);
       }, 3000);
     }
 
@@ -95,20 +95,25 @@ const WebhookManager = {
     PenPal.DataStore.delete(PLUGIN_NAME, WebhooksCollectionName, { _id: id });
 
     if (!/webhook-test/.test(stored_webhook?.url ?? "")) {
-      console.log("Deleting webhook from API");
       PenPal.API.deleteHook(id);
     }
 
     return true;
   },
 
-  async executeWebhook(url, args = {}) {
+  async executeWebhook(id, url, args = {}) {
     console.log(`[.] Executing webhook: ${url}`);
     const result = await fetch(url, {
       method: "POST",
       body: JSON.stringify(args),
       headers: { "Content-Type": "application/json" }
     });
+    if (result.status === 404) {
+      // 404 so remove the webhook
+      console.log(`[!] URL not registered: ${url} --- deleting webhook`);
+      WebhookManager.deleteWebhook(id);
+      return null;
+    }
     return await result.json();
   }
 };
