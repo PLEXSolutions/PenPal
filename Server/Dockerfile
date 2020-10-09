@@ -14,6 +14,12 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     procps entr nodejs python mongodb-org file lsof \
     netcat
 
+# Install docker in docker....
+ENV DOCKERVERSION=19.03.12
+RUN curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKERVERSION}.tgz \
+  && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \
+  && rm docker-${DOCKERVERSION}.tgz
+
 RUN mkdir -p /data/db
 
 # Install npm

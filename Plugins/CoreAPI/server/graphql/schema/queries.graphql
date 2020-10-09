@@ -1,6 +1,6 @@
 type Query {
-  getCoreAPIConfiguration: CoreAPIConfiguration
-  getHosts(projectID: ID!): [Host]!
+  getCoreAPIConfiguration: CoreAPIConfiguration!
+  getHosts(projectID: ID!, hostIDs: [ID]): [Host]!
   getHost(id: ID!): Host!
   getProjects: [Project]!
   getProject(id: ID!): Project!

@@ -7,7 +7,7 @@ export default {
     let hookURL =
       PenPal.DataStore.fetch("CoreAPI", "Configuration", {})[0]?.hookURL ?? "";
     return {
-      hookURL
+      hookURL,
     };
   },
   async getHosts(root, args, context) {
