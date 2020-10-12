@@ -6,9 +6,73 @@ interface Annotatable {
 }
 
 """
+This is a container for annotations, which are a way of adding information to any type that implements Annotatable
+"""
+type Annotations {
+  id: ID!
+  """
+  A link back to the Type to which the annotations apply
+  """
+  annotatee: Annotatable
+  """
+  Notes about the annotatee
+  """
+  notes: [Note]
+  """
+  Files related to the annotatee
+  """
+  files: [File]
+  """
+  Tags that apply to the annotatee (one-word notes)
+  """
+  tags: [String]
+}
+
+"""
+An interface that allows audit trails to be applied to the implementer
+"""
+interface Auditable {
+  changes: [Audit]
+}
+
+"""
+A way to implement plugin "users" that can allow auditing of when a plugin causes a change
+"""
+type PluginUser {
+  id: ID!
+  """
+  The plugin name
+  """
+  name: String!
+}
+
+"""
+An Audit user is one of WebappUser or PluginUser
+"""
+union AuditUser = WebappUser | PluginUser
+
+"""
+This contains the audit trail for any type that implementes Auditable
+"""
+type Audit {
+  """
+  The user that caused the change
+  """
+  user: AuditUser!
+  """
+  The date that the change happened on
+  """
+  date: Date!
+  """
+  A message to go along with the audit trail
+  """
+  message: String!
+}
+
+"""
 The root of the PenPal data schema
 """
-type Project implements Annotatable {
+type Project implements Annotatable & Auditable {
   id: ID!
   """
   The customer for this project
@@ -38,12 +102,16 @@ type Project implements Annotatable {
   The networks and domains that represent the project's scope of engagement
   """
   scope: ProjectScope
+  """
+  Audits for the project
+  """
+  changes: [Audit]
 }
 
 """
 Customers are a type that allows projects to be grouped together and holds metadata about the customer
 """
-type Customer implements Annotatable {
+type Customer implements Annotatable & Auditable {
   id: ID!
   """
   Customer name (e.g. Acme, Inc)
@@ -61,6 +129,10 @@ type Customer implements Annotatable {
   Customer annotations
   """
   annotations: Annotations
+  """
+  Audits for the customer
+  """
+  changes: [Audit]
 }
 
 """
@@ -104,29 +176,6 @@ enum Industry {
   Finance
   Software
   Other
-}
-
-"""
-This is a container for annotations, which are a way of adding information to any type that implements Annotatable
-"""
-type Annotations {
-  id: ID!
-  """
-  A link back to the Type to which the annotations apply
-  """
-  annotatee: Annotatable
-  """
-  Notes about the annotatee
-  """
-  notes: [Note]
-  """
-  Files related to the annotatee
-  """
-  files: [File]
-  """
-  Tags that apply to the annotatee (one-word notes)
-  """
-  tags: [String]
 }
 
 """
@@ -181,7 +230,7 @@ type ProjectScope {
 """
 A logical grouping of hosts
 """
-type Network implements Annotatable {
+type Network implements Annotatable & Auditable {
   id: ID!
   """
   The network address (e.g. 10.0.0.0)
@@ -203,12 +252,16 @@ type Network implements Annotatable {
   Annotations about the network as a whole
   """
   annotations: Annotations
+  """
+  Audits for the network
+  """
+  changes: [Audit]
 }
 
 """
 An individual host, usually associated with a single IP Address
 """
-type Host implements Annotatable {
+type Host implements Annotatable & Auditable {
   id: ID!
   """
   A link back to the project.
@@ -235,10 +288,6 @@ type Host implements Annotatable {
   """
   os: HostOS
   """
-  User who last modified the information about this host
-  """
-  last_modified_by: WebappUser
-  """
   Services associated with this host
   """
   services: [Service]
@@ -246,6 +295,10 @@ type Host implements Annotatable {
   Annotations about this host
   """
   annotations: Annotations
+  """
+  Audits for the host
+  """
+  changes: [Audit]
 }
 
 """
@@ -266,7 +319,7 @@ type HostOS {
 """
 The generic interface for services. This allows for enforcement of certain fields while allowing for customized service types to be created.
 """
-interface Service implements Annotatable {
+interface Service implements Annotatable & Auditable {
   id: ID!
   """
   The host to which the service belongs
@@ -276,17 +329,17 @@ interface Service implements Annotatable {
   The name of the service
   """
   name: String!
-  """
-  The user who last modified this service's information
-  """
-  last_modified_by: WebappUser
   """
   Annotations about the service
   """
   annotations: Annotations
+  """
+  Audits for the service
+  """
+  changes: [Audit]
 }
 
-interface NetworkService implements Service & Annotatable {
+interface NetworkService implements Service & Annotatable & Auditable {
   id: ID!
   """
   The host to which the service belongs
@@ -296,10 +349,6 @@ interface NetworkService implements Service & Annotatable {
   The name of the service
   """
   name: String!
-  """
-  The user who last modified this service's information
-  """
-  last_modified_by: WebappUser
   """
   Annotations about the service
   """
@@ -312,6 +361,10 @@ interface NetworkService implements Service & Annotatable {
   The port number on which the service operates
   """
   port: Int!
+  """
+  Audits for the service
+  """
+  changes: [Audit]
 }
 
 enum IPProtocol {
@@ -319,7 +372,7 @@ enum IPProtocol {
   UDP
 }
 
-type GenericNetworkService implements NetworkService & Service & Annotatable {
+type GenericNetworkService implements NetworkService & Service & Annotatable & Auditable {
   id: ID!
   """
   The host to which the service belongs
@@ -329,10 +382,6 @@ type GenericNetworkService implements NetworkService & Service & Annotatable {
   The name of the service
   """
   name: String!
-  """
-  The user who last modified this service's information
-  """
-  last_modified_by: WebappUser
   """
   Annotations about the service
   """
@@ -345,6 +394,10 @@ type GenericNetworkService implements NetworkService & Service & Annotatable {
   The port number on which the service operates
   """
   port: Int!
+  """
+  Audits for the service
+  """
+  changes: [Audit]
 }
 
 type MutationResponse {
@@ -409,7 +462,6 @@ input HostInput {
   status_message: String
   tags: [String]
   status: String
-  last_modified_by: WebappUserInput
   is_flagged: Boolean
   files: [FileInput]
   services: [ServiceInput]
