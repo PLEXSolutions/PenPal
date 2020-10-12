@@ -8,13 +8,14 @@ function customizer(objValue, srcValue) {
   }
 }
 function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 async function parseMasscan(projectID, jsonData) {
+  console.log("[.] Parsing masscan results");
   let res = {
     status: "Error Uploading Data",
     was_success: false,
-    affected_records: [],
+    affected_records: []
   };
   let parsedJson = hjson.parse(jsonData.toString());
   const ips = _.reduce(
@@ -35,10 +36,10 @@ async function parseMasscan(projectID, jsonData) {
   // 1. Upsert Hosts
   let upsertHostResp = await PenPal.API.Hosts.Upsert({
     projectID: projectID,
-    hosts: hosts,
+    hosts: hosts
   });
   let ids = [];
-  _.each(upsertHostResp.affected_records, (record) => {
+  _.each(upsertHostResp.affected_records, record => {
     if (typeof record._str !== "undefined") {
       ids.push(record._str);
     } else {
@@ -48,28 +49,28 @@ async function parseMasscan(projectID, jsonData) {
   // 2. Get IP -> hostID mapping
   let hostRecords = await PenPal.API.Hosts.Get({
     projectID: projectID,
-    hostIDs: ids,
+    hostIDs: ids
   });
   // 3. Create proper services insertion for each host and insert...
   let servicesArray = [];
-  _.each(hostRecords, (host) => {
-    _.each(ips[host.ipv4].ports, (foundPort) => {
+  _.each(hostRecords, host => {
+    _.each(ips[host.ipv4].ports, foundPort => {
       servicesArray.push({
         hostID: host._id._str,
         port: foundPort.port,
-        protocol: foundPort.proto,
+        protocol: foundPort.proto
       });
     });
   });
   let servicesResp = await PenPal.API.Services.Upsert({
     projectID: projectID,
-    services: servicesArray,
+    services: servicesArray
   });
   if (servicesResp.affected_records.length > 0) {
     res = {
       status: "Services Created",
       was_success: true,
-      affected_records: servicesResp.affected_records,
+      affected_records: servicesResp.affected_records
     };
   }
   return res;
@@ -80,7 +81,7 @@ export default {
     let res = {
       status: "Error Uploading Data",
       was_success: false,
-      affected_records: [],
+      affected_records: []
     };
     if (args.submissionDoc.format !== "JSON") {
       res.status = "Please Submit JSON Data";
@@ -94,7 +95,7 @@ export default {
     await delay(0);
     let response = {
       status: "Masscan Failed",
-      was_success: false,
+      was_success: false
     };
     PenPal.API.Docker.Exec(
       `masscan bash -c "masscan -oJ res.json --rate=${args.scanRate} -p${
@@ -105,12 +106,11 @@ export default {
         console.log(err);
         return response;
       }
-      console.log(res);
       const buff = Buffer.from(res, "utf-8");
       parseMasscan(args.projectID, buff.toString());
     });
     response.status = "Masscan Started";
     response.was_success = true;
     return response;
-  },
+  }
 };

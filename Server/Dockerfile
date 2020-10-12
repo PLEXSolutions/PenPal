@@ -95,6 +95,9 @@ RUN cat /usr/lib/node_modules/n8n-node-dev/src/tsconfig-build.json | sed -e 's!"
 # Expose n8n port
 EXPOSE 5678
 
+# Install npm-recursive-install for merging of package.json dependencies
+RUN sudo npm install -g recursive-install
+
 # Now install PenPal dependencies
 # Make /app the working directory
 WORKDIR /app

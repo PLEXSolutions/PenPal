@@ -1,46 +1,46 @@
 version: "2"
 services:
-  penpal-server:
-    volumes:
-      - ./Server/src/client/:/app/client:consistent
-      - ./Server/src/lib/:/app/lib:consistent
-      - ./Server/src/server/:/app/server:consistent
-      - ./Server/src/stories/:/app/stories:consistent
-      - ./Server/src/package.json:/app/package.json:consistent
-      - ./Server/src/settings.dev.json:/app/settings.json:consistent
-      - ./Server/src/.meteor/packages:/app/.meteor/packages:consistent
-      - ./Server/src/public:/app/public:consistent
-      - ./Server/src/packages:/app/packages:consistent
-      - ./Plugins/:/app/plugins:consistent
-      - /var/run/docker.sock:/var/run/docker.sock
+    penpal-server:
+        volumes:
+            - ./Server/src/client/:/app/client:consistent
+            - ./Server/src/lib/:/app/lib:consistent
+            - ./Server/src/server/:/app/server:consistent
+            - ./Server/src/stories/:/app/stories:consistent
+            - ./Server/src/package.json:/app/package.json:consistent
+            - ./Server/src/settings.dev.json:/app/settings.json:consistent
+            - ./Server/src/.meteor/packages:/app/.meteor/packages:consistent
+            - ./Server/src/public:/app/public:consistent
+            - ./Server/src/packages:/app/packages:consistent
+            - ./Plugins/:/app/plugins:consistent
+            - /var/run/docker.sock:/var/run/docker.sock
 
-  graphql_editor:
-    # Path to Dockerfile directory
-    build: ./Dev-Tools/GraphqlEditor
-    ports:
-      - "1568:1568"
-    command: npm run start
-    volumes:
-      - ./Server/src/server/graphql/schema/schema.graphql:/app/sandbox/schema/schema.txt
-    networks:
-      - public
+    graphql_editor:
+        # Path to Dockerfile directory
+        build: ./Dev-Tools/GraphqlEditor
+        ports:
+            - "1568:1568"
+        command: npm run start
+        volumes:
+            - ./Server/src/server/graphql/schema/schema.graphql:/app/sandbox/schema/schema.txt
+        networks:
+            - public
 
-  storybook:
-    build:
-      context: ./
-      dockerfile: ./Dev-Tools/Storybook/Dockerfile
-    ports:
-      - "6006:6006"
-    command: npm run storybook
-    volumes:
-      - ./Server/src/client/:/app/client:consistent
-      - ./Server/src/server/:/app/server:consistent
-      - ./Server/src/stories/:/app/stories:consistent
-      - ./Server/src/package.json:/app/package.json:consistent
-      - ./Server/src/settings.json:/app/settings.json:consistent
-      - ./Server/src/.meteor/packages:/app/.meteor/packages:consistent
-      - ./Server/src/.storybook:/app/.storybook
-      - ./Server/src/lib/:/app/lib:consistent
-      - ./Server/src/public:/app/public:consistent
-    networks:
-      - public
+    storybook:
+        build:
+            context: ./
+            dockerfile: ./Dev-Tools/Storybook/Dockerfile
+        ports:
+            - "6006:6006"
+        command: npm run storybook
+        volumes:
+            - ./Server/src/client/:/app/client:consistent
+            - ./Server/src/server/:/app/server:consistent
+            - ./Server/src/stories/:/app/stories:consistent
+            - ./Server/src/package.json:/app/package.json:consistent
+            - ./Server/src/settings.json:/app/settings.json:consistent
+            - ./Server/src/.meteor/packages:/app/.meteor/packages:consistent
+            - ./Server/src/.storybook:/app/.storybook
+            - ./Server/src/lib/:/app/lib:consistent
+            - ./Server/src/public:/app/public:consistent
+        networks:
+            - public

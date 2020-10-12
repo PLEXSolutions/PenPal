@@ -1,11 +1,11 @@
 import PenPal from "meteor/penpal";
 
 export default {
-  Service: {
+  NetworkService: {
     __resolveType(obj, context, info) {
       switch (true) {
-        case obj.ip_protocol !== undefined:
-          return "NetworkService";
+        default:
+          return "GenericNetworkService";
       }
     }
   }
