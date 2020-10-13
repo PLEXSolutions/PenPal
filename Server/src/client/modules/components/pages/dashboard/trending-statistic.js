@@ -38,6 +38,10 @@ const useStyles = makeStyles(theme => ({
   },
   uppercase: {
     textTransform: "uppercase"
+  },
+  caption: {
+    marginLeft: theme.spacing(2),
+    fontSize: 15
   }
 }));
 
@@ -93,7 +97,11 @@ const TrendingStatistic = ({
           >
             {delta}
           </Typography>
-          <Typography color="textSecondary" variant="caption">
+          <Typography
+            color="textSecondary"
+            variant="caption"
+            className={classes.caption}
+          >
             {caption}
           </Typography>
         </Box>

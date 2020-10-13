@@ -29,6 +29,7 @@ dashboard.add("Trending Statistics", () => (
             value={9001}
             delta={36}
             icon={<AccountTreeIcon />}
+            caption={`since 2 seconds ago`}
           />
         </Grid>
         <Grid item lg={4} sm={6} xl={4} xs={12}>
@@ -37,6 +38,7 @@ dashboard.add("Trending Statistics", () => (
             value={200}
             delta={-72}
             icon={<DesktopWindowsIcon />}
+            caption={`since last year`}
           />
         </Grid>
       </Grid>
