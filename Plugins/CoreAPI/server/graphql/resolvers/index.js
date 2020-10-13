@@ -1,3 +1,5 @@
+import analytics_default_resolvers from "./analytics.default.js";
+import analytics_query_resolvers from "./analytics.queries.js";
 import annotatable_default_resolvers from "./annotatable.default.js";
 import auditable_default_resolvers from "./auditable.default.js";
 import audit_user_default_resolvers from "./audit-user.default.js";
@@ -8,9 +10,13 @@ import query_resolvers from "./queries.js";
 import service_default_resolvers from "./service.default.js";
 
 export default {
-  queries: query_resolvers,
+  queries: {
+    ...analytics_query_resolvers,
+    ...query_resolvers
+  },
   mutations: mutation_resolvers,
   default_resolvers: [
+    analytics_default_resolvers,
     annotatable_default_resolvers,
     auditable_default_resolvers,
     audit_user_default_resolvers,
