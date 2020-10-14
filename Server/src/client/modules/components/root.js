@@ -30,11 +30,11 @@ const Root = () => {
           {loading ? null : (
             <Components.ErrorBoundary>
               <Components.IntrospectionProvider>
-                {/* <Components.AccountProvider> */}
-                  {/* <Components.ForceLogin> */}
-                   <Components.Layout />
-                 {/* </Components.ForceLogin> */}
-                {/* </Components.AccountProvider> */}
+                <Components.AccountProvider>
+                  <Components.ForceLogin>
+                    <Components.Layout />
+                  </Components.ForceLogin>
+                </Components.AccountProvider>
               </Components.IntrospectionProvider>
             </Components.ErrorBoundary>
           )}

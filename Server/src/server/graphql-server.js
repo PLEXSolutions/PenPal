@@ -35,7 +35,6 @@ const startGraphQLServer = (
       loaders = _.extend(loaders, plugins_buildLoaders());
 
       const user = await getUser(req.headers.authorization_token);
-
       if (user !== undefined) {
         user.id = user._id;
         await loaders.webappUsersLoader.prime(user.id, user);

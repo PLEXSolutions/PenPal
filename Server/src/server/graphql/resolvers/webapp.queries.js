@@ -11,11 +11,7 @@ export default {
     return user;
   },
 
-  async getUsers(
-    root,
-    { filter: { active, pending } = {} },
-    { user, redball_loaders }
-  ) {
+  async getUsers(root, { filter: { active, pending } = {} }, { user }) {
     restrictToRole(user, CONSTANTS.ROLE.ADMIN);
 
     const query = {};
@@ -31,9 +27,11 @@ export default {
 
     let users = await Meteor.users.find(query).fetch();
     users = users.map(({ _id, ...rest }) => ({ _id, id: _id, ...rest }));
-    for (user of users) {
-      await redball_loaders.webappUsersLoader.prime(user.id, user);
-    }
+
+    // TODO: Re-implement loaders
+    /*for (user of users) {
+      await loaders.webappUsersLoader.prime(user.id, user);
+    }*/
 
     return users;
   },
