@@ -1,17 +1,7 @@
 type CoreAPIAnalytics {
-  totalProjects: TrendingInt!
-  totalCustomers: TrendingInt!
-  totalHosts: TrendingInt!
-  totalServices: TrendingInt!
-  servicesBreakdown: [CoreAPIAnalyticsServiceBreakdown]!
-}
-
-type CoreAPIAnalyticsServiceBreakdown {
-  name: String!
-  count: TrendingInt!
-}
-
-type TrendingInt {
-  value: Int!
-  delta: Int!
+  id: ID!
+  totalProjects: DashboardableStatisticsTrendingInt!
+  totalCustomers: DashboardableStatisticsTrendingInt!
+  totalHosts: DashboardableStatisticsTrendingInt!
+  totalServices: DashboardableStatisticsTrendingInt!
 }

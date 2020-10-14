@@ -78,7 +78,7 @@ const TrendingStatistic = ({
             </Typography>
           </Grid>
           <Grid item>
-            <Avatar className={classes.avatar}>{icon}</Avatar>
+            {/*<Avatar className={classes.avatar}>{icon}</Avatar>*/}
           </Grid>
         </Grid>
         <Box mt={2} display="flex" alignItems="center">

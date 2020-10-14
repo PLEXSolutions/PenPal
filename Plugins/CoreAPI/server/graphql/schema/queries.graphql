@@ -1,5 +1,5 @@
 type Query {
-  getAnalytics: CoreAPIAnalytics!
+  getCoreAPIAnalytics: CoreAPIAnalytics!
   getCoreAPIConfiguration: CoreAPIConfiguration!
   getHosts(projectID: ID!, hostIDs: [ID]): [Host]!
   getHost(id: ID!): Host!

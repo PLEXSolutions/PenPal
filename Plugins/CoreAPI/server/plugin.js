@@ -28,6 +28,10 @@ const settings = {
     getter: "getCoreAPIConfiguration",
     setter: "setCoreAPIConfiguration"
   },
+  dashboard: {
+    schema_root: "CoreAPIAnalytics",
+    getter: "getCoreAPIAnalytics"
+  },
   datastores: [
     {
       name: "Customers"

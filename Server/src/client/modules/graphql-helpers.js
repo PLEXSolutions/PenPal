@@ -20,6 +20,13 @@ export const process_schema = (types, schema_root, depth = 0) => {
           depth + 1
         );
         query.fields.push({ [field.name]: _query });
+      } else if (field.type.kind === "NON_NULL") {
+        const _query = process_schema(
+          types,
+          types[field.type.ofType.name],
+          depth + 1
+        );
+        query.fields.push({ [field.name]: _query });
       } else {
         const _query = process_schema(types, types[field.type.name], depth + 1);
         query.fields.push({ [field.name]: _query });
@@ -39,13 +46,39 @@ export const generateQueryFromSchema = (types, schema_root, query_name) => {
     `;
   }
 
-  console.log(types, types[schema_root]);
   const query_config = process_schema(types, types[schema_root]);
   query_config.operation = query_name;
   const { query } = queryBuilder(query_config);
   return gql`
     ${query}
   `;
+};
+
+export const generateQueryFromSchemas = (types, schemas = []) => {
+  if (types === false || schemas.length === 0) {
+    return gql`
+      {
+        nop
+      }
+    `;
+  }
+
+  const queries = schemas.map(({ schema_root, query_name }) => {
+    const query_config = process_schema(types, types[schema_root]);
+    query_config.operation = query_name;
+    const { query } = queryBuilder(query_config);
+    try {
+      const inner_query = query.match(/query\s+{\s+(.*)\s+}/)[1];
+      return inner_query;
+    } catch (e) {
+      console.error(e);
+      return "";
+    }
+  });
+
+  return gql`{
+    ${queries.join("\n")}
+  }`;
 };
 
 export const generateMutationFromSchema = (types, mutations, mutation_name) => {

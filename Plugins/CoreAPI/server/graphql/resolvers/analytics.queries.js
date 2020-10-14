@@ -5,7 +5,7 @@ import { Random } from "meteor/random";
 export const ANALYTICS_ID = Random.id();
 
 export default {
-  async getAnalytics(root, args, context) {
+  async getCoreAPIAnalytics(root, args, context) {
     return { id: ANALYTICS_ID };
   }
 };

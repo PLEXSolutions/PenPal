@@ -11,9 +11,18 @@ export default {
         .aggregate(pipeline)
         .toArray();
 
-      return results.length === 0
-        ? { value: 0, delta: 0 }
-        : { value: results[0].totalProjects, delta: results[0].totalProjects };
+      const result = {
+        title: "Total Projects",
+        value: 0,
+        delta: 0,
+        since: new Date()
+      };
+
+      if (results.length > 0) {
+        result.value = results[0].totalProjects;
+      }
+
+      return result;
     },
 
     totalCustomers: async () => {
@@ -24,12 +33,18 @@ export default {
         .aggregate(pipeline)
         .toArray();
 
-      return results.length === 0
-        ? { value: 0, delta: 0 }
-        : {
-            value: results[0].totalCustomers,
-            delta: results[0].totalCustomers
-          };
+      const result = {
+        title: "Total Customers",
+        value: 0,
+        delta: 0,
+        since: new Date()
+      };
+
+      if (results.length > 0) {
+        result.value = results[0].totalCustomers;
+      }
+
+      return result;
     },
 
     totalHosts: async () => {
@@ -40,9 +55,18 @@ export default {
         .aggregate(pipeline)
         .toArray();
 
-      return results.length === 0
-        ? { value: 0, delta: 0 }
-        : { value: results[0].totalHosts, delta: results[0].totalHosts };
+      const result = {
+        title: "Total Hosts",
+        value: 0,
+        delta: 0,
+        since: new Date()
+      };
+
+      if (results.length > 0) {
+        result.value = results[0].totalHosts;
+      }
+
+      return result;
     },
 
     totalServices: async () => {
@@ -53,9 +77,18 @@ export default {
         .aggregate(pipeline)
         .toArray();
 
-      return results.length === 0
-        ? { value: 0, delta: 0 }
-        : { value: results[0].totalServices, delta: results[0].totalServices };
+      const result = {
+        title: "Total Services",
+        value: 0,
+        delta: 0,
+        since: new Date()
+      };
+
+      if (results.length > 0) {
+        result.value = results[0].totalServices;
+      }
+
+      return result;
     }
 
     /*
