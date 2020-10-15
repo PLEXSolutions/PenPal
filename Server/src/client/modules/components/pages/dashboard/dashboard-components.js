@@ -18,9 +18,9 @@ const DashboardTrendingStatistic = ({ title, value, delta, since }) => (
 const DashboardComponents = ({ data }) => {
   return (
     <Grid container spacing={2}>
-      {_.map(data, field =>
+      {_.map(data, (field, key) =>
         field.__typename === "DashboardableStatisticsTrendingInt" ? (
-          <DashboardTrendingStatistic {...field} />
+          <DashboardTrendingStatistic key={key} {...field} />
         ) : null
       )}
     </Grid>

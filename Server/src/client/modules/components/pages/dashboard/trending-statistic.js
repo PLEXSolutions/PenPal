@@ -49,8 +49,8 @@ const TrendingStatistic = ({
   title = "",
   value = 0,
   delta = 0,
-  caption = "",
-  icon = <CheckBoxOutlineBlankIcon />
+  caption = ""
+  //icon = <CheckBoxOutlineBlankIcon />
 }) => {
   const classes = useStyles();
   const is_positive_delta = delta >= 0;
@@ -62,7 +62,7 @@ const TrendingStatistic = ({
             <Typography
               color="textSecondary"
               gutterBottom
-              variant="h7"
+              variant="body2"
               className={cx(classes.uppercase)}
             >
               {title}

@@ -8,8 +8,9 @@ import {
 import { ApolloLink } from "apollo-link";
 import { BatchHttpLink } from "apollo-link-batch-http";
 
+const graphql_loc = Meteor.settings.public?.graphql ?? "http://localhost:3000";
 const introspect_schema = async () => {
-  const result = await fetch(`http://localhost:3000/graphql`, {
+  const result = await fetch(`${graphql_loc}/graphql`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
