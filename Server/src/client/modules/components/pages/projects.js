@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import Backdrop from "@material-ui/core/Backdrop";
+import Container from "@material-ui/core/Container";
 import SpeedDial from "@material-ui/lab/SpeedDial";
 import SpeedDialIcon from "@material-ui/lab/SpeedDialIcon";
 import SpeedDialAction from "@material-ui/lab/SpeedDialAction";
@@ -38,12 +39,19 @@ const useStyles = makeStyles(theme => ({
     width: "max-content"
   },
   container: {
+    height: "100%",
+    position: "relative"
+  },
+  paper: {
+    position: "absolute",
+    right: 0,
     display: "flex",
     border: `1px solid ${theme.palette.divider}`,
     flexWrap: "wrap",
-    width: "auto" },
+    padding: theme.spacing(0.5)
+  },
   divider: {
-    margin: theme.spacing(1, 0.5)
+    margin: theme.spacing(1)
   },
   grouped: {
     margin: theme.spacing(0.5),
@@ -54,7 +62,8 @@ const useStyles = makeStyles(theme => ({
     "&:first-child": {
       borderRadius: theme.shape.borderRadius
     }
-  } }));
+  }
+}));
 
 const _actions = [
   { icon: <ViewListIcon />, name: "Table View" },
@@ -94,13 +103,25 @@ const Projects = () => {
       ]
     : [
         {
+          group: [
+            {
+              icon: <AddIcon />,
+              onClick: event => {
+                event.preventDefault();
+              }
+            }
+          ],
+          exclusive: false
+        },
+        {
           group: _actions,
           exclusive: true
         },
         {
           group: [
             {
-              icon: <ClearIcon />,
+              name: view, // A hack to make this always a "depressed" value
+              icon: <BuildIcon />,
               onClick: event => {
                 event.preventDefault();
                 setFabVisible(true);
@@ -113,34 +134,38 @@ const Projects = () => {
 
   return (
     <div className={classes.root}>
-      {!fabVisible && (
-        <Paper className={classes.container}>
-          {actions.map(({ group, exclusive }, index) => (
-            <React.Fragment key={index}>
-              <ToggleButtonGroup
-                classes={{ grouped: classes.grouped }}
-                size="small"
-                value={view}
-                exclusive={exclusive}
-                onChange={(event, newView) => setView(newView)}
-              >
-                {group.map(item => (
-                  <ToggleButton value={item.name} onClick={item.onClick}>
-                    {item.icon}
-                  </ToggleButton>
-                ))}
-              </ToggleButtonGroup>
-              {index !== actions.length - 1 && (
-                <Divider
-                  flexItem
-                  orientation="vertical"
-                  className={classes.divider}
-                />
-              )}
-            </React.Fragment>
-          ))}
-        </Paper>
-      )}
+      <Container maxWidth="lg" className={classes.container} disableGutters>
+        {!fabVisible && (
+          <Paper className={classes.paper}>
+            {actions.map(({ group, exclusive }, index) => (
+              <React.Fragment key={index}>
+                <ToggleButtonGroup
+                  classes={{ grouped: classes.grouped }}
+                  size="small"
+                  value={view}
+                  exclusive={exclusive}
+                  onChange={(event, newView) =>
+                    newView !== null && setView(newView)
+                  }
+                >
+                  {group.map(item => (
+                    <ToggleButton value={item.name} onClick={item.onClick}>
+                      {item.icon}
+                    </ToggleButton>
+                  ))}
+                </ToggleButtonGroup>
+                {index !== actions.length - 1 && (
+                  <Divider
+                    flexItem
+                    orientation="vertical"
+                    className={classes.divider}
+                  />
+                )}
+              </React.Fragment>
+            ))}
+          </Paper>
+        )}
+      </Container>
       {fabVisible && <Backdrop open={open} />}
       <SpeedDial
         ariaLabel=""
