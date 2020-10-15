@@ -43,7 +43,7 @@ import { CONSTANTS, hasRole } from "../../../../lib/common.js";
 const { useAccount } = Hooks;
 
 const drawerWidth = 240;
-const routeNames = ["dashboard", "configuration"];
+const routeNames = ["dashboard", "projects", "", "configuration"];
 
 const useStyles = makeStyles(theme => ({
   root: {
