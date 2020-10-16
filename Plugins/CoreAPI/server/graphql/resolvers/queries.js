@@ -7,8 +7,12 @@ export default {
     let hookURL =
       PenPal.DataStore.fetch("CoreAPI", "Configuration", {})[0]?.hookURL ?? "";
     return {
-      hookURL,
+      hookURL
     };
+  },
+  async getCustomers(root, args, context) {
+    let res = PenPal.API.Customers.Get(args);
+    return res;
   },
   async getHosts(root, args, context) {
     let res = PenPal.API.Hosts.Get(args);

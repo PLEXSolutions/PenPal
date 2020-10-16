@@ -165,6 +165,7 @@ const Projects = () => {
             ))}
           </Paper>
         )}
+        <Components.ProjectsView view={view} />
       </Container>
       {fabVisible && <Backdrop open={open} />}
       <SpeedDial

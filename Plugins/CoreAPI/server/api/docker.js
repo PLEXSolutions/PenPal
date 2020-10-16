@@ -1,7 +1,7 @@
 import { exec } from "child_process";
 import PenPal from "meteor/penpal";
 
-const runCommand = async (args) => {
+const runCommand = async args => {
   return new Promise((resolutionFunc, rejectionFunc) => {
     try {
       exec(`${args}`, (error, stdout, stderr) => {
@@ -17,12 +17,14 @@ const runCommand = async (args) => {
     }
   });
 };
-export const dockerExec = async (args) => {
+
+export const dockerExec = async args => {
   await PenPal.API.AsyncNOOP();
   let res = await runCommand(`sudo docker run --rm ${args}`);
   return res;
 };
-export const dockerBuild = async (args) => {
+
+export const dockerBuild = async args => {
   await PenPal.API.AsyncNOOP();
   const res = runCommand(
     `sudo echo """${args.dockerfile}""" > Dockerfile-${args.name} && sudo docker build -t ${args.name} -f Dockerfile-${args.name} . && sudo rm -f Dockerfile-${args.name}`

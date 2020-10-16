@@ -1,9 +1,11 @@
 type Mutation {
   setCoreAPIConfiguration(configuration: JSON): CoreAPIConfiguration
-  upsertHosts(projectID: ID!, hosts: [HostInput]!): MutationResponse!
-  removeHosts(hostIDs: [ID]!): MutationResponse!
-  upsertProjects(projects: [ProjectInput]!): MutationResponse!
-  removeProjects(projectIDs: [ID]!): MutationResponse!
-  upsertServices(projectID: ID!, services: [ServiceInput]!): MutationResponse!
-  removeServices(serviceIDs: [ID]!): MutationResponse!
+  upsertCustomers(customers: [CustomerInput!]!): MutationResponse!
+  removeCustomers(customerIDs: [ID!]!): MutationResponse!
+  upsertProjects(projects: [ProjectInput!]!): MutationResponse!
+  removeProjects(projectIDs: [ID!]!): MutationResponse!
+  upsertHosts(projectID: ID!, hosts: [HostInput!]!): MutationResponse!
+  removeHosts(hostIDs: [ID!]!): MutationResponse!
+  upsertServices(hostID: ID!, services: [ServiceInput!]!): MutationResponse!
+  removeServices(serviceIDs: [ID!]!): MutationResponse!
 }

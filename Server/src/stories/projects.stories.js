@@ -19,3 +19,8 @@ projects.add("Main Page", () => (
     <Components.Projects />
   </SetupPage>
 ));
+projects.add("New Project Workflow", () => (
+  <SetupPage>
+    <Components.NewProjectWorkflow open={true} handleClose={() => null} />
+  </SetupPage>
+));

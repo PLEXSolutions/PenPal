@@ -1,24 +1,8 @@
 import { types, resolvers, loaders } from "./graphql";
 import _ from "lodash";
 import PenPal from "meteor/penpal";
-import {
-  getHosts,
-  getProjects,
-  getServices,
-  removeHosts,
-  removeProjects,
-  removeServices,
-  upsertHosts,
-  upsertProjects,
-  upsertServices,
-  registerHook as apiRegisterHook,
-  deleteHook as apiDeleteHook
-} from "./api-functions";
+import * as API from "./api/";
 import { dockerExec, dockerBuild, dockerRun } from "./api/docker";
-
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 import { mocks } from "./test/";
 
@@ -57,57 +41,39 @@ const settings = {
 const CoreAPIPlugin = {
   loadPlugin() {
     // Register API Hooks
+    PenPal.API.Customers = {
+      Upsert: API.upsertCustomers,
+      Remove: API.removeCustomers,
+      Get: API.getCustomers
+    };
+
     PenPal.API.Hosts = {
-      Upsert: args => {
-        return upsertHosts(args);
-      },
-      Remove: args => {
-        return removeHosts(args);
-      },
-      Get: args => {
-        return getHosts(args);
-      }
+      Upsert: API.upsertHosts,
+      Remove: API.removeHosts,
+      Get: API.getHosts
     };
 
     PenPal.API.Projects = {
-      Upsert: args => {
-        return upsertProjects(args);
-      },
-      Remove: args => {
-        return removeProjects(args);
-      },
-      Get: args => {
-        return getProjects(args);
-      }
+      Upsert: API.upsertProjects,
+      Remove: API.removeProjects,
+      Get: API.getProjects
     };
 
     PenPal.API.Services = {
-      Upsert: args => {
-        return upsertServices(args);
-      },
-      Remove: args => {
-        return removeServices(args);
-      },
-      Get: args => {
-        return getServices(args);
-      }
+      Upsert: API.upsertServices,
+      Remove: API.removeServices,
+      Get: API.getServices
     };
 
     PenPal.API.Docker = {
-      Exec: async args => {
-        return dockerExec(args);
-      },
-      Build: async args => {
-        return dockerBuild(args);
-      }
+      Exec: API.dockerExec,
+      Build: API.dockerBuild
     };
 
-    PenPal.API.AsyncNOOP = async () => {
-      await delay(0);
-    };
+    PenPal.API.AsyncNOOP = API.AsyncNOOP;
 
-    PenPal.API.registerHook = apiRegisterHook;
-    PenPal.API.deleteHook = apiDeleteHook;
+    PenPal.API.registerHook = API.registerHook;
+    PenPal.API.deleteHook = API.deleteHook;
 
     PenPal.Test.CoreAPI = { ...mocks };
 
