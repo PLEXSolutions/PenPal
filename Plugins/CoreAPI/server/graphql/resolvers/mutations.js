@@ -15,26 +15,34 @@ export default {
       return {
         status: "Updated Configuration",
         was_success: true,
-        affected_records: [currConfig[0]._id],
+        affected_records: [currConfig[0]._id]
       };
     } else {
       let addedConfig = PenPal.DataStore.insert("CoreAPI", "Configuration", {
-        hookURL: configuration.hookURL,
+        hookURL: configuration.hookURL
       });
       if (addedConfig) {
         return {
           status: "Inserted Configuration",
           was_success: true,
-          affected_records: [addedConfig],
+          affected_records: [addedConfig]
         };
       } else {
         return {
           status: "Configuration Update Failed",
           was_success: false,
-          affected_records: [],
+          affected_records: []
         };
       }
     }
+  },
+  async upsertCustomers(root, args, context) {
+    let res = PenPal.API.Customers.Upsert(args);
+    return res;
+  },
+  async removeCustomers(root, args, context) {
+    let res = PenPal.API.Customers.Remove(args);
+    return res;
   },
   async upsertHosts(root, args, context) {
     let res = PenPal.API.Hosts.Upsert(args);

@@ -176,7 +176,7 @@ input CustomerInput {
   Insertion: required, sets the industry of the customer
   Update: not required, updates the industry of the customer
   """
-  industry: String
+  industry: Industry
 }
 
 """

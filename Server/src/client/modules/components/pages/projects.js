@@ -74,12 +74,15 @@ const _actions = [
 const Projects = () => {
   const classes = useStyles();
   const [fabVisible, setFabVisible] = useState(false);
+  const [newProjectOpen, setNewProjectOpen] = useState(false);
 
   const [open, setOpen] = useState(false);
   const [view, setView] = useState(_actions[0].name);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  const handleNewProjectOpen = () => setNewProjectOpen(true);
+  const handleNewProjectClose = () => setNewProjectOpen(false);
 
   const actions = fabVisible
     ? [
@@ -98,7 +101,10 @@ const Projects = () => {
         {
           icon: <AddIcon />,
           name: "New Project",
-          onClick: handleClose
+          onClick: () => {
+            handleClose();
+            setTimeout(handleNewProjectOpen, 200);
+          }
         }
       ]
     : [
@@ -108,6 +114,7 @@ const Projects = () => {
               icon: <AddIcon />,
               onClick: event => {
                 event.preventDefault();
+                handleNewProjectOpen();
               }
             }
           ],
@@ -148,8 +155,12 @@ const Projects = () => {
                     newView !== null && setView(newView)
                   }
                 >
-                  {group.map(item => (
-                    <ToggleButton value={item.name} onClick={item.onClick}>
+                  {group.map((item, index) => (
+                    <ToggleButton
+                      key={index}
+                      value={item.name ?? ""}
+                      onClick={item.onClick}
+                    >
                       {item.icon}
                     </ToggleButton>
                   ))}
@@ -166,29 +177,42 @@ const Projects = () => {
           </Paper>
         )}
         <Components.ProjectsView view={view} />
+        <Components.NewProjectWorkflow
+          open={newProjectOpen}
+          handleClose={handleNewProjectClose}
+        />
       </Container>
-      {fabVisible && <Backdrop open={open} />}
-      <SpeedDial
-        ariaLabel=""
-        hidden={!fabVisible}
-        className={classes.speedDial}
-        icon={<SpeedDialIcon icon={<EditIcon />} openIcon={<CloseIcon />} />}
-        onClose={handleClose}
-        onOpen={handleOpen}
-        open={open}
-      >
-        {actions.reverse().map(action => (
-          <SpeedDialAction
-            key={action.name}
-            FabProps={{ disabled: action.name === view }}
-            icon={action.icon}
-            classes={{ staticTooltipLabel: classes.action_tooltip }}
-            tooltipTitle={action.name}
-            tooltipOpen
-            onClick={action.onClick}
-          />
-        ))}
-      </SpeedDial>
+      {fabVisible && (
+        <>
+          <Backdrop open={open} />
+          <SpeedDial
+            ariaLabel=""
+            hidden={!fabVisible}
+            className={classes.speedDial}
+            icon={
+              <SpeedDialIcon icon={<EditIcon />} openIcon={<CloseIcon />} />
+            }
+            onClose={handleClose}
+            onOpen={(event, reason) => {
+              if (reason === "focus") return;
+              handleOpen();
+            }}
+            open={open}
+          >
+            {actions.reverse().map(action => (
+              <SpeedDialAction
+                key={action.name}
+                FabProps={{ disabled: action.name === view }}
+                icon={action.icon}
+                classes={{ staticTooltipLabel: classes.action_tooltip }}
+                tooltipTitle={action.name}
+                tooltipOpen
+                onClick={action.onClick}
+              />
+            ))}
+          </SpeedDial>
+        </>
+      )}
     </div>
   );
 };
