@@ -10,6 +10,9 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import KeyboardArrowLeft from "@material-ui/icons/KeyboardArrowLeft";
 import KeyboardArrowRight from "@material-ui/icons/KeyboardArrowRight";
 
+import { useQuery } from "@apollo/react-hooks";
+import GetCustomersQuery from "./queries/get-customers.js";
+
 import { Components, registerComponent } from "../../../components.js";
 
 const useStyles = makeStyles({
@@ -42,10 +45,23 @@ const steps = [
 ];
 
 const NewProjectWorkflow = ({ open, handleClose }) => {
+  // -------------------------------------------------------------
+
   const classes = useStyles();
   const theme = useTheme();
   const [activeStep, setActiveStep] = useState(0);
   const [nextEnabled, setNextEnabled] = useState(false);
+
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const {
+    loading: customersLoading,
+    error: customersError,
+    data: { getCustomers: currentCustomers } = {}
+  } = useQuery(GetCustomersQuery, {
+    pollInterval: 15000
+  });
+
+  // -------------------------------------------------------------
 
   const enableNextStep = () => setNextEnabled(true);
   const disableNextStep = () => setNextEnabled(false);
@@ -60,7 +76,12 @@ const NewProjectWorkflow = ({ open, handleClose }) => {
     enableNextStep();
   };
 
+  // -------------------------------------------------------------
+
+  const loading = customersLoading;
   const ActiveStep = steps[activeStep].component;
+
+  console.log(loading, currentCustomers);
 
   return (
     <Dialog
@@ -73,7 +94,15 @@ const NewProjectWorkflow = ({ open, handleClose }) => {
     >
       <DialogTitle>{steps[activeStep].name}</DialogTitle>
       <DialogContent>
-        <ActiveStep enableNext={enableNextStep} disableNext={disableNextStep} />
+        {loading ? (
+          "Loading details..."
+        ) : (
+          <ActiveStep
+            enableNext={enableNextStep}
+            disableNext={disableNextStep}
+            customers={currentCustomers}
+          />
+        )}
       </DialogContent>
       <DialogActions>
         <MobileStepper
