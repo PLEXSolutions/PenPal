@@ -7,6 +7,7 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
+import Divider from "@material-ui/core/Divider";
 import KeyboardArrowLeft from "@material-ui/icons/KeyboardArrowLeft";
 import KeyboardArrowRight from "@material-ui/icons/KeyboardArrowRight";
 
@@ -81,8 +82,6 @@ const NewProjectWorkflow = ({ open, handleClose }) => {
   const loading = customersLoading;
   const ActiveStep = steps[activeStep].component;
 
-  console.log(loading, currentCustomers);
-
   return (
     <Dialog
       fullWidth
@@ -93,6 +92,7 @@ const NewProjectWorkflow = ({ open, handleClose }) => {
       classes={{ paper: classes.dialog_paper }}
     >
       <DialogTitle>{steps[activeStep].name}</DialogTitle>
+      <Divider />
       <DialogContent>
         {loading ? (
           "Loading details..."
@@ -104,6 +104,7 @@ const NewProjectWorkflow = ({ open, handleClose }) => {
           />
         )}
       </DialogContent>
+      <Divider />
       <DialogActions>
         <MobileStepper
           variant="dots"

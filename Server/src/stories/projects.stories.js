@@ -17,3 +17,9 @@ projects.add("New Project Workflow", () => (
     <Components.NewProjectWorkflow open={true} handleClose={() => null} />
   </SetupProviders>
 ));
+
+projects.add("New Project Workflow (Select Customer)", () => (
+  <SetupProviders>
+    <Components.NewProjectWorkflowSelectCustomer customers={[]} />
+  </SetupProviders>
+));

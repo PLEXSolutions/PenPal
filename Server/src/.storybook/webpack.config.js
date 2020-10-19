@@ -16,6 +16,12 @@ module.exports = ({ config }) => {
     // this way node_modules are always those of current project and not of Vulcan
     alias: {
       ...config.resolve.alias,
+      // https://github.com/storybookjs/storybook/issues/11255
+      "core-js/modules": path.resolve(
+        __dirname,
+        "..",
+        "node_modules/@storybook/core/node_modules/core-js/modules"
+      ),
       // Other packages
       "meteor/apollo": path.resolve(__dirname, "./mocks/meteor-apollo"),
       "meteor/server-render": path.resolve(

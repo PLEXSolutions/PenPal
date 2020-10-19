@@ -42,5 +42,6 @@ services:
             - ./Server/src/.storybook:/app/.storybook
             - ./Server/src/lib/:/app/lib:consistent
             - ./Server/src/public:/app/public:consistent
+            - ./Server/src/.babelrc:/app/.babelrc:consistent
         networks:
             - public
