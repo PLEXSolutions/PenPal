@@ -32,7 +32,12 @@ projects.add("Select", () => {
 
   return (
     <SetupProviders>
-      <Components.StyledSelect value={selected} onChange={handleChange}>
+      <Components.StyledSelect
+        label="Test label"
+        placeholder="Test placeholder"
+        value={selected}
+        onChange={handleChange}
+      >
         {items.map((item, index) => (
           <MenuItem key={item.id} value={index}>
             {item.value}
