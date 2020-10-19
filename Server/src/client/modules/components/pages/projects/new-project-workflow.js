@@ -32,7 +32,7 @@ const useStyles = makeStyles({
 
 const steps = [
   {
-    name: "Select Customer",
+    name: "Customer",
     component: Components.NewProjectWorkflowSelectCustomer
   },
   {

@@ -20,13 +20,28 @@ const useStyles = makeStyles(theme => ({
     alignItems: "center"
   },
   pane: {
-    height: "100%",
+    height: `calc(100% - ${theme.spacing(4)}px)`,
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "flex-start",
     flex: 1,
-    padding: 20
+    margin: theme.spacing(2)
+  },
+  pane_title: {
+    color: "#555",
+    fontSize: 17,
+    textTransform: "uppercase",
+    width: "100%",
+    textAlign: "center",
+    marginBottom: theme.spacing(1)
+  },
+  pane_rest: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "flex-start"
   },
   select: {
     minWidth: 200,
@@ -113,25 +128,31 @@ const SelectCustomer = ({ enableNext, disableNext, customers }) => {
   return (
     <div className={classes.root}>
       <div className={classes.pane}>
-        <FormControl>
-          <Select
-            disableUnderline
-            classes={{ root: classes.select }}
-            MenuProps={menuProps}
-            IconComponent={iconComponent}
-            value={selected}
-            onChange={handleChange}
-          >
-            {customers.map((customer, index) => (
-              <MenuItem key={customer.id} value={index}>
-                {customer.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <div className={classes.pane_title}>Select Customer</div>
+        <div className={classes.pane_rest}>
+          <FormControl>
+            <Select
+              disableUnderline
+              classes={{ root: classes.select }}
+              MenuProps={menuProps}
+              IconComponent={iconComponent}
+              value={selected}
+              onChange={handleChange}
+            >
+              {customers.map((customer, index) => (
+                <MenuItem key={customer.id} value={index}>
+                  {customer.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </div>
       </div>
       <Divider flexItem orientation="vertical" />
-      <div className={classes.pane}>Add a new customer</div>
+      <div className={classes.pane}>
+        <div className={classes.pane_title}>New Customer</div>
+        <div className={classes.pane_rest}>test</div>
+      </div>
     </div>
   );
 };
