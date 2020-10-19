@@ -6,7 +6,12 @@ import Button from "@material-ui/core/Button";
 import { Components, registerComponent } from "../../components.js";
 
 const useStyles = makeStyles(theme => ({
-  root: { fontSize: "0.9rem", paddingTop: 7, paddingBottom: 7 }
+  root: {
+    fontSize: "0.9rem",
+    paddingTop: 7,
+    paddingBottom: 7,
+    borderRadius: 12
+  }
 }));
 
 const StyledButton = props => {
