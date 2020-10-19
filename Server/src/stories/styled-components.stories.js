@@ -7,6 +7,22 @@ import { SetupProviders } from "./common.js";
 
 const projects = storiesOf("UI/Styled Components", module);
 
+// ------------------------------------------------------
+
+projects.add("Button", () => (
+  <SetupProviders>
+    <Components.StyledButton
+      variant="contained"
+      color="primary"
+      onClick={() => null}
+    >
+      Test Button
+    </Components.StyledButton>
+  </SetupProviders>
+));
+
+// ------------------------------------------------------
+
 projects.add("Text Field", () => (
   <SetupProviders>
     <Components.StyledTextField

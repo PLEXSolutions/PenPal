@@ -108,7 +108,6 @@ const StyledSelect = ({
     getContentAnchorEl: null
   };
 
-  console.log(labelId, label);
   return (
     <FormControl>
       {label.length > 0 && (

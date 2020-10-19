@@ -7,6 +7,8 @@ import MenuItem from "@material-ui/core/MenuItem";
 import cx from "classnames";
 
 import { Components, registerComponent } from "../../../components.js";
+import Hooks from "../../../hooks.js";
+const { useIntrospection } = Hooks;
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -30,14 +32,20 @@ const NewCustomerForm = () => {
   const classes = useStyles();
   const [customerName, setCustomerName] = useState("");
   const [customerIndustry, setCustomerIndustry] = useState("");
+  const { loading, types } = useIntrospection();
 
   // ----------------------------------------------------
 
-  const handleCustomerNameChange = (event, value) => setCustomerName(value);
+  const handleCustomerNameChange = event => setCustomerName(event.target.value);
   const handleCustomerIndustryChange = event =>
     setCustomerIndustry(event.target.value);
+  const submitNewCustomer = () => null;
 
   // ----------------------------------------------------
+
+  const industries = loading
+    ? ["Loading industry values..."]
+    : types.Industry.enumValues.map(value => value.name);
 
   return (
     <div className={classes.root}>
@@ -50,15 +58,22 @@ const NewCustomerForm = () => {
       <Components.StyledSelect
         value={customerIndustry}
         onChange={handleCustomerIndustryChange}
-        label={"Industry"}
-        placeholder="Industry"
+        label="Industry"
+        className={classes.form_field}
       >
         {industries.map((item, index) => (
-          <MenuItem key={item.id} value={index}>
-            {item.value}
+          <MenuItem key={index} value={index}>
+            {item}
           </MenuItem>
         ))}
       </Components.StyledSelect>
+      <Components.StyledButton
+        disabled={customerName.length === 0 || customerIndustry === ""}
+        color="primary"
+        onClick={submitNewCustomer}
+      >
+        Submit
+      </Components.StyledButton>
     </div>
   );
 };

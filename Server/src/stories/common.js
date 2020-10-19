@@ -11,6 +11,10 @@ import mocks from "./mocks";
 
 export const SetupProviders = ({ children }) => (
   <SnackbarProvider maxSnacks={3}>
-    <MockedProvider mocks={mocks}>{children}</MockedProvider>
+    <MockedProvider mocks={mocks}>
+      <Components.IntrospectionProvider>
+        {children}
+      </Components.IntrospectionProvider>
+    </MockedProvider>
   </SnackbarProvider>
 );

@@ -151,7 +151,9 @@ const SelectCustomer = ({ enableNext, disableNext, customers }) => {
       <Divider flexItem orientation="vertical" />
       <div className={classes.pane}>
         <div className={classes.pane_title}>New Customer</div>
-        <div className={classes.pane_rest}>test</div>
+        <div className={classes.pane_rest}>
+          <Components.NewCustomerForm />
+        </div>
       </div>
     </div>
   );

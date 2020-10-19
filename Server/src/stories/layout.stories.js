@@ -6,7 +6,7 @@ import { SetupProviders } from "./common.js";
 
 // Layout
 /* --------------------------------------------- */
-const layout = storiesOf("UI/Layout", module);
+const layout = storiesOf("PenPal/Layout", module);
 layout.add("Default", () => (
   <SetupProviders>
     <Components.Layout>

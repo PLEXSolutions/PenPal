@@ -18,7 +18,7 @@ import Grid from "@material-ui/core/Grid";
 import DesktopWindowsIcon from "@material-ui/icons/DesktopWindows";
 import AccountTreeIcon from "@material-ui/icons/AccountTree";
 
-const dashboard = storiesOf("UI/Dashboard", module);
+const dashboard = storiesOf("PenPal/Dashboard", module);
 dashboard.add("Trending Statistics", () => (
   <SetupPage>
     <Container>

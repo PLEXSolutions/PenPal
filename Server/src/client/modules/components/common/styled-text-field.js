@@ -29,7 +29,7 @@ const useStyles = makeStyles(theme => ({
     borderColor: grey[400],
     overflow: "hidden",
     backgroundColor: "#fff",
-    "&:hover:not($disabled)": {
+    "&:hover": {
       borderColor: grey[500]
     },
     "& > svg": {
@@ -39,14 +39,14 @@ const useStyles = makeStyles(theme => ({
   round_input_focused: {
     boxShadow: "0 1px 4px 0 rgba(0,0,0,0.24)",
     borderColor: theme.palette.primary.main,
-    "&:hover:not($disabled)": {
+    "&:hover": {
       borderColor: theme.palette.primary.main
     }
   },
   round_input_error: {
     backgroundColor: "#fff9f9",
     borderColor: "#ff5252",
-    "&:hover:not($disabled)": {
+    "&:hover": {
       borderColor: "#ff5252"
     }
   },

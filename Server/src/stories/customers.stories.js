@@ -5,7 +5,7 @@ import { action } from "@storybook/addon-actions";
 import { Components } from "../client/modules/components.js";
 import { SetupProviders } from "./common.js";
 
-const customers = storiesOf("UI/Customers", module);
+const customers = storiesOf("PenPal/Customers", module);
 /*customers.add("Main Page", () => (
   <SetupProviders>
     <Components.Projects />
