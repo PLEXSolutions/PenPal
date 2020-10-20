@@ -1,4 +1,4 @@
-import GetCustomersQuery from "../../client/modules/components/pages/projects/queries/get-customers.js";
+import GetCustomersQuery from "../../client/modules/components/pages/customers/queries/get-customers.js";
 
 export default [
   {

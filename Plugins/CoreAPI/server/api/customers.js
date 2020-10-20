@@ -3,7 +3,7 @@ import { Mongo } from "meteor/mongo";
 import _ from "lodash";
 
 export async function upsertCustomers({ customers }) {
-  const affected_records = [];
+  const result = [];
   const insert_customers = [];
   const update_customers = [];
 
@@ -24,7 +24,7 @@ export async function upsertCustomers({ customers }) {
       { _id: new Mongo.ObjectID(id) },
       rest
     );
-    if (res > 0) affected_records.push(id);
+    if (res > 0) result.push({ id, ...rest });
   }
 
   if (insert_customers.length > 0) {
@@ -33,14 +33,12 @@ export async function upsertCustomers({ customers }) {
       "Customers",
       insert_customers
     );
-    _.each(res.insertedIds, k => affected_records.push(k));
+
+    // TODO: currently coupled to Mongo. DataStore should abstract this away
+    _.each(res.ops, ({ _id, ...rest }) => result.push({ id: _id, ...rest }));
   }
 
-  return {
-    status: "Customers Updated",
-    was_success: true,
-    affected_records
-  };
+  return result;
 }
 
 export async function removeCustomers(args) {

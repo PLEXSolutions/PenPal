@@ -12,7 +12,7 @@ import KeyboardArrowLeft from "@material-ui/icons/KeyboardArrowLeft";
 import KeyboardArrowRight from "@material-ui/icons/KeyboardArrowRight";
 
 import { useQuery } from "@apollo/react-hooks";
-import GetCustomersQuery from "./queries/get-customers.js";
+import GetCustomersQuery from "../customers/queries/get-customers.js";
 
 import { Components, registerComponent } from "../../../components.js";
 
@@ -45,7 +45,7 @@ const steps = [
   }
 ];
 
-const NewProjectWorkflow = ({ open, handleClose }) => {
+const NewProjectWorkflow = ({ open, handleClose: handleCloseProp }) => {
   // -------------------------------------------------------------
 
   const classes = useStyles();
@@ -53,7 +53,7 @@ const NewProjectWorkflow = ({ open, handleClose }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [nextEnabled, setNextEnabled] = useState(false);
 
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedCustomer, setSelectedCustomer] = useState("");
   const {
     loading: customersLoading,
     error: customersError,
@@ -75,6 +75,11 @@ const NewProjectWorkflow = ({ open, handleClose }) => {
   const handleBack = () => {
     setActiveStep(prevActiveStep => prevActiveStep - 1);
     enableNextStep();
+  };
+
+  const handleClose = () => {
+    setSelectedCustomer("");
+    handleCloseProp();
   };
 
   // -------------------------------------------------------------
@@ -100,6 +105,8 @@ const NewProjectWorkflow = ({ open, handleClose }) => {
           <ActiveStep
             enableNext={enableNextStep}
             disableNext={disableNextStep}
+            selectedCustomer={selectedCustomer}
+            setSelectedCustomer={setSelectedCustomer}
             customers={currentCustomers}
           />
         )}
@@ -116,7 +123,7 @@ const NewProjectWorkflow = ({ open, handleClose }) => {
             <Button
               size="small"
               onClick={handleNext}
-              disabled={activeStep === steps.length - 1}
+              disabled={activeStep === steps.length - 1 || !nextEnabled}
             >
               Next
               {theme.direction === "rtl" ? (

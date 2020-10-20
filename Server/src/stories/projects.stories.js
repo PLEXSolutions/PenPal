@@ -20,7 +20,7 @@ projects.add("New Project Workflow", () => (
 
 projects.add("New Project Workflow (Select Customer)", () => (
   <SetupProviders>
-    <div style={{ width: 600, height: 400, border: "1px solid black" }}>
+    <div style={{ width: 800, height: 600, border: "1px solid black" }}>
       <Components.NewProjectWorkflowSelectCustomer customers={[]} />
     </div>
   </SetupProviders>

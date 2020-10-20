@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import _ from "lodash";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import { indigo } from "@material-ui/core/colors";
 import Select from "@material-ui/core/Select";
@@ -43,116 +44,72 @@ const useStyles = makeStyles(theme => ({
     justifyContent: "center",
     alignItems: "flex-start"
   },
-  select: {
-    minWidth: 200,
-    background: "white",
-    color: indigo[75],
-    fontWeight: 200,
-    border: "1px solid rgba(0, 0, 0, 0.87)",
-    borderRadius: 12,
-    paddingLeft: 24,
-    paddingTop: 14,
-    paddingBottom: 15,
-    boxShadow: "0px 5px 8px -3px rgba(0,0,0,0.14)",
-    "&:focus": {
-      borderRadius: 12,
-      background: "white",
-      borderColor: indigo[100]
-    }
-  },
-  icon: {
-    color: indigo[300],
-    right: 12,
-    position: "absolute",
-    userSelect: "none",
-    pointerEvents: "none"
-  },
-  paper: {
-    borderRadius: 12,
-    marginTop: 8
-  },
-  list: {
-    paddingTop: 0,
-    paddingBottom: 0,
-    background: "white",
-    "& li": {
-      fontWeight: 200,
-      paddingTop: 12,
-      paddingBottom: 12
-    },
-    "& li:hover": {
-      background: indigo[100]
-    },
-    "& li.Mui-selected": {
-      color: "white",
-      background: indigo[400]
-    },
-    "& li.Mui-selected:hover": {
-      background: indigo[500]
-    }
+  divider: {
+    margin: theme.spacing(2)
   }
 }));
 
-const SelectCustomer = ({ enableNext, disableNext, customers }) => {
+const SelectCustomer = ({
+  enableNext,
+  disableNext,
+  selectedCustomer,
+  setSelectedCustomer,
+  customers
+}) => {
   // ----------------------------------------------------
 
   const classes = useStyles();
-  const [selected, setSelected] = useState("");
+
+  useEffect(() => {
+    if (selectedCustomer !== "") {
+      enableNext();
+    }
+  }, [selectedCustomer]);
 
   // ----------------------------------------------------
 
-  const handleChange = event => setSelected(event.target.value);
+  const handleChange = event => setSelectedCustomer(event.target.value);
+  const handleNewCustomers = (all_customers, new_customers) => {
+    if (new_customers.length > 0) {
+      const new_customer_index = _.findIndex(
+        all_customers,
+        customer => customer.id === new_customers[0].id
+      );
+
+      // Delay this by a scosh to avoid a warning on the race condition
+      setTimeout(() => setSelectedCustomer(new_customer_index), 50);
+    }
+  };
 
   // ----------------------------------------------------
-
-  const iconComponent = props => {
-    return <ExpandMoreIcon className={cx(props.className, classes.icon)} />;
-  };
-
-  const menuProps = {
-    classes: {
-      paper: classes.paper,
-      list: classes.list
-    },
-    anchorOrigin: {
-      vertical: "bottom",
-      horizontal: "left"
-    },
-    transformOrigin: {
-      vertical: "top",
-      horizontal: "left"
-    },
-    getContentAnchorEl: null
-  };
 
   return (
     <div className={classes.root}>
       <div className={classes.pane}>
         <div className={classes.pane_title}>Select Customer</div>
         <div className={classes.pane_rest}>
-          <FormControl>
-            <Select
-              disableUnderline
-              classes={{ root: classes.select }}
-              MenuProps={menuProps}
-              IconComponent={iconComponent}
-              value={selected}
-              onChange={handleChange}
-            >
-              {customers.map((customer, index) => (
-                <MenuItem key={customer.id} value={index}>
-                  {customer.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Components.StyledSelect
+            value={selectedCustomer}
+            onChange={handleChange}
+          >
+            {customers.length === 0 && (
+              <MenuItem value="" disabled>
+                No customers found
+              </MenuItem>
+            )}
+            {customers.map((customer, index) => (
+              <MenuItem key={customer.id} value={index}>
+                {customer.name}
+              </MenuItem>
+            ))}
+          </Components.StyledSelect>
         </div>
       </div>
-      <Divider flexItem orientation="vertical" />
+      <Divider flexItem orientation="vertical" className={classes.divider} />
       <div className={classes.pane}>
         <div className={classes.pane_title}>New Customer</div>
         <div className={classes.pane_rest}>
-          <Components.NewCustomerForm />
+          <Components.NewCustomerForm newCustomerHook={handleNewCustomers} />
         </div>
       </div>
     </div>
