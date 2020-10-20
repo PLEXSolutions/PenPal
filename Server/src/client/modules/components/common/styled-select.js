@@ -28,10 +28,13 @@ const useStyles = makeStyles(theme => ({
     paddingRight: 20,
     boxShadow: "0px 5px 8px -3px rgba(0,0,0,0.14)",
     "&:focus": {
-      borderRadius: 12,
-      background: "white",
-      borderColor: indigo[100]
+      backgroundColor: "white",
+      borderRadius: 12
     }
+  },
+  select_open: {
+    borderColor: theme.palette.primary.main,
+    boxShadow: "0 1px 4px 0 rgba(0,0,0,0.24)"
   },
   icon: {
     color: indigo[300],
@@ -87,6 +90,10 @@ const StyledSelect = ({
 }) => {
   const classes = useStyles();
   const [labelId, setLabelId] = useState(uuidv4()); // Random string to avoid collisions
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleOpen = () => setIsOpen(true);
+  const handleClose = () => setIsOpen(false);
 
   const iconComponent = props => {
     return <ExpandMoreIcon className={cx(props.className, classes.icon)} />;
@@ -127,12 +134,14 @@ const StyledSelect = ({
       <Select
         labelId={labelId}
         disableUnderline
-        classes={{ root: classes.select }}
+        classes={{ root: cx(classes.select, isOpen && classes.select_open) }}
         MenuProps={menuProps}
         IconComponent={iconComponent}
         displayEmpty
         value={value}
         onChange={onChange}
+        onOpen={handleOpen}
+        onClose={handleClose}
         {...rest}
       >
         {placeholder.length > 0 && (

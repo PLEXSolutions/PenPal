@@ -29,6 +29,7 @@ const useStyles = makeStyles(theme => ({
     borderColor: grey[400],
     overflow: "hidden",
     backgroundColor: "#fff",
+    boxShadow: "0px 5px 8px -3px rgba(0,0,0,0.14)",
     "&:hover": {
       borderColor: grey[500]
     },
