@@ -22,6 +22,6 @@ export default {
   },
 
   async removeProject(root, { id }, context) {
-    return PenPal.API.Projects.Remove(id);
+    return await PenPal.API.Projects.Remove(id);
   }
 };

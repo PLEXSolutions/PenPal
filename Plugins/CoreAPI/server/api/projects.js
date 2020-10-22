@@ -1,15 +1,7 @@
 import PenPal from "meteor/penpal";
 import { Mongo } from "meteor/mongo";
 import _ from "lodash";
-
-const required_field = (obj, field_name, operation_name) => {
-  if (obj[field_name] === undefined) {
-    throw new Meteor.Error(
-      500,
-      `${field_name} field is required for ${operation_name}`
-    );
-  }
-};
+import { required_field } from "./common.js";
 
 // -----------------------------------------------------------
 
@@ -47,7 +39,7 @@ export const insertProjects = async projects => {
   for (let project of projects) {
     try {
       required_field(project, "customer", "insertion");
-      required_field(project, "customer", "name");
+      required_field(project, "name", "insertion");
 
       let customer = await PenPal.DataStore.fetchOne("CoreAPI", "Customers", {
         _id: new Mongo.ObjectID(project.customer)
@@ -71,7 +63,25 @@ export const insertProjects = async projects => {
     );
 
     // TODO: currently coupled to Mongo. DataStore should abstract this away
-    _.each(res.ops, ({ _id, ...rest }) => accepted.push({ id: _id, ...rest }));
+    _.each(res.ops, ({ _id, ...rest }) =>
+      accepted.push({ id: String(_id), ...rest })
+    );
+  }
+
+  for (let project of accepted) {
+    // Add the id to the customer
+    let customer = await PenPal.DataStore.fetchOne("CoreAPI", "Customers", {
+      _id: new Mongo.ObjectID(project.customer)
+    });
+
+    customer.projects.push(project.id);
+
+    await PenPal.DataStore.update(
+      "CoreAPI",
+      "Customers",
+      { _id: customer._id },
+      { $set: { projects: customer.projects } }
+    );
   }
 
   return { accepted, rejected };
@@ -141,21 +151,17 @@ export const upsertProjects = async projects => {
 // -----------------------------------------------------------
 
 export const removeProject = async project_id => {
-  return removeProjects([project_id])[0];
+  return await removeProjects([project_id]);
 };
 
 export const removeProjects = async project_ids => {
-  const removed = [];
-
-  let res = await PenPal.DataStore.delete("CoreAPI", "Projects", {
+  let res = PenPal.DataStore.delete("CoreAPI", "Projects", {
     _id: { $in: project_ids.map(id => new Mongo.ObjectID(id)) }
   });
 
-  console.log(res);
-
   if (res > 0) {
-    // Do something to put removed into `removed`
+    return true;
   }
 
-  return removed;
+  return false;
 };

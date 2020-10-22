@@ -11,31 +11,31 @@ export default {
     };
   },
   async getCustomers(root, args, context) {
-    let res = PenPal.API.Customers.Get(args);
-    return res;
+    return await PenPal.API.Customers.GetMany();
+  },
+  async getCustomer(root, { id }, context) {
+    return await PenPal.API.Customers.Get({ id });
   },
   async getHosts(root, args, context) {
-    let res = PenPal.API.Hosts.Get(args);
-    return res;
+    // TODO: Update for new API functionality
+    return await PenPal.API.Hosts.Get(args);
   },
   async getHost(root, args, context) {
-    let res = PenPal.API.Hosts.Get(args);
-    return res;
+    // TODO: Update for new API functionality
+    return await PenPal.API.Hosts.Get(args);
   },
   async getProjects(root, args, context) {
-    let res = PenPal.API.Projects.GetMany();
-    return res;
+    return PenPal.API.Projects.GetMany();
   },
-  async getProject(root, args, context) {
-    let res = PenPal.API.Projects.Get(args);
-    return res;
+  async getProject(root, { id }, context) {
+    return PenPal.API.Projects.Get({ id });
   },
   async getServices(root, args, context) {
-    let res = PenPal.API.Services.Get(args);
-    return res;
+    // TODO: Update for new API functionality
+    return await PenPal.API.Services.Get(args);
   },
   async getService(root, args, context) {
-    let res = PenPal.API.Services.Get(args);
-    return res;
+    // TODO: Update for new API functionality
+    return await PenPal.API.Services.Get(args);
   }
 };

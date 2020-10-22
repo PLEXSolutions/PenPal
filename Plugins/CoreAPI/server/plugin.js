@@ -42,9 +42,15 @@ const CoreAPIPlugin = {
   loadPlugin() {
     // Register API Hooks
     PenPal.API.Customers = {
-      Upsert: API.upsertCustomers,
-      Remove: API.removeCustomers,
-      Get: API.getCustomers
+      Get: API.getCustomer,
+      GetMany: API.getCustomers,
+      Insert: API.insertCustomer,
+      InsertMany: API.insertCustomers,
+      Remove: API.removeCustomer,
+      RemoveMany: API.removeCustomers,
+      Update: API.updateCustomer,
+      UpdateMany: API.updateCustomers,
+      UpsertMany: API.upsertCustomers
     };
 
     PenPal.API.Hosts = {

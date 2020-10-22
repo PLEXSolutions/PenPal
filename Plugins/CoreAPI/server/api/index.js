@@ -1,4 +1,12 @@
-export { upsertCustomers, removeCustomers, getCustomers } from "./customers.js";
+export {
+  getCustomer,
+  getCustomers,
+  insertCustomer,
+  insertCustomers,
+  upsertCustomers,
+  removeCustomer,
+  removeCustomers
+} from "./customers.js";
 export { dockerExec, dockerBuild } from "./docker.js";
 export { registerHook, deleteHook } from "./hooks.js";
 export { upsertHosts, removeHosts, getHosts } from "./hosts.js";

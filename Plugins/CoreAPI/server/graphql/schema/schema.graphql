@@ -184,21 +184,33 @@ type Customer implements Annotatable & Auditable {
 }
 
 """
-A generic input for a Customer
+Fields for the createCustomer mutation
 """
-input CustomerInput {
+input CreateCustomerInput {
   """
-  If you include the ID, it will be considered an update. If there's no ID, it will be an insertion
+  Sets the name of the customer (e.g. "Acme, Inc")
   """
-  id: ID
+  name: String!
   """
-  Insertion: required, sets the name of the customer (e.g. "Acme, Inc")
-  Update: not required, updates the name of the customer
+  Sets the industry of the customer
+  """
+  industry: Industry!
+}
+
+"""
+Fields for the createCustomer mutation
+"""
+input UpdateCustomerInput {
+  """
+  The ID of the customer to update
+  """
+  id: ID!
+  """
+  Updates the name of the customer
   """
   name: String
   """
-  Insertion: required, sets the industry of the customer
-  Update: not required, updates the industry of the customer
+  Updates the industry of the customer
   """
   industry: Industry
 }

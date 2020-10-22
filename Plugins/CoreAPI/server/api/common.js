@@ -12,3 +12,12 @@ export const isTestData = arg => {
     }
   }
 };
+
+export const required_field = (obj, field_name, operation_name) => {
+  if (obj[field_name] === undefined) {
+    throw new Meteor.Error(
+      500,
+      `${field_name} field is required for ${operation_name}`
+    );
+  }
+};
