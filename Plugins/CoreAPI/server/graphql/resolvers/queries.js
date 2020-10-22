@@ -23,7 +23,7 @@ export default {
     return res;
   },
   async getProjects(root, args, context) {
-    let res = PenPal.API.Projects.Get(args);
+    let res = PenPal.API.Projects.GetMany();
     return res;
   },
   async getProject(root, args, context) {

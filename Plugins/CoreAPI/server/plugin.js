@@ -54,9 +54,15 @@ const CoreAPIPlugin = {
     };
 
     PenPal.API.Projects = {
-      Upsert: API.upsertProjects,
-      Remove: API.removeProjects,
-      Get: API.getProjects
+      Get: API.getProject,
+      GetMany: API.getProjects,
+      Insert: API.insertProject,
+      InsertMany: API.insertProjects,
+      Remove: API.removeProject,
+      RemoveMany: API.removeProjects,
+      Update: API.updateProject,
+      UpdateMany: API.updateProjects,
+      UpsertMany: API.upsertProjects
     };
 
     PenPal.API.Services = {

@@ -2,139 +2,160 @@ import PenPal from "meteor/penpal";
 import { Mongo } from "meteor/mongo";
 import _ from "lodash";
 
-export async function upsertProjects(args) {
-  let toUpdate = [];
-  let potentialToUpdate = [];
-  let toInsert = [];
-  let names = [];
-  _.each(args.projects, project => {
-    if (project.id) {
-      toUpdate.push(project);
-    } else {
-      names.push(project.name);
-    }
+const required_field = (obj, field_name, operation_name) => {
+  if (obj[field_name] === undefined) {
+    throw new Meteor.Error(
+      500,
+      `${field_name} field is required for ${operation_name}`
+    );
+  }
+};
+
+// -----------------------------------------------------------
+
+export const getProject = async project_id => {
+  return await PenPal.DataStore.fetchOne("CoreAPI", "Projects", {
+    _id: new Mongo.ObjectID(project_id)
   });
-  let searchDoc = {
-    name: { $in: names }
-  };
-  let existingRecords = PenPal.DataStore.fetch(
-    "CoreAPI",
-    "Projects",
-    searchDoc
-  );
-  let updatedRecords = [];
-  // short circuit check if all new projects...
-  if (existingRecords.length === 0) {
-    // all projects are new
-    toInsert = args.projects;
-  } else if (existingRecords.length === args.projects.length) {
-    // all projects are updates
-    toUpdate = args.projects;
+};
+
+export const getProjects = async (project_ids = []) => {
+  let result = [];
+
+  if (project_ids.length === 0) {
+    result = await PenPal.DataStore.fetch("CoreAPI", "Projects", {});
   } else {
-    // mix of new and old... what we need to do is find which of the included projects were already present...
-    // make array of project names from the returned existingRecords...
-    let existingProjects = [];
-    _.each(existingRecords, existingProject => {
-      existingProjects.push(existingProject.name);
-    });
-    _.each(args.projects, project => {
-      if (existingProjects.includes(project.name)) {
-        toUpdate.push(project);
-      } else {
-        toInsert.push(project);
-      }
+    result = await PenPal.DataStore.fetch("CoreAPI", "Projects", {
+      _id: { $in: project_ids.map(id => new Mongo.ObjectID(id)) }
     });
   }
 
-  // if we have net-new add them...
-  if (toInsert.length > 0) {
+  return result.map(({ _id, ...rest }) => ({ id: _id, ...rest }));
+};
+
+// -----------------------------------------------------------
+
+export const insertProject = async project => {
+  return await insertProjects([project]);
+};
+
+export const insertProjects = async projects => {
+  const rejected = [];
+  const _accepted = [];
+  const accepted = [];
+
+  for (let project of projects) {
+    try {
+      required_field(project, "customer", "insertion");
+      required_field(project, "customer", "name");
+
+      let customer = await PenPal.DataStore.fetchOne("CoreAPI", "Customers", {
+        _id: new Mongo.ObjectID(project.customer)
+      });
+
+      if (customer === undefined) {
+        throw new Meteor.Error(404, `Customer ${project.customer} not found`);
+      }
+
+      _accepted.push(project);
+    } catch (e) {
+      rejected.push({ project, error: e });
+    }
+  }
+
+  if (_accepted.length > 0) {
     let res = await PenPal.DataStore.insertMany(
       "CoreAPI",
       "Projects",
-      toInsert
+      _accepted
     );
-    _.each(res.insertedIds, (k, v) => {
-      updatedRecords.push(k);
-    });
+
+    // TODO: currently coupled to Mongo. DataStore should abstract this away
+    _.each(res.ops, ({ _id, ...rest }) => accepted.push({ id: _id, ...rest }));
   }
 
-  // if we have ones to update update them....
-  _.each(toUpdate, project => {
-    // this is the project to add
-    // and this is the existing db entry
-    let storedProject = {};
-    let foundProject = false;
-    _.each(existingRecords, existingProject => {
-      if (!foundProject) {
-        if (existingProject.name === project.name) {
-          storedProject = existingProject;
-          foundHost = true;
-        }
-      }
-    });
-    // at this point we have the host data to add and the existing host data.... need to diff the objects to figure out what fields need to be set....
-    // ok so merge will work but make it so that we can't remove fields... need to find out way to intelligently find the difference and adjust accordingly...
-    let mergedObject = _.merge(storedProject, project);
-    let ID = mergedObject._id;
-    delete mergedObject._id;
-    let res = PenPal.DataStore.update(
+  return { accepted, rejected };
+};
+
+// -----------------------------------------------------------
+
+export const updateProject = async project => {
+  return await updateProjects([project]);
+};
+
+export const updateProjects = async projects => {
+  const rejected = [];
+  const _accepted = [];
+  const accepted = [];
+
+  for (let project of projects) {
+    try {
+      required_field(project, "id", "update");
+      _accepted.push(project);
+    } catch (e) {
+      rejected.push({ project, error: e });
+    }
+  }
+
+  let matched_projects = await PenPal.DataStore.fetch("CoreAPI", "Projects", {
+    _id: { $in: _accepted.map(project => new Mongo.ObjectID(project.id)) }
+  });
+  if (matched_projects.length !== _accepted.length) {
+    // Find the unknown IDs
+  }
+
+  for (let { id, ...project } of _accepted) {
+    let res = await PenPal.DataStore.update(
       "CoreAPI",
       "Projects",
-      { _id: ID },
-      mergedObject
+      { _id: new Mongo.ObjectID(id) },
+      project
     );
-    if (res > 0) updatedRecords.push(ID);
+
+    if (res > 0) accepted.push({ id, ...project });
+  }
+
+  return { accepted, rejected };
+};
+
+// -----------------------------------------------------------
+
+export const upsertProjects = async projects => {
+  let to_update = [];
+  let to_insert = [];
+
+  for (let project of projects) {
+    if (project.id !== undefined) {
+      to_update.push(project);
+    } else {
+      to_insert.push(project);
+    }
+  }
+
+  const inserted = await insertProjects(to_insert);
+  const updated = await updateProjects(to_update);
+
+  return { inserted, updated };
+};
+
+// -----------------------------------------------------------
+
+export const removeProject = async project_id => {
+  return removeProjects([project_id])[0];
+};
+
+export const removeProjects = async project_ids => {
+  const removed = [];
+
+  let res = await PenPal.DataStore.delete("CoreAPI", "Projects", {
+    _id: { $in: project_ids.map(id => new Mongo.ObjectID(id)) }
   });
 
-  // TODO - Transactions?
-  return {
-    status: "Projects Updated",
-    was_success: true,
-    affected_records: updatedRecords
-  };
-}
+  console.log(res);
 
-export async function removeProjects(args) {
-  const response = {
-    status: "Error During Removal",
-    was_success: false,
-    affected_records: []
-  };
-
-  let idArray = [];
-  _.each(args.projectIDs, projectId => {
-    idArray.push(projectId);
-  });
-
-  let res = PenPal.DataStore.delete("CoreAPI", "Projects", {
-    _id: { $in: idArray }
-  });
   if (res > 0) {
-    response.status = "Successfully removed records";
-    response.was_success = true;
-    response.affected_records = args.projectIDs;
-  } else if (res === 0) {
-    response.status = "No records affected";
-    response.was_success = true;
-    response.affected_records = [];
+    // Do something to put removed into `removed`
   }
 
-  return response;
-}
-
-export async function getProjects(args) {
-  let projectsToReturn = [];
-  if (args.id) {
-    projectsToReturn = PenPal.DataStore.fetch("CoreAPI", "Projects", {
-      _id: new Mongo.ObjectID(args.id)
-    });
-  } else {
-    projectsToReturn = PenPal.DataStore.fetch("CoreAPI", "Projects", {});
-  }
-  _.each(projectsToReturn, project => {
-    project.id = project._id;
-  });
-  return typeof args.id !== "undefined"
-    ? projectsToReturn[0]
-    : projectsToReturn;
-}
+  return removed;
+};

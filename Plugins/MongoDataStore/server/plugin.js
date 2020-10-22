@@ -50,6 +50,10 @@ const MongoDataStorePlugin = {
         .fetch();
     };
 
+    PenPal.DataStore.fetchOne = (plugin_name, table, selector) => {
+      return PenPal.DataStore.fetch(plugin_name, table, selector)?.[0];
+    };
+
     PenPal.DataStore.delete = (plugin_name, table, selector) => {
       return PenPal.MongoCollections[`${plugin_name}${table}`].remove(selector);
     };

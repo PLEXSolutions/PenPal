@@ -52,14 +52,6 @@ export default {
     let res = PenPal.API.Hosts.Remove(args);
     return res;
   },
-  async upsertProjects(root, args, context) {
-    let res = PenPal.API.Projects.Upsert(args);
-    return res;
-  },
-  async removeProjects(root, args, context) {
-    let res = PenPal.API.Projects.Remove(args);
-    return res;
-  },
   async upsertServices(root, args, context) {
     let res = PenPal.API.Services.Upsert(args);
     return res;

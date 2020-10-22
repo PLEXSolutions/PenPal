@@ -89,7 +89,7 @@ type Project implements Annotatable & Auditable {
   """
   Project description
   """
-  description: String!
+  description: String
   """
   All WebappUsers associated with this project
   """
@@ -109,27 +109,51 @@ type Project implements Annotatable & Auditable {
 }
 
 """
-A generic input for a Project
+Fields for createProject mutation
 """
-input ProjectInput {
+input CreateProjectInput {
   """
-  If you include the ID, it will be considered an update. If there's no ID, it will be an insertion
+  Sets the customer for the project
   """
-  id: ID
+  customer: ID!
   """
-  Insertion: required, sets the customer for the project
-  Update: not required, sets the customer for the project
+  Sets the name of the project (e.g. "Q1 Pentest")
   """
-  customer_id: ID
+  name: String!
   """
-  Insertion: required, sets the name of the project (e.g. "Q1 Pentest")
-  Update: not required, updates the name of the project
+  Sets the description of the project
+  """
+  description: String
+  """
+  Sets the appropriate dates for the project
+  """
+  dates: ProjectInputDates
+}
+
+"""
+Fields for updateProject mutation
+"""
+input UpdateProjectInput {
+  """
+  The ID of the project to update
+  """
+  id: ID!
+  """
+  Sets the customer for the project
+  """
+  customer: ID
+  """
+  Updates the name of the project
   """
   name: String
   """
-  Not required on insertion or update, sets the description of the project
+  Sets the description of the project
   """
   description: String
+  """
+  Sets the appropriate dates for the project
+  """
+  dates: ProjectInputDates
 }
 
 """
@@ -194,6 +218,14 @@ type ProjectDates {
   """
   The date that action for the project ends
   """
+  end: Date
+}
+
+"""
+An input for project dates. Neither a start nor an end date are required for a project
+"""
+input ProjectInputDates {
+  start: Date
   end: Date
 }
 
@@ -269,6 +301,14 @@ type ProjectScope {
   Individual hosts that don't fall under a particular network
   """
   hosts: [Host]
+}
+
+"""
+Input for project scope
+"""
+input ProjectScopeInput {
+  ip_addresses: [IPAddress]
+  subnets: [IPSubnet]
 }
 
 """
@@ -476,7 +516,7 @@ input OSInput {
 }
 
 input ServiceInput {
-  project: ProjectInput
+  project: ID!
   hostID: ID!
   port: Int!
   protocol: String!
@@ -490,7 +530,7 @@ input ServiceInput {
 
 input HostInput {
   id: ID
-  project: ProjectInput
+  project: ID!
   ipv4: String
   mac: String
   hostnames: [String]
@@ -504,3 +544,5 @@ input HostInput {
   services: [ServiceInput]
 }
 
+scalar IPAddress
+scalar IPSubnet
