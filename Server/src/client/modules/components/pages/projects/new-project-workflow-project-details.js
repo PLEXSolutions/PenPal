@@ -39,81 +39,68 @@ const useStyles = makeStyles(theme => ({
   },
   pane_rest: {
     flex: 1,
+    width: "100%",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "flex-start"
   },
-  divider: {
-    margin: theme.spacing(2)
-  }
+  divider: {}
 }));
 
-const SelectCustomer = ({
+const ProjectDetails = ({
   enableNext = () => null,
   disableNext = () => null,
-  selectedCustomer,
-  setSelectedCustomer,
-  customers
+  projectName,
+  setProjectName,
+  projectDescription,
+  setProjectDescription,
+  projectIPs,
+  setProjectIPs,
+  projectNetworks,
+  setProjectNetworks
 }) => {
   // ----------------------------------------------------
 
   const classes = useStyles();
 
   useEffect(() => {
-    if (selectedCustomer !== "") {
+    if (projectName.length !== 0 && projectDescription.length !== 0) {
       enableNext();
     } else {
       disableNext();
     }
-  }, [selectedCustomer]);
-
-  // ----------------------------------------------------
-
-  const handleChange = event => setSelectedCustomer(event.target.value);
-  const handleNewCustomer = (all_customers, new_customer) => {
-    const new_customer_index = _.findIndex(
-      all_customers,
-      customer => customer.id === new_customer.id
-    );
-
-    // Delay this by a scosh to avoid a warning on the race condition
-    setTimeout(() => setSelectedCustomer(new_customer_index), 50);
-  };
+  }, [projectName, projectDescription]);
 
   // ----------------------------------------------------
 
   return (
     <div className={classes.root}>
       <div className={classes.pane}>
-        <div className={classes.pane_title}>Select Customer</div>
+        <div className={classes.pane_title}>Details</div>
         <div className={classes.pane_rest}>
-          <Components.StyledSelect
-            value={selectedCustomer}
-            onChange={handleChange}
-          >
-            {customers.length === 0 && (
-              <MenuItem value="" disabled>
-                No customers found
-              </MenuItem>
-            )}
-            {customers.map((customer, index) => (
-              <MenuItem key={customer.id} value={index}>
-                {customer.name}
-              </MenuItem>
-            ))}
-          </Components.StyledSelect>
+          <Components.ProjectDetailsForm
+            projectName={projectName}
+            setProjectName={setProjectName}
+            projectDescription={projectDescription}
+            setProjectDescription={setProjectDescription}
+          />
         </div>
       </div>
       <Divider flexItem orientation="vertical" className={classes.divider} />
       <div className={classes.pane}>
-        <div className={classes.pane_title}>New Customer</div>
+        <div className={classes.pane_title}>Scope</div>
         <div className={classes.pane_rest}>
-          <Components.NewCustomerForm newCustomerHook={handleNewCustomer} />
+          <Components.ProjectScopeForm
+            projectIPs={projectIPs}
+            setProjectIPs={setProjectIPs}
+            projectNetworks={projectNetworks}
+            setProjectNetworks={setProjectNetworks}
+          />
         </div>
       </div>
     </div>
   );
 };
 
-registerComponent("NewProjectWorkflowSelectCustomer", SelectCustomer);
+registerComponent("NewProjectWorkflowProjectDetails", ProjectDetails);

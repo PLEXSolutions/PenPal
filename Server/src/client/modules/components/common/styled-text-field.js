@@ -21,6 +21,8 @@ const useStyles = makeStyles(theme => ({
     transform: "translate(0, 1.5px) scale(1)"
   },
   text_field_helper_text: {
+    float: "left",
+    clear: "left",
     marginLeft: "0.75rem"
   },
   round_input_root: {

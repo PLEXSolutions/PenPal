@@ -8,8 +8,8 @@ import { Components, registerComponent } from "../../components.js";
 const useStyles = makeStyles(theme => ({
   root: {
     fontSize: "0.9rem",
-    paddingTop: 7,
-    paddingBottom: 7,
+    paddingTop: 8,
+    paddingBottom: 8,
     borderRadius: 12
   }
 }));

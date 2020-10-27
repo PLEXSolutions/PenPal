@@ -44,16 +44,17 @@ const NewCustomerForm = ({ newCustomerHook = () => null }) => {
   const { loading, types } = useIntrospection();
 
   const [createNewCustomer] = useMutation(CreateNewCustomer, {
-    update(cache, { data: { upsertCustomers: new_customers = [] } }) {
+    update(cache, { data: { createCustomer: new_customer } }) {
       const current_customers =
         cache.readQuery({ query: GetCustomers })?.getCustomers ?? [];
-      const data = { getCustomers: current_customers.concat(new_customers) };
+      current_customers.push(new_customer);
+      const data = { getCustomers: current_customers };
       cache.writeQuery({
         query: GetCustomers,
         data
       });
 
-      newCustomerHook(data.getCustomers, new_customers);
+      newCustomerHook(data.getCustomers, new_customer);
     }
   });
 

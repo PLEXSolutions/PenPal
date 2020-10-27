@@ -36,11 +36,11 @@ const steps = [
     component: Components.NewProjectWorkflowSelectCustomer
   },
   {
-    name: "Create Project",
-    component: () => null
+    name: "Project",
+    component: Components.NewProjectWorkflowProjectDetails
   },
   {
-    name: "Project Scope",
+    name: "Scope",
     component: () => null
   }
 ];
@@ -61,6 +61,11 @@ const NewProjectWorkflow = ({ open, handleClose: handleCloseProp }) => {
   } = useQuery(GetCustomersQuery, {
     pollInterval: 15000
   });
+
+  const [projectName, setProjectName] = useState("");
+  const [projectDescription, setProjectDescription] = useState("");
+  const [projectIPs, setProjectIPs] = useState([]);
+  const [projectNetworks, setProjectNetworks] = useState([]);
 
   // -------------------------------------------------------------
 
@@ -108,6 +113,14 @@ const NewProjectWorkflow = ({ open, handleClose: handleCloseProp }) => {
             selectedCustomer={selectedCustomer}
             setSelectedCustomer={setSelectedCustomer}
             customers={currentCustomers}
+            projectName={projectName}
+            setProjectName={setProjectName}
+            projectDescription={projectDescription}
+            setProjectDescription={setProjectDescription}
+            projectIPs={projectIPs}
+            setProjectIPs={setProjectIPs}
+            projectNetworks={projectNetworks}
+            setProjectNetworks={setProjectNetworks}
           />
         )}
       </DialogContent>
