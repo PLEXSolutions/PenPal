@@ -58,16 +58,14 @@ projects.add("New Project Workflow (Project Details/Scope)", () => {
 });
 
 projects.add("New Project Workflow (Review)", () => {
+  const customers = [{ name: "Test Customer" }];
+  const selectedCustomer = 0;
   const [projectName, setProjectName] = useState("Test Project");
   const [projectDescription, setProjectDescription] = useState(
     "Test project description"
   );
-  const [projectStartDate, setProjectStartDate] = useState(moment().toDate());
-  const [projectEndDate, setProjectEndDate] = useState(
-    moment()
-      .add(7, "days")
-      .toDate()
-  );
+  const [projectStartDate, setProjectStartDate] = useState(moment());
+  const [projectEndDate, setProjectEndDate] = useState(moment().add(7, "days"));
   const [projectIPs, setProjectIPs] = useState(["192.168.1.1", "192.168.1.2"]);
   const [projectNetworks, setProjectNetworks] = useState(["192.168.1.0/24"]);
 
@@ -75,6 +73,8 @@ projects.add("New Project Workflow (Review)", () => {
     <SetupProviders>
       <div style={{ width: 1000, height: 600, border: "1px solid black" }}>
         <Components.NewProjectWorkflowReview
+          customers={customers}
+          selectedCustomer={selectedCustomer}
           projectName={projectName}
           projectDescription={projectDescription}
           projectStartDate={projectStartDate}
