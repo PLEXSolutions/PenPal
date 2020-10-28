@@ -36,6 +36,14 @@ projects.add("Text Field", () => (
 
 // ------------------------------------------------------
 
+projects.add("Date Field", () => (
+  <SetupProviders>
+    <Components.StyledDateField label={"This is a date picker"} />
+  </SetupProviders>
+));
+
+// ------------------------------------------------------
+
 import MenuItem from "@material-ui/core/MenuItem";
 const items = [
   { id: "test-1", value: "test 1" },

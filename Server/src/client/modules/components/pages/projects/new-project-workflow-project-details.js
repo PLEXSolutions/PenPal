@@ -55,6 +55,10 @@ const ProjectDetails = ({
   setProjectName,
   projectDescription,
   setProjectDescription,
+  projectStartDate,
+  setProjectStartDate,
+  projectEndDate,
+  setProjectEndDate,
   projectIPs,
   setProjectIPs,
   projectNetworks,
@@ -84,6 +88,10 @@ const ProjectDetails = ({
             setProjectName={setProjectName}
             projectDescription={projectDescription}
             setProjectDescription={setProjectDescription}
+            projectStartDate={projectStartDate}
+            setProjectStartDate={setProjectStartDate}
+            projectEndDate={projectEndDate}
+            setProjectEndDate={setProjectEndDate}
           />
         </div>
       </div>

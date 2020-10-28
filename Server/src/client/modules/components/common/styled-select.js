@@ -11,6 +11,7 @@ import cx from "classnames";
 import { v4 as uuidv4 } from "uuid";
 
 import { Components, registerComponent } from "../../components.js";
+import { borderRadius } from "./styled-common.js";
 
 const useStyles = makeStyles(theme => ({
   select: {
@@ -20,7 +21,7 @@ const useStyles = makeStyles(theme => ({
     fontWeight: 200,
     border: "1px solid rgba(0, 0, 0, 0.87)",
     borderColor: grey[400],
-    borderRadius: 12,
+    borderRadius,
     marginTop: 8,
     paddingLeft: 16,
     paddingTop: 10,
@@ -29,7 +30,7 @@ const useStyles = makeStyles(theme => ({
     boxShadow: "0px 5px 8px -3px rgba(0,0,0,0.14)",
     "&:focus": {
       backgroundColor: "white",
-      borderRadius: 12
+      borderRadius
     }
   },
   select_open: {
@@ -45,7 +46,7 @@ const useStyles = makeStyles(theme => ({
     pointerEvents: "none"
   },
   paper: {
-    borderRadius: 12,
+    borderRadius,
     marginTop: 8
   },
   list: {

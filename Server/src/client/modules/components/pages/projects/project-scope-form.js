@@ -3,10 +3,11 @@ import _ from "lodash";
 import cx from "classnames";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import { grey, indigo } from "@material-ui/core/colors";
-import { Components, registerComponent } from "../../../components.js";
+
 import Chip from "@material-ui/core/Chip";
 import Divider from "@material-ui/core/Divider";
 
+import { Components, registerComponent } from "../../../components.js";
 import { REGEX } from "../../../../../lib/common.js";
 
 const useStyles = makeStyles(theme => ({

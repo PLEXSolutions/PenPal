@@ -123,11 +123,15 @@ input CreateProjectInput {
   """
   Sets the description of the project
   """
-  description: String
+  description: String!
   """
   Sets the appropriate dates for the project
   """
   dates: ProjectInputDates
+  """
+  Sets the scope for the project
+  """
+  scope: ProjectInputScope
 }
 
 """
@@ -239,6 +243,11 @@ An input for project dates. Neither a start nor an end date are required for a p
 input ProjectInputDates {
   start: Date
   end: Date
+}
+
+input ProjectInputScope {
+  hosts: [IPAddress]
+  networks: [IPSubnet]
 }
 
 """

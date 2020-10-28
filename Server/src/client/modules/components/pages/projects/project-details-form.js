@@ -12,6 +12,7 @@ const useStyles = makeStyles(theme => ({
     width: "100%"
   },
   form_field: {
+    width: 300,
     marginBottom: theme.spacing(2)
   },
   submit_container: {
@@ -26,7 +27,11 @@ const ProjectDetailsForm = ({
   projectName,
   setProjectName,
   projectDescription,
-  setProjectDescription
+  setProjectDescription,
+  projectStartDate,
+  setProjectStartDate,
+  projectEndDate,
+  setProjectEndDate
 }) => {
   // ----------------------------------------------------
 
@@ -41,15 +46,31 @@ const ProjectDetailsForm = ({
   return (
     <div className={classes.root}>
       <Components.StyledTextField
+        required
         label="Name"
         value={projectName}
         onChange={handleProjectNameChange}
         className={classes.form_field}
       />
       <Components.StyledTextField
+        required
         value={projectDescription}
         onChange={handleProjectDescriptionChange}
         label="Description"
+        className={classes.form_field}
+      />
+      <Components.StyledDateField
+        value={projectStartDate}
+        onChange={setProjectStartDate}
+        label="Start Date"
+        className={classes.form_field}
+      />
+      <Components.StyledDateField
+        disabled={projectStartDate === null}
+        shouldDisableDate={date => date.isBefore(projectStartDate, "day")}
+        value={projectEndDate}
+        onChange={setProjectEndDate}
+        label="End Date"
         className={classes.form_field}
       />
     </div>

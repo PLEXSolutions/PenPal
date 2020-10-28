@@ -40,8 +40,8 @@ const steps = [
     component: Components.NewProjectWorkflowProjectDetails
   },
   {
-    name: "Scope",
-    component: () => null
+    name: "Review",
+    component: Components.NewProjectWorkflowReview
   }
 ];
 
@@ -66,6 +66,8 @@ const NewProjectWorkflow = ({ open, handleClose: handleCloseProp }) => {
   const [projectDescription, setProjectDescription] = useState("");
   const [projectIPs, setProjectIPs] = useState([]);
   const [projectNetworks, setProjectNetworks] = useState([]);
+  const [projectStartDate, setProjectStartDate] = useState(null);
+  const [projectEndDate, setProjectEndDate] = useState(null);
 
   // -------------------------------------------------------------
 
@@ -117,6 +119,10 @@ const NewProjectWorkflow = ({ open, handleClose: handleCloseProp }) => {
             setProjectName={setProjectName}
             projectDescription={projectDescription}
             setProjectDescription={setProjectDescription}
+            projectStartDate={projectStartDate}
+            setProjectStartDate={setProjectStartDate}
+            projectEndDate={projectEndDate}
+            setProjectEndDate={setProjectEndDate}
             projectIPs={projectIPs}
             setProjectIPs={setProjectIPs}
             projectNetworks={projectNetworks}

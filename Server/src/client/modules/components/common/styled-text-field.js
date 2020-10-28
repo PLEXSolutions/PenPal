@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import _ from "lodash";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import { grey, indigo } from "@material-ui/core/colors";
 import TextField from "@material-ui/core/TextField";
 
 import { Components, registerComponent } from "../../components.js";
+import { borderRadius, textFieldWidth } from "./styled-common.js";
 
 const useStyles = makeStyles(theme => ({
   text_field_form_control: {
@@ -26,7 +28,7 @@ const useStyles = makeStyles(theme => ({
     marginLeft: "0.75rem"
   },
   round_input_root: {
-    borderRadius: 12,
+    borderRadius,
     border: "1px solid",
     borderColor: grey[400],
     overflow: "hidden",
@@ -67,12 +69,18 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const StyledTextField = props => {
+const StyledTextField = ({
+  FormHelperTextProps = {},
+  InputProps = {},
+  InputLabelProps = {},
+  ...props
+}) => {
   const classes = useStyles();
+
   return (
     <TextField
       {...props}
-      InputLabelProps={{
+      InputLabelProps={_.merge(InputLabelProps, {
         shrink: true,
         classes: {
           root: classes.text_field_input_label_root,
@@ -80,8 +88,8 @@ const StyledTextField = props => {
           shrink: classes.text_field_input_label_shrink,
           focused: classes.text_field_input_label_focused
         }
-      }}
-      InputProps={{
+      })}
+      InputProps={_.merge(InputProps, {
         classes: {
           root: classes.round_input_root,
           error: classes.round_input_error,
@@ -90,10 +98,10 @@ const StyledTextField = props => {
           formControl: classes.text_field_form_control
         },
         disableUnderline: true
-      }}
-      FormHelperTextProps={{
+      })}
+      FormHelperTextProps={_.merge(FormHelperTextProps, {
         classes: { root: classes.text_field_helper_text }
-      }}
+      })}
     />
   );
 };
