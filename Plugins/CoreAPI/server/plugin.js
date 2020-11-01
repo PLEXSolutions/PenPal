@@ -54,9 +54,16 @@ const CoreAPIPlugin = {
     };
 
     PenPal.API.Hosts = {
-      Upsert: API.upsertHosts,
-      Remove: API.removeHosts,
-      Get: API.getHosts
+      Get: API.getHost,
+      GetMany: API.getHosts,
+      GetManyByProjectID: API.getHostsByProject,
+      Insert: API.insertHost,
+      InsertMany: API.insertHosts,
+      Remove: API.removeHost,
+      RemoveMany: API.removeHosts,
+      Update: API.updateHost,
+      UpdateMany: API.updateHosts,
+      UpsertMany: API.upsertHosts
     };
 
     PenPal.API.Projects = {

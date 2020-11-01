@@ -21,6 +21,8 @@ const MongoDataStorePlugin = {
     PenPal.MongoCollections = {};
     PenPal.DataStore = {}; // TODO: need this to exist in a general DataStore plugin once we move past Mongo
 
+    // TODO: https://www.npmjs.com/package/mongo-dot-notation
+
     PenPal.DataStore.update = (plugin_name, table, selector, update) => {
       return PenPal.MongoCollections[`${plugin_name}${table}`].update(
         selector,

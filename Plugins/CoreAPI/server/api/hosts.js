@@ -2,251 +2,239 @@ import PenPal from "meteor/penpal";
 import { Mongo } from "meteor/mongo";
 import _ from "lodash";
 
+import { required_field, isTestData } from "./common.js";
+
 import { hosts as mockHosts } from "../test/mock-hosts.json";
 import { newHostHooks, deletedHostHooks, updatedHostHooks } from "./hooks.js";
 
-export async function upsertHosts(args) {
-  // Check if we already have the host
-  // args: projectId: ID!, hosts: [HostInput]!
-  // first get an array of all the hosts for the project that match the HostInput array
-  // NOTE: HostInput will not be guaranteed to have the ID so we will have to do a search based off the IP and/or Hostnames
-  // NOTE: Mongo does have upsert functionality but for our use case we are upserting unique data per record, not upserting
-  //       consistend data across all records.... custom logic will have to suffice I think...
+// -----------------------------------------------------------
 
-  // First, check to see what hosts exist, we will do this by generating key search fields...
-  let toUpdate = [];
-  let toInsert = [];
-  let ipv4s = [];
-  let macs = [];
-  let hostnames = [];
-  // anything with provided ID is implied update all else are default insert
-  // but we build arrays to search for to then further remove from the insert
-  // group
-  _.each(args.hosts, host => {
-    if (host.id) {
-      toUpdate.push(host);
-    } else {
-      if (host.ipv4) ipv4s.push(host.ipv4);
-      if (host.mac) macs.push(host.mac);
-      if (host.hostname) hostnames.push(host.hostname);
-    }
-  });
-  let searchDoc = {
-    $or: [
-      { ipv4: { $in: ipv4s } },
-      { mac: { $in: macs } },
-      { hostname: { $in: hostnames } }
-    ]
-  };
-  let existingRecords = await PenPal.DataStore.fetch(
-    "CoreAPI",
-    "Hosts",
-    searchDoc
-  );
-  let updatedRecords = [];
-  // short circuit check if all new hosts...
-  if (existingRecords.length === 0) {
-    // all hosts are new
-    toInsert = args.hosts;
-  } else if (existingRecords.length === args.hosts.length) {
-    // all hosts are updates
-    toUpdate = args.hosts;
+export const getHost = async host_id => {
+  const is_test = isTestData(host_ids);
+  return is_test
+    ? _.find(mockHosts, host => host.id === host_id)
+    : await PenPal.DataStore.fetchOne("CoreAPI", "Hosts", {
+        _id: new Mongo.ObjectID(host_id)
+      });
+};
+
+export const getHosts = async host_ids => {
+  const is_test = isTestData(host_ids);
+
+  let result = [];
+  // Pass in an array of host IDs
+  if (is_test) {
+    result = _.map(args, arg => _.find(mockHosts, host => host.id === arg));
   } else {
-    // mix of new and old...
-    let existingHostMacs = [];
-    let existingHostIPs = [];
-    let existingHostHostnames = [];
-    _.each(existingRecords, existingRecord => {
-      if (existingRecord.ipv4) existingHostIPs.push(existingRecord.ipv4);
-      if (existingRecord.mac) existingHostMacs.push(existingRecord.mac);
-      if (existingRecord.hostname)
-        existingHostHostnames.concat(existingRecord.hostnames);
-    });
-    _.each(args.hosts, host => {
-      if (
-        existingHostIPs.includes(host.ipv4) ||
-        existingHostMacs.includes(host.mac)
-      ) {
-        toUpdate.push(host);
-      } else {
-        let hadHostname = false;
-        _.each(host.hostnames, hostname => {
-          if (existingHostHostnames.includes(hostname)) {
-            hadHostname = true;
-          }
-        });
-        if (hadHostname) {
-          toUpdate.push(host);
-        } else {
-          toInsert.push(host);
-        }
-      }
+    result = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
+      _id: { $in: host_ids.map(id => new Mongo.ObjectID(id)) }
     });
   }
 
-  // if we have net-new add them...
-  if (toInsert.length > 0) {
-    _.each(toInsert, host => {
-      host.projectID = args.projectID;
-    });
-    let res = await PenPal.DataStore.insertMany("CoreAPI", "Hosts", toInsert);
-    let new_hosts = [];
-    _.each(res.insertedIds, (value, key) => {
-      updatedRecords.push(value);
-      new_hosts.push(value);
-    });
+  return result.map(({ _id, ...rest }) => ({ id: _id, ...rest }));
+};
 
-    // Now execute the "new host" hooks
-    newHostHooks(args.projectID, new_hosts);
+export const getHostsByProject = async project_id => {
+  const { _id, ...rest } = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
+    projectID: project_id
+  });
+
+  return { id: _id, ...rest };
+};
+
+// -----------------------------------------------------------
+
+export const insertHost = async host => {
+  return await insertHosts([host]);
+};
+
+export const insertHosts = async hosts => {
+  const rejected = [];
+  const _accepted = [];
+  const accepted = [];
+
+  for (let host of hosts) {
+    try {
+      required_field(host, "project", "insertion");
+      required_field(host, "ip_address", "insertion");
+
+      _accepted.push(host);
+    } catch (e) {
+      rejected.push({ host, error: e });
+    }
   }
 
-  // This variable is purely for updated hosts (vs inserted) and is used for hooks
-  let updated_hosts = [];
-  // if we have ones to update update them....
-  _.each(toUpdate, host => {
-    // this is the host to add
-    // and this is the existing db entry
-    let storedHost = {};
-    let foundHost = false;
-    _.each(existingRecords, existingHost => {
-      if (!foundHost) {
-        if (existingHost.ipv4 && existingHost.ipv4 === host.ipv4) {
-          storedHost = existingHost;
-          foundHost = true;
-        } else if (existingHost.mac && existingHost.mac === host.mac) {
-          storedHost = existingHost;
-          foundHost = true;
-        } else if (existingHost.hostnames) {
-          if (
-            existingHost.hostnames.join(",").includes(host.hostnames.join(","))
-          ) {
-            storedHost = existingHost;
-            foundHost = true;
-          }
-        }
-      }
-    });
-    // at this point we have the host data to add and the existing host data.... need to diff the objects to figure out what fields need to be set....
-    // ok so merge will work but make it so that we can't remove fields... need to find out way to intelligently find the difference and adjust accordingly...
-    let storedHostnames = [];
-    if (storedHost.hostnames) {
-      storedHostnames = [].concat(storedHost.hostnames);
+  if (_accepted.length > 0) {
+    let res = await PenPal.DataStore.insertMany("CoreAPI", "Hosts", _accepted);
+
+    // TODO: currently coupled to Mongo. DataStore should abstract this away
+    _.each(res.ops, ({ _id, ...rest }) =>
+      accepted.push({ id: String(_id), ...rest })
+    );
+  }
+
+  if (accepted.length > 0) {
+    newHostHooks(accepted);
+  }
+
+  return { accepted, rejected };
+};
+
+// -----------------------------------------------------------
+
+export const updateHost = async host => {
+  return await updateHosts([host]);
+};
+
+export const updateHosts = async hosts => {
+  const rejected = [];
+  const _accepted = [];
+  const accepted = [];
+
+  for (let host of hosts) {
+    try {
+      required_field(host, "id", "update");
+      _accepted.push(host);
+    } catch (e) {
+      rejected.push({ host, error: e });
     }
-    let mergedObject = _.merge(storedHost, host);
-    let ID = mergedObject._id;
-    delete mergedObject._id;
-    _.each(storedHostnames, hostname => {
-      if (
-        mergedObject.hostnames &&
-        !mergedObject.hostnames.includes(hostname)
-      ) {
-        mergedObject.hostnames.push(hostname);
-      }
-    });
-    // After we merge but before we insert we need to see if any splitout attributes were added.... OS is a single embedded object
-    // so that's ok but hosts also have files, notes, and services....
-    if (mergedObject.services) {
-      console.log("HAVE SERVICES TO HANDLE....");
-      delete mergedObject.services;
-    }
-    mergedObject.projectID = args.projectID;
-    let res = PenPal.DataStore.update(
+  }
+
+  let matched_hosts = await PenPal.DataStore.fetch("CoreAPI", "Hosts", {
+    _id: { $in: _accepted.map(host => new Mongo.ObjectID(host.id)) }
+  });
+
+  if (matched_hosts.length !== _accepted.length) {
+    // Find the unknown IDs
+    console.error('Implement updateHosts "host not found" functionality');
+  }
+
+  for (let { id, ...host } of _accepted) {
+    // TODO: Needs some work, but I'd prefer to update the datastore layer than here
+    let res = await PenPal.DataStore.update(
       "CoreAPI",
       "Hosts",
-      { _id: ID },
-      mergedObject
+      { _id: new Mongo.ObjectID(id) },
+      { $set: host }
     );
-    if (res > 0) updatedRecords.push(ID);
-    updated_hosts.push({ hostID: ID, projectID: args.projectID });
-  });
 
-  if (updated_hosts.length > 0) {
-    updatedHostHooks(updated_hosts);
+    if (res > 0) accepted.push({ id, ...host });
   }
 
-  // TODO - Transactions?
-  return {
-    status: "Hosts Updated",
-    was_success: true,
-    affected_records: updatedRecords
-  };
-}
+  if (accepted.length > 0) {
+    updatedHostHooks(accepted);
+  }
 
-export async function removeHosts(args) {
-  const response = {
-    status: "Error During Removal",
-    was_success: false,
-    affected_records: []
+  return { accepted, rejected };
+};
+
+// -----------------------------------------------------------
+
+export const upsertHosts = async (project_id, hosts) => {
+  const result = [];
+  const to_update = [];
+  const to_insert = [];
+  const rejected = [];
+
+  // Not all data updates are going to have an "id". We need to search from some unique pieces of info that
+  // could relate to a host, such as ip address or mac address
+
+  const to_check = [];
+  const search_ips = [];
+  const search_macs = [];
+
+  for (let host of hosts) {
+    if (host.id !== undefined) {
+      to_update.push(host);
+    } else {
+      if (host.ip_address === undefined && host.mac_address === undefined) {
+        rejected.push(host);
+      } else {
+        to_check.push(host);
+        if (host.ip_address !== undefined) search_ips.push(host.ip_address);
+        if (host.mac_address !== undefined) search_macs.push(host.mac_address);
+      }
+    }
+  }
+
+  let searchDoc = {
+    $and: [
+      { project: project_id },
+      {
+        $or: [
+          { ip_address: { $in: search_ips } },
+          { mac_address: { $in: search_macs } }
+        ]
+      }
+    ]
   };
 
-  let idArray = [];
-  _.each(args.hostIDs, hostId => {
-    idArray.push(new Mongo.ObjectID(hostId));
+  let exists = await PenPal.DataStore.fetch("CoreAPI", "Hosts", searchDoc);
+
+  // After this loop, all existing hosts will be set up for an update and `to_check` will only have "new" hosts left
+  for (let existing_host of exists) {
+    let to_check_host = _.remove(
+      to_check,
+      host =>
+        host.ip_address === existing_host.ip_address ||
+        host.mac_address === existing_host.mac_address
+    );
+
+    if (to_check_host.length === 0) {
+      // This really shouldn't happen because it matched the query for the DB
+      console.error(
+        `Somehow found a host on upsert but it wasn't in the set of hosts passed in?`
+      );
+      console.error(to_check);
+      console.error(existing_host);
+    }
+
+    to_update.push(to_check_host[0]);
+  }
+
+  for (let host of to_check) {
+    to_insert.push(host);
+  }
+
+  // Make sure that the project field is present on all hosts
+  _.each(to_insert, host => {
+    host.project = project_id;
+  });
+  _.each(to_update, host => {
+    host.project = project_id;
   });
 
+  // Do the inserts and updates
+  const inserted = await insertHosts(to_insert);
+  const updated = await updateHosts(to_update);
+
+  return {
+    inserted,
+    updated,
+    rejected
+  };
+};
+
+// -----------------------------------------------------------
+
+export const removeHost = async host_id => {
+  return await removeHosts([host_id]);
+};
+
+export const removeHosts = async host_ids => {
   // Get all the host data for hooks so the deleted host hook has some info for notifications and such
   let hosts = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
-    _id: { $in: idArray }
+    _id: { $in: host_ids }
   });
 
   let res = PenPal.DataStore.delete("CoreAPI", "Hosts", {
-    _id: { $in: idArray }
+    _id: { $in: host_ids }
   });
 
   if (res > 0) {
     deletedHostHooks(hosts);
-
-    response.status = "Successfully removed records";
-    response.was_success = true;
-    response.affected_records = args.projectIDs;
-  } else if (res === 0) {
-    response.status = "No records affected";
-    response.was_success = true;
-    response.affected_records = [];
+    return true;
   }
 
-  return response;
-}
-
-export async function getHosts(args) {
-  // we abstracted GET an additional level, possible inputs are a ProjectID or a HostID...
-  // could just get both and return the results from whichever result has data.... Lazy but efficient? (otherwise we check if the ID is a project ID which is a DB call anyway...)
-  const is_test = isTestData(args);
-
-  let hostsToReturn = [];
-  if (!Array.isArray(args)) {
-    if (args.projectID) {
-      // TODO: Test data should never get here but handle it anyways
-      hostsToReturn = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
-        projectID: args.projectID
-      });
-    } else if (args.id) {
-      if (is_test) {
-        return _.find(mockHosts, host => host.id === args.id);
-      } else {
-        hostsToReturn =
-          PenPal.DataStore.fetch("CoreAPI", "Hosts", {
-            _id: new Mongo.ObjectID(args.id)
-          })?.[0] ?? [];
-      }
-    }
-  } else {
-    // Pass in an array of host IDs
-    if (is_test) {
-      return _.map(args, arg => _.find(mockHosts, host => host.id === arg));
-    } else {
-      hostsToReturn = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
-        _id: { $in: args.map(arg => new Mongo.ObjectID(arg)) }
-      });
-    }
-  }
-  if (hostsToReturn.length !== undefined) {
-    _.each(hostsToReturn, host => {
-      host.id = host._id._str;
-    });
-  } else {
-    hostsToReturn.id = hostsToReturn._id._str;
-  }
-
-  return hostsToReturn;
-}
+  return false;
+};

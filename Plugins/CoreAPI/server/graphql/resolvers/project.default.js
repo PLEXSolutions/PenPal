@@ -4,19 +4,25 @@ import PenPal from "meteor/penpal";
 
 export default {
   Project: {
-    customer(project) {
-      const customer = PenPal.DataStore.fetchOne("CoreAPI", "Customers", {
-        _id: new Mongo.ObjectID(project.customer)
-      });
+    async customer({ customer }) {
+      const customer_data = await PenPal.API.Customers.Get(customer);
 
-      if (customer === undefined) {
+      if (customer_data === undefined) {
         throw new Meteor.Error(
           404,
           `Customer not found for project ${project.id}`
         );
       }
 
-      return { id: project.customer, ...customer };
+      return { id: customer, ...customer_data };
+    },
+
+    async scope({ scope: { hosts, networks } }) {
+      const result = {
+        hosts: await PenPal.API.Hosts.GetMany(hosts),
+        networks: null
+      };
+      return result;
     }
   }
 };

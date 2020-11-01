@@ -36,14 +36,6 @@ export default {
       }
     }
   },
-  async upsertHosts(root, args, context) {
-    let res = PenPal.API.Hosts.Upsert(args);
-    return res;
-  },
-  async removeHosts(root, args, context) {
-    let res = PenPal.API.Hosts.Remove(args);
-    return res;
-  },
   async upsertServices(root, args, context) {
     let res = PenPal.API.Services.Upsert(args);
     return res;

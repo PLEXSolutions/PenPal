@@ -2,13 +2,13 @@ import gql from "graphql-tag";
 
 export default gql`
   mutation createProjectMutation(
-    $customer: String!
+    $customer: ID!
     $name: String!
     $description: String!
     $start_date: Date
     $end_date: Date
-    $project_ips: [String]
-    $project_networks: [String]
+    $project_ips: [IPAddress]
+    $project_networks: [IPSubnet]
   ) {
     createProject(
       project: {

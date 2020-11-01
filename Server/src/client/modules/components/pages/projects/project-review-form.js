@@ -68,12 +68,33 @@ const ProjectReviewForm = ({
   projectStartDate,
   projectEndDate,
   projectIPs,
-  projectNetworks
+  projectNetworks,
+  handleClose = () => null
 }) => {
   // ----------------------------------------------------
 
   const classes = useStyles();
   const [createProject] = useMutation(CreateProjectMutation);
+
+  // ----------------------------------------------------
+
+  const handleCreateProject = () => {
+    const variables = _.pickBy({
+      customer: customers[selectedCustomer].id,
+      name: projectName,
+      description: projectDescription,
+      start_date: projectStartDate,
+      end_date: projectEndDate,
+      project_ips: projectIPs,
+      project_networks: projectNetworks
+    });
+
+    createProject({
+      variables
+    });
+
+    handleClose();
+  };
 
   // ----------------------------------------------------
 
@@ -116,7 +137,7 @@ const ProjectReviewForm = ({
         </Table>
       </div>
       <div className={classes.bottom_pane}>
-        <Components.StyledButton color="primary" onClick={() => null}>
+        <Components.StyledButton color="primary" onClick={handleCreateProject}>
           Create Project
         </Components.StyledButton>
       </div>

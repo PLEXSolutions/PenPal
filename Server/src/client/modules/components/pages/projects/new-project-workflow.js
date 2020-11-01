@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import MobileStepper from "@material-ui/core/MobileStepper";
 import Button from "@material-ui/core/Button";
@@ -40,6 +40,13 @@ const steps = [
     component: Components.NewProjectWorkflowProjectDetails
   },
   {
+    name: "Collaborators",
+    component: ({ enableNext }) => {
+      useEffect(() => enableNext(), []);
+      return "Coming soon!";
+    }
+  },
+  {
     name: "Review",
     component: Components.NewProjectWorkflowReview
   }
@@ -54,6 +61,13 @@ const NewProjectWorkflow = ({ open, handleClose: handleCloseProp }) => {
   const [nextEnabled, setNextEnabled] = useState(false);
 
   const [selectedCustomer, setSelectedCustomer] = useState("");
+  const [projectName, setProjectName] = useState("");
+  const [projectDescription, setProjectDescription] = useState("");
+  const [projectIPs, setProjectIPs] = useState([]);
+  const [projectNetworks, setProjectNetworks] = useState([]);
+  const [projectStartDate, setProjectStartDate] = useState(null);
+  const [projectEndDate, setProjectEndDate] = useState(null);
+
   const {
     loading: customersLoading,
     error: customersError,
@@ -61,13 +75,6 @@ const NewProjectWorkflow = ({ open, handleClose: handleCloseProp }) => {
   } = useQuery(GetCustomersQuery, {
     pollInterval: 15000
   });
-
-  const [projectName, setProjectName] = useState("");
-  const [projectDescription, setProjectDescription] = useState("");
-  const [projectIPs, setProjectIPs] = useState([]);
-  const [projectNetworks, setProjectNetworks] = useState([]);
-  const [projectStartDate, setProjectStartDate] = useState(null);
-  const [projectEndDate, setProjectEndDate] = useState(null);
 
   // -------------------------------------------------------------
 
@@ -85,8 +92,19 @@ const NewProjectWorkflow = ({ open, handleClose: handleCloseProp }) => {
   };
 
   const handleClose = () => {
-    setSelectedCustomer("");
     handleCloseProp();
+
+    setTimeout(() => {
+      setActiveStep(0);
+      setNextEnabled(false);
+      setSelectedCustomer("");
+      setProjectName("");
+      setProjectDescription("");
+      setProjectIPs([]);
+      setProjectNetworks([]);
+      setProjectStartDate(null);
+      setProjectEndDate(null);
+    }, 50);
   };
 
   // -------------------------------------------------------------
@@ -127,6 +145,7 @@ const NewProjectWorkflow = ({ open, handleClose: handleCloseProp }) => {
             setProjectIPs={setProjectIPs}
             projectNetworks={projectNetworks}
             setProjectNetworks={setProjectNetworks}
+            handleClose={handleClose}
           />
         )}
       </DialogContent>

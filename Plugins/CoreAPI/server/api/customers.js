@@ -58,7 +58,9 @@ export const insertCustomers = async customers => {
     );
 
     // TODO: currently coupled to Mongo. DataStore should abstract this away
-    _.each(res.ops, ({ _id, ...rest }) => accepted.push({ id: _id, ...rest }));
+    _.each(res.ops, ({ _id, ...rest }) =>
+      accepted.push({ id: String(_id), ...rest })
+    );
   }
 
   return { accepted, rejected };
@@ -100,7 +102,7 @@ export const updateCustomers = async customers => {
       "CoreAPI",
       "Customers",
       { _id: new Mongo.ObjectID(id) },
-      customer
+      { $set: customer }
     );
 
     if (res > 0) accepted.push({ id, ...customer });

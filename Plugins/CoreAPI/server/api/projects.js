@@ -1,6 +1,7 @@
 import PenPal from "meteor/penpal";
 import { Mongo } from "meteor/mongo";
 import _ from "lodash";
+
 import { required_field } from "./common.js";
 
 // -----------------------------------------------------------
@@ -27,6 +28,11 @@ export const getProjects = async (project_ids = []) => {
 
 // -----------------------------------------------------------
 
+const default_project = {
+  dates: {},
+  scope: { hosts: [], networks: [] }
+};
+
 export const insertProject = async project => {
   return await insertProjects([project]);
 };
@@ -49,7 +55,10 @@ export const insertProjects = async projects => {
         throw new Meteor.Error(404, `Customer ${project.customer} not found`);
       }
 
-      _accepted.push(project);
+      const _project = _.merge(default_project, project);
+      _project.dates.created_at = new Date();
+
+      _accepted.push(_project);
     } catch (e) {
       rejected.push({ project, error: e });
     }
@@ -68,13 +77,14 @@ export const insertProjects = async projects => {
     );
   }
 
-  for (let project of accepted) {
+  if (accepted.length > 0) {
+    // TODO: maybe make this a call to the customer API to update the customer instead of doing the raw database queries here?
     // Add the id to the customer
     let customer = await PenPal.DataStore.fetchOne("CoreAPI", "Customers", {
-      _id: new Mongo.ObjectID(project.customer)
+      _id: new Mongo.ObjectID(accepted[0].customer)
     });
 
-    customer.projects.push(project.id);
+    customer.projects.push(...accepted.map(p => p.id));
 
     await PenPal.DataStore.update(
       "CoreAPI",
@@ -107,22 +117,27 @@ export const updateProjects = async projects => {
     }
   }
 
-  let matched_projects = await PenPal.DataStore.fetch("CoreAPI", "Projects", {
-    _id: { $in: _accepted.map(project => new Mongo.ObjectID(project.id)) }
-  });
-  if (matched_projects.length !== _accepted.length) {
-    // Find the unknown IDs
-  }
+  if (_accepted.length > 0) {
+    let matched_projects = await PenPal.DataStore.fetch("CoreAPI", "Projects", {
+      _id: {
+        $in: _accepted.map(project => new Mongo.ObjectID(project.id))
+      }
+    });
 
-  for (let { id, ...project } of _accepted) {
-    let res = await PenPal.DataStore.update(
-      "CoreAPI",
-      "Projects",
-      { _id: new Mongo.ObjectID(id) },
-      project
-    );
+    if (matched_projects.length !== _accepted.length) {
+      // Find the unknown IDs
+    }
 
-    if (res > 0) accepted.push({ id, ...project });
+    for (let { id, ...project } of _accepted) {
+      let res = await PenPal.DataStore.update(
+        "CoreAPI",
+        "Projects",
+        { _id: new Mongo.ObjectID(id) },
+        { $set: project }
+      );
+
+      if (res > 0) accepted.push({ id, ...project });
+    }
   }
 
   return { accepted, rejected };

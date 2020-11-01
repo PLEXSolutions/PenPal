@@ -65,7 +65,7 @@ projects.add("New Project Workflow (Review)", () => {
     "Test project description"
   );
   const [projectStartDate, setProjectStartDate] = useState(moment());
-  const [projectEndDate, setProjectEndDate] = useState(moment().add(7, "days"));
+  const [projectEndDate, setProjectEndDate] = useState(null);
   const [projectIPs, setProjectIPs] = useState(["192.168.1.1", "192.168.1.2"]);
   const [projectNetworks, setProjectNetworks] = useState(["192.168.1.0/24"]);
 

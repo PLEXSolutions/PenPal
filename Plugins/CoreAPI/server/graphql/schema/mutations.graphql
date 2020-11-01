@@ -9,8 +9,11 @@ type Mutation {
   updateProject(project: UpdateProjectInput!): Project!
   removeProject(id: ID!): Boolean!
 
-  upsertHosts(projectID: ID!, hosts: [HostInput!]!): MutationResponse!
-  removeHosts(hostIDs: [ID!]!): MutationResponse!
+  createHost(projectID: ID!, host: HostInput!): Host!
+  createHosts(projectID: ID!, hosts: [HostInput!]!): [Host]!
+  updateHost(host: HostInput!): Host!
+  removeHost(id: ID!): Boolean!
+
   upsertServices(hostID: ID!, services: [ServiceInput!]!): MutationResponse!
   removeServices(serviceIDs: [ID!]!): MutationResponse!
 }
