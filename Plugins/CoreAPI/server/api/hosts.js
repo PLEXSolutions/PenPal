@@ -1,5 +1,4 @@
 import PenPal from "meteor/penpal";
-import { Mongo } from "meteor/mongo";
 import _ from "lodash";
 
 import { required_field, isTestData } from "./common.js";
@@ -14,7 +13,7 @@ export const getHost = async host_id => {
   return is_test
     ? _.find(mockHosts, host => host.id === host_id)
     : await PenPal.DataStore.fetchOne("CoreAPI", "Hosts", {
-        _id: new Mongo.ObjectID(host_id)
+        id: host_id
       });
 };
 
@@ -27,19 +26,19 @@ export const getHosts = async host_ids => {
     result = _.map(args, arg => _.find(mockHosts, host => host.id === arg));
   } else {
     result = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
-      _id: { $in: host_ids.map(id => new Mongo.ObjectID(id)) }
+      id: { $in: host_ids }
     });
   }
 
-  return result.map(({ _id, ...rest }) => ({ id: _id, ...rest }));
+  return result;
 };
 
 export const getHostsByProject = async project_id => {
-  const { _id, ...rest } = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
+  const result = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
     projectID: project_id
   });
 
-  return { id: _id, ...rest };
+  return result;
 };
 
 // -----------------------------------------------------------
@@ -65,12 +64,12 @@ export const insertHosts = async hosts => {
   }
 
   if (_accepted.length > 0) {
-    let res = await PenPal.DataStore.insertMany("CoreAPI", "Hosts", _accepted);
-
-    // TODO: currently coupled to Mongo. DataStore should abstract this away
-    _.each(res.ops, ({ _id, ...rest }) =>
-      accepted.push({ id: String(_id), ...rest })
+    let result = await PenPal.DataStore.insertMany(
+      "CoreAPI",
+      "Hosts",
+      _accepted
     );
+    accepted.push(...result);
   }
 
   if (accepted.length > 0) {
@@ -101,7 +100,7 @@ export const updateHosts = async hosts => {
   }
 
   let matched_hosts = await PenPal.DataStore.fetch("CoreAPI", "Hosts", {
-    _id: { $in: _accepted.map(host => new Mongo.ObjectID(host.id)) }
+    id: { $in: _accepted.map(host => host.id) }
   });
 
   if (matched_hosts.length !== _accepted.length) {
@@ -114,7 +113,7 @@ export const updateHosts = async hosts => {
     let res = await PenPal.DataStore.update(
       "CoreAPI",
       "Hosts",
-      { _id: new Mongo.ObjectID(id) },
+      { id },
       { $set: host }
     );
 
@@ -157,7 +156,7 @@ export const upsertHosts = async (project_id, hosts) => {
     }
   }
 
-  let searchDoc = {
+  let selector = {
     $and: [
       { project: project_id },
       {
@@ -169,7 +168,7 @@ export const upsertHosts = async (project_id, hosts) => {
     ]
   };
 
-  let exists = await PenPal.DataStore.fetch("CoreAPI", "Hosts", searchDoc);
+  let exists = await PenPal.DataStore.fetch("CoreAPI", "Hosts", selector);
 
   // After this loop, all existing hosts will be set up for an update and `to_check` will only have "new" hosts left
   for (let existing_host of exists) {
@@ -224,11 +223,11 @@ export const removeHost = async host_id => {
 export const removeHosts = async host_ids => {
   // Get all the host data for hooks so the deleted host hook has some info for notifications and such
   let hosts = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
-    _id: { $in: host_ids }
+    id: { $in: host_ids }
   });
 
   let res = PenPal.DataStore.delete("CoreAPI", "Hosts", {
-    _id: { $in: host_ids }
+    id: { $in: host_ids }
   });
 
   if (res > 0) {

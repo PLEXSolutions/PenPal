@@ -1,5 +1,4 @@
 import PenPal from "meteor/penpal";
-import { Mongo } from "meteor/mongo";
 import _ from "lodash";
 
 import { required_field } from "./common.js";
@@ -8,7 +7,7 @@ import { required_field } from "./common.js";
 
 export const getProject = async project_id => {
   return await PenPal.DataStore.fetchOne("CoreAPI", "Projects", {
-    _id: new Mongo.ObjectID(project_id)
+    id: project_id
   });
 };
 
@@ -19,11 +18,11 @@ export const getProjects = async (project_ids = []) => {
     result = await PenPal.DataStore.fetch("CoreAPI", "Projects", {});
   } else {
     result = await PenPal.DataStore.fetch("CoreAPI", "Projects", {
-      _id: { $in: project_ids.map(id => new Mongo.ObjectID(id)) }
+      id: { $in: project_ids }
     });
   }
 
-  return result.map(({ _id, ...rest }) => ({ id: _id, ...rest }));
+  return result;
 };
 
 // -----------------------------------------------------------
@@ -48,7 +47,7 @@ export const insertProjects = async projects => {
       required_field(project, "name", "insertion");
 
       let customer = await PenPal.DataStore.fetchOne("CoreAPI", "Customers", {
-        _id: new Mongo.ObjectID(project.customer)
+        id: project.customer
       });
 
       if (customer === undefined) {
@@ -65,23 +64,20 @@ export const insertProjects = async projects => {
   }
 
   if (_accepted.length > 0) {
-    let res = await PenPal.DataStore.insertMany(
+    let result = await PenPal.DataStore.insertMany(
       "CoreAPI",
       "Projects",
       _accepted
     );
 
-    // TODO: currently coupled to Mongo. DataStore should abstract this away
-    _.each(res.ops, ({ _id, ...rest }) =>
-      accepted.push({ id: String(_id), ...rest })
-    );
+    accepted.push(...result);
   }
 
   if (accepted.length > 0) {
     // TODO: maybe make this a call to the customer API to update the customer instead of doing the raw database queries here?
     // Add the id to the customer
     let customer = await PenPal.DataStore.fetchOne("CoreAPI", "Customers", {
-      _id: new Mongo.ObjectID(accepted[0].customer)
+      id: accepted[0].customer
     });
 
     customer.projects.push(...accepted.map(p => p.id));
@@ -89,7 +85,7 @@ export const insertProjects = async projects => {
     await PenPal.DataStore.update(
       "CoreAPI",
       "Customers",
-      { _id: customer._id },
+      { id: customer.id },
       { $set: { projects: customer.projects } }
     );
   }
@@ -119,8 +115,8 @@ export const updateProjects = async projects => {
 
   if (_accepted.length > 0) {
     let matched_projects = await PenPal.DataStore.fetch("CoreAPI", "Projects", {
-      _id: {
-        $in: _accepted.map(project => new Mongo.ObjectID(project.id))
+      id: {
+        $in: _accepted.map(project => project.id)
       }
     });
 
@@ -132,7 +128,7 @@ export const updateProjects = async projects => {
       let res = await PenPal.DataStore.update(
         "CoreAPI",
         "Projects",
-        { _id: new Mongo.ObjectID(id) },
+        { id },
         { $set: project }
       );
 
@@ -171,7 +167,7 @@ export const removeProject = async project_id => {
 
 export const removeProjects = async project_ids => {
   let res = PenPal.DataStore.delete("CoreAPI", "Projects", {
-    _id: { $in: project_ids.map(id => new Mongo.ObjectID(id)) }
+    id: { $in: project_ids }
   });
 
   if (res > 0) {

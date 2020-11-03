@@ -1,5 +1,4 @@
 import PenPal from "meteor/penpal";
-import { Mongo } from "meteor/mongo";
 import _ from "lodash";
 import { required_field } from "./common.js";
 
@@ -7,7 +6,7 @@ import { required_field } from "./common.js";
 
 export const getCustomer = async customer_id => {
   return await PenPal.DataStore.fetchOne("CoreAPI", "Customers", {
-    _id: new Mongo.ObjectID(customer_id)
+    id: customer_id
   });
 };
 
@@ -18,11 +17,10 @@ export const getCustomers = async (customer_ids = []) => {
     result = await PenPal.DataStore.fetch("CoreAPI", "Customers", {});
   } else {
     result = await PenPal.DataStore.fetch("CoreAPI", "Customers", {
-      _id: { $in: customer_ids.map(id => new Mongo.ObjectID(id)) }
+      id: { $in: customer_ids }
     });
   }
-  // TODO: uncouple the "id" logic from Mongo DB by having that occur in the DataStore layer
-  return result.map(customer => ({ id: customer._id, ...customer }));
+  return result;
 };
 
 // -----------------------------------------------------------
@@ -51,16 +49,13 @@ export const insertCustomers = async customers => {
   }
 
   if (_accepted.length > 0) {
-    let res = await PenPal.DataStore.insertMany(
+    let results = await PenPal.DataStore.insertMany(
       "CoreAPI",
       "Customers",
       _accepted
     );
 
-    // TODO: currently coupled to Mongo. DataStore should abstract this away
-    _.each(res.ops, ({ _id, ...rest }) =>
-      accepted.push({ id: String(_id), ...rest })
-    );
+    accepted.push(...results);
   }
 
   return { accepted, rejected };
@@ -87,7 +82,7 @@ export const updateCustomers = async customers => {
   }
 
   let matched_customers = await PenPal.DataStore.fetch("CoreAPI", "Customers", {
-    _id: { $in: _accepted.map(customer => new Mongo.ObjectID(customer.id)) }
+    id: { $in: _accepted.map(customer => customer.id) }
   });
 
   if (matched_customers.length !== _accepted.length) {
@@ -101,7 +96,7 @@ export const updateCustomers = async customers => {
     let res = await PenPal.DataStore.update(
       "CoreAPI",
       "Customers",
-      { _id: new Mongo.ObjectID(id) },
+      { id },
       { $set: customer }
     );
 
@@ -140,7 +135,7 @@ export const removeCustomer = async customer_id => {
 
 export const removeCustomers = async customer_ids => {
   let res = await PenPal.DataStore.delete("CoreAPI", "Customers", {
-    _id: { $in: customer_ids.map(id => new Mongo.ObjectID(id)) }
+    id: { $in: customer_ids }
   });
 
   if (res > 0) {
