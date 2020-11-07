@@ -3,6 +3,7 @@ import { makeExecutableSchema } from "graphql-tools";
 import { mergeTypeDefs } from "@graphql-tools/merge";
 import { applyMiddleware } from "graphql-middleware";
 import { WebApp } from "meteor/webapp";
+import PenPal from "meteor/penpal";
 import _ from "lodash";
 
 import { getUser } from "./get-meteor-user.js";
@@ -31,6 +32,7 @@ const startGraphQLServer = (
     playground: true,
     context: async ({ req }) => {
       let loaders = {};
+
       loaders = _.extend(loaders, buildLoaders());
       loaders = _.extend(loaders, plugins_buildLoaders());
 
@@ -40,9 +42,12 @@ const startGraphQLServer = (
         await loaders.webappUsersLoader.prime(user.id, user);
       }
 
+      const PenPalCachingAPI = PenPal.API.CachingAPI();
+
       return {
         user: user,
-        loaders
+        loaders,
+        PenPalCachingAPI
       };
     }
   });

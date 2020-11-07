@@ -1,9 +1,15 @@
-import PenPal from "meteor/penpal";
+import { CachingDefaultResolvers } from "./common.js";
 
 export default {
   Host: {
-    project(host) {
-      return PenPal.API.Projects.Get(host.project);
+    ...CachingDefaultResolvers("Hosts", [
+      "ip_address",
+      "mac_address",
+      "hostnames"
+    ]),
+
+    project({ project }, args, { PenPalCachingAPI }) {
+      return PenPalCachingAPI.Projects.Get(host.project);
     }
   }
 };

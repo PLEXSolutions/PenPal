@@ -1,8 +1,11 @@
 import PenPal from "meteor/penpal";
 
 export default {
-  async createHost(root, { projectID, host }, context) {
-    const { accepted, rejected } = await PenPal.API.Hosts.Insert(projectID, host);
+  async createHost(root, { projectID, host }, { PenPalCachingAPI }) {
+    const { accepted, rejected } = await PenPalCachingAPI.Hosts.Insert(
+      projectID,
+      host
+    );
 
     if (accepted.length > 0) {
       return accepted[0];
@@ -11,8 +14,11 @@ export default {
     }
   },
 
-  async createHosts(root, { projectID, hosts }, context) {
-    const { accepted, rejected } = await PenPal.API.Hosts.Insert(projectID, hosts);
+  async createHosts(root, { projectID, hosts }, { PenPalCachingAPI }) {
+    const { accepted, rejected } = await PenPalCachingAPI.Hosts.Insert(
+      projectID,
+      hosts
+    );
 
     if (accepted.length > 0) {
       return accepted;
@@ -21,8 +27,8 @@ export default {
     }
   },
 
-  async updateHost(root, { host }, context) {
-    const { accepted, rejected } = await PenPal.API.Hosts.Update(host);
+  async updateHost(root, { host }, { PenPalCachingAPI }) {
+    const { accepted, rejected } = await PenPalCachingAPI.Hosts.Update(host);
 
     if (accepted.length > 0) {
       return accepted[0];
@@ -31,7 +37,7 @@ export default {
     }
   },
 
-  async removeHost(root, { id }, context) {
-    return await PenPal.API.Customers.Remove(id);
+  async removeHost(root, { id }, { PenPalCachingAPI }) {
+    return await PenPalCachingAPI.Customers.Remove(id);
   }
 };

@@ -1,10 +1,8 @@
-import PenPal from "meteor/penpal";
-
 export default {
-  async getProject(root, { id }, context) {
-    return PenPal.API.Projects.Get({ id });
+  async getProject(root, { id }, { PenPalCachingAPI }) {
+    return PenPalCachingAPI.Projects.Get({ id });
   },
-  async getProjects(root, args, context) {
-    return PenPal.API.Projects.GetMany();
+  async getProjects(root, args, { PenPalCachingAPI }) {
+    return PenPalCachingAPI.Projects.GetMany();
   }
 };

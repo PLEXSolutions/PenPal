@@ -5,6 +5,7 @@ import auditable_default_resolvers from "./auditable.default.js";
 import audit_user_default_resolvers from "./audit-user.default.js";
 import customer_default_resolvers from "./customer.default.js";
 import customer_mutation_resolvers from "./customer.mutations.js";
+import customer_query_resolvers from "./customer.queries.js";
 import host_default_resolvers from "./host.default";
 import host_mutation_resolvers from "./host.mutations.js";
 import mutation_resolvers from "./mutations.js";
@@ -19,6 +20,7 @@ import scalar_resolvers from "./scalars.js";
 export default {
   queries: {
     ...analytics_query_resolvers,
+    ...customer_query_resolvers,
     ...project_query_resolvers,
     ...query_resolvers
   },

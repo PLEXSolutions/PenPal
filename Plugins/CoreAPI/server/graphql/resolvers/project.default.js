@@ -1,11 +1,11 @@
-import { Meteor } from "meteor/meteor";
-import { Mongo } from "meteor/mongo";
-import PenPal from "meteor/penpal";
+import { CachingDefaultResolvers } from "./common.js";
 
 export default {
   Project: {
-    async customer({ customer }) {
-      const customer_data = await PenPal.API.Customers.Get(customer);
+    ...CachingDefaultResolvers("Projects", ["name", "description", "dates"]),
+
+    async customer({ customer }, args, { PenPalCachingAPI }) {
+      const customer_data = await PenPalCachingAPI.Customers.Get(customer);
 
       if (customer_data === undefined) {
         throw new Meteor.Error(
@@ -17,11 +17,12 @@ export default {
       return { id: customer, ...customer_data };
     },
 
-    async scope({ scope: { hosts, networks } }) {
+    async scope({ scope: { hosts, networks } }, args, { PenPalCachingAPI }) {
       const result = {
-        hosts: await PenPal.API.Hosts.GetMany(hosts),
+        hosts: await PenPalCachingAPI.Hosts.GetMany(hosts),
         networks: null
       };
+
       return result;
     }
   }

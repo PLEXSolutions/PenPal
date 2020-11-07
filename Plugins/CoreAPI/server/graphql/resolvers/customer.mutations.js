@@ -1,8 +1,8 @@
-import PenPal from "meteor/penpal";
-
 export default {
-  async createCustomer(root, { customer }, context) {
-    const { accepted, rejected } = await PenPal.API.Customers.Insert(customer);
+  async createCustomer(root, { customer }, { PenPalCachingAPI }) {
+    const { accepted, rejected } = await PenPalCachingAPI.Customers.Insert(
+      customer
+    );
 
     if (accepted.length > 0) {
       return accepted[0];
@@ -12,7 +12,9 @@ export default {
   },
 
   async updateCustomer(root, { customer }, context) {
-    const { accepted, rejected } = await PenPal.API.Customers.Update(customer);
+    const { accepted, rejected } = await PenPalCachingAPI.Customers.Update(
+      customer
+    );
 
     if (accepted.length > 0) {
       return accepted[0];
@@ -22,6 +24,6 @@ export default {
   },
 
   async removeCustomer(root, { id }, context) {
-    return await PenPal.API.Customers.Remove(id);
+    return await PenPalCachingAPI.Customers.Remove(id);
   }
 };

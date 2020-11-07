@@ -49,13 +49,13 @@ export const insertCustomers = async customers => {
   }
 
   if (_accepted.length > 0) {
-    let results = await PenPal.DataStore.insertMany(
+    let insertedIds = await PenPal.DataStore.insertMany(
       "CoreAPI",
       "Customers",
       _accepted
     );
 
-    accepted.push(...results);
+    accepted.push(...insertedIds);
   }
 
   return { accepted, rejected };

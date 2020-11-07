@@ -1,28 +1,31 @@
-import PenPal from "meteor/penpal";
-
 export default {
   async createProject(
     root,
     { project: { scope: { hosts = [], networks = [] } = {}, ...project } },
-    context
+    { PenPalCachingAPI }
   ) {
-    const { accepted, rejected } = await PenPal.API.Projects.Insert(project);
+    const { accepted, rejected } = await PenPalCachingAPI.Projects.Insert(
+      project
+    );
 
     if (accepted.length > 0) {
-      const project = accepted[0];
+      // We need to get the project so we can update it
+      const project = await PenPalCachingAPI.Projects.Get(accepted[0].id);
 
       // Now insert the hosts and networks with the appropriate project ID
-      const { accepted: new_hosts } = await PenPal.API.Hosts.InsertMany(
+      const { accepted: new_hosts } = await PenPalCachingAPI.Hosts.InsertMany(
         hosts.map(host_ip => ({ project: project.id, ip_address: host_ip }))
       );
+
       // NOTE: This will maybe cause a memory error if new_hosts has a length > 100,000 ish. Is this actually a problem?
       project.scope.hosts.push(...new_hosts.map(host => host.id));
-      await PenPal.API.Projects.Update({
+
+      await PenPalCachingAPI.Projects.Update({
         id: project.id,
         "scope.hosts": project.scope.hosts
       });
 
-      //await PenPal.API.Networks.insertMany(networks);
+      //await PenPalCachingAPI.Networks.InsertMany(networks);
 
       return project;
     } else {
@@ -30,8 +33,10 @@ export default {
     }
   },
 
-  async updateProject(root, { project }, context) {
-    const { accepted, rejected } = await PenPal.API.Projects.Update(project);
+  async updateProject(root, { project }, { PenPalCachingAPI }) {
+    const { accepted, rejected } = await PenPalCachingAPI.Projects.Update(
+      project
+    );
 
     if (accepted.length > 0) {
       return accepted[0];
@@ -40,7 +45,7 @@ export default {
     }
   },
 
-  async removeProject(root, { id }, context) {
-    return await PenPal.API.Projects.Remove(id);
+  async removeProject(root, { id }, { PenPalCachingAPI }) {
+    return await PenPalCachingAPI.Projects.Remove(id);
   }
 };

@@ -1,9 +1,10 @@
-import { types, resolvers, loaders } from "./graphql";
 import _ from "lodash";
 import PenPal from "meteor/penpal";
+import DataLoader from "dataloader";
+
+import { types, resolvers, loaders } from "./graphql";
 import * as API from "./api/";
 import { dockerExec, dockerBuild, dockerRun } from "./api/docker";
-
 import { mocks } from "./test/";
 
 const settings = {
@@ -82,6 +83,54 @@ const CoreAPIPlugin = {
       Upsert: API.upsertServices,
       Remove: API.removeServices,
       Get: API.getServices
+    };
+
+    // This builds a unique set of wrapped functions that can pass a cache object as the final
+    // argument to each API function. The API function has the ability to interact with the
+    // .get or .add of that cache as they see fit. A nop_cache implementation that does nothing
+    // should be the default final argument of each API function that desires to use the cache
+    // so that there needs not be any logic around whether or not a cache actually exists - the
+    // code just pretends one always exists
+    PenPal.API.CachingAPI = () => {
+      const caching_apis = {};
+
+      for (let api_key of Object.keys(PenPal.API)) {
+        // The "batch" getter is the GetMany function
+        const batch_api_getter = PenPal.API[api_key].GetMany;
+        if (batch_api_getter === undefined) {
+          continue;
+        }
+
+        // Build the dataloader
+        const api_dataloader = new DataLoader(keys => batch_api_getter(keys));
+
+        const { Get, GetMany, ...OtherFunctions } = PenPal.API[api_key];
+
+        // Build the object that's going to hold all the caching functions
+        caching_apis[api_key] = {
+          async Get(key) {
+            return await api_dataloader.load(key);
+          },
+          async GetMany(keys) {
+            if (keys === undefined) {
+              // There's no way to use a cache when all records are requested, so get all the records and
+              // cache them for any future requests
+              const all_results = await PenPal.API[api_key].GetMany();
+              for (let result of all_results) {
+                api_dataloader.clear(result.id).prime(result.id, result);
+              }
+              return all_results;
+            } else {
+              return await api_dataloader.loadMany(keys);
+            }
+          },
+          // TODO: At some point consider using the "prime" functions of the data loader to cache the results
+          // of and insert, update, etc
+          ...OtherFunctions
+        };
+      }
+
+      return caching_apis;
     };
 
     PenPal.API.Docker = {
