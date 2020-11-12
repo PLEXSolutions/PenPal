@@ -166,7 +166,7 @@ export const removeProject = async project_id => {
 };
 
 export const removeProjects = async project_ids => {
-  let res = PenPal.DataStore.delete("CoreAPI", "Projects", {
+  let res = await PenPal.DataStore.delete("CoreAPI", "Projects", {
     id: { $in: project_ids }
   });
 

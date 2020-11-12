@@ -15,19 +15,6 @@ export {
 } from "./customers.js";
 
 export {
-  getHost,
-  getHosts,
-  getHostsByProject,
-  insertHost,
-  insertHosts,
-  updateHost,
-  updateHosts,
-  upsertHosts,
-  removeHost,
-  removeHosts
-} from "./hosts.js";
-
-export {
   getProject,
   getProjects,
   insertProject,
@@ -38,5 +25,31 @@ export {
   removeProject,
   removeProjects
 } from "./projects.js";
+
+export {
+  getHost,
+  getHosts,
+  getHostsByProject,
+  getHostsByNetwork,
+  insertHost,
+  insertHosts,
+  updateHost,
+  updateHosts,
+  upsertHosts,
+  removeHost,
+  removeHosts
+} from "./hosts.js";
+
+export {
+  getNetwork,
+  getNetworks,
+  getNetworksByProject,
+  insertNetwork,
+  insertNetworks,
+  updateNetwork,
+  updateNetworks,
+  removeNetwork,
+  removeNetworks
+} from "./networks.js";
 
 export { upsertServices, removeServices, getServices } from "./services.js";

@@ -53,7 +53,7 @@ const GraphQLIPSubnet = new GraphQLScalarType({
   description: `Requires that the string passed that is parsed match an IP Subnet regex (e.g. 192.168.0.0/24). When successfully parsed, an object is returned with a structure of { network_address: "192.168.0.0", subnet_mask: 24 }`,
 
   serialize: serializeIPSubnet,
-  parseValue: parseIPAddress,
+  parseValue: parseIPSubnet,
   parseLiteral: ast => {
     if (ast.kind !== Kind.STRING) {
       throw new GraphQLError(

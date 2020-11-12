@@ -9,6 +9,7 @@ import customer_query_resolvers from "./customer.queries.js";
 import host_default_resolvers from "./host.default";
 import host_mutation_resolvers from "./host.mutations.js";
 import mutation_resolvers from "./mutations.js";
+import network_default_resolvers from "./network.default.js";
 import network_service_default_resolvers from "./network-service.default.js";
 import project_default_resolvers from "./project.default.js";
 import project_mutation_resolvers from "./project.mutations.js";
@@ -37,6 +38,7 @@ export default {
     audit_user_default_resolvers,
     customer_default_resolvers,
     host_default_resolvers,
+    network_default_resolvers,
     network_service_default_resolvers,
     project_default_resolvers,
     service_default_resolvers

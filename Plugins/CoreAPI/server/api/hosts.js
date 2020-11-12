@@ -25,7 +25,7 @@ export const getHosts = async host_ids => {
   if (is_test) {
     result = _.map(args, arg => _.find(mockHosts, host => host.id === arg));
   } else {
-    result = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
+    result = await PenPal.DataStore.fetch("CoreAPI", "Hosts", {
       id: { $in: host_ids }
     });
   }
@@ -34,8 +34,16 @@ export const getHosts = async host_ids => {
 };
 
 export const getHostsByProject = async project_id => {
-  const result = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
-    projectID: project_id
+  const result = await PenPal.DataStore.fetch("CoreAPI", "Hosts", {
+    project: project_id
+  });
+
+  return result;
+};
+
+export const getHostsByNetwork = async network_id => {
+  const result = await PenPal.DataStore.fetch("CoreAPI", "Hosts", {
+    network: network_id
   });
 
   return result;
@@ -222,11 +230,11 @@ export const removeHost = async host_id => {
 
 export const removeHosts = async host_ids => {
   // Get all the host data for hooks so the deleted host hook has some info for notifications and such
-  let hosts = PenPal.DataStore.fetch("CoreAPI", "Hosts", {
+  let hosts = await PenPal.DataStore.fetch("CoreAPI", "Hosts", {
     id: { $in: host_ids }
   });
 
-  let res = PenPal.DataStore.delete("CoreAPI", "Hosts", {
+  let res = await PenPal.DataStore.delete("CoreAPI", "Hosts", {
     id: { $in: host_ids }
   });
 

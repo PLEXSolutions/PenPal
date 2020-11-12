@@ -28,10 +28,10 @@ const settings = {
       name: "Hosts"
     },
     {
-      name: "Services"
+      name: "Networks"
     },
     {
-      name: "Netblocks"
+      name: "Services"
     },
     {
       name: "Configuration"
@@ -54,19 +54,6 @@ const CoreAPIPlugin = {
       UpsertMany: API.upsertCustomers
     };
 
-    PenPal.API.Hosts = {
-      Get: API.getHost,
-      GetMany: API.getHosts,
-      GetManyByProjectID: API.getHostsByProject,
-      Insert: API.insertHost,
-      InsertMany: API.insertHosts,
-      Remove: API.removeHost,
-      RemoveMany: API.removeHosts,
-      Update: API.updateHost,
-      UpdateMany: API.updateHosts,
-      UpsertMany: API.upsertHosts
-    };
-
     PenPal.API.Projects = {
       Get: API.getProject,
       GetMany: API.getProjects,
@@ -77,6 +64,32 @@ const CoreAPIPlugin = {
       Update: API.updateProject,
       UpdateMany: API.updateProjects,
       UpsertMany: API.upsertProjects
+    };
+
+    PenPal.API.Hosts = {
+      Get: API.getHost,
+      GetMany: API.getHosts,
+      GetManyByProjectID: API.getHostsByProject,
+      GetManyByNetworkID: API.getHostsByNetwork,
+      Insert: API.insertHost,
+      InsertMany: API.insertHosts,
+      Remove: API.removeHost,
+      RemoveMany: API.removeHosts,
+      Update: API.updateHost,
+      UpdateMany: API.updateHosts,
+      UpsertMany: API.upsertHosts
+    };
+
+    PenPal.API.Networks = {
+      Get: API.getNetwork,
+      GetMany: API.getNetworks,
+      GetManyByProjectID: API.getNetworksByProject,
+      Insert: API.insertNetwork,
+      InsertMany: API.insertNetworks,
+      Remove: API.removeNetwork,
+      RemoveMany: API.removeNetworks,
+      Update: API.updateNetwork,
+      UpdateMany: API.updateNetworks
     };
 
     PenPal.API.Services = {

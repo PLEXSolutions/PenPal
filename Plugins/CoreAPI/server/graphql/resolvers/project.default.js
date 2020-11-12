@@ -20,7 +20,7 @@ export default {
     async scope({ scope: { hosts, networks } }, args, { PenPalCachingAPI }) {
       const result = {
         hosts: await PenPalCachingAPI.Hosts.GetMany(hosts),
-        networks: null
+        networks: await PenPalCachingAPI.Networks.GetMany(networks)
       };
 
       return result;

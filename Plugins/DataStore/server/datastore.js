@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import _ from "lodash";
 
 const DataStore = {};
 DataStore._Adapters = []; // Meant to be internal, so don't make it obviously accessible. Maybe make this a real class at some point?
@@ -8,6 +9,10 @@ DataStore._Adapters = []; // Meant to be internal, so don't make it obviously ac
 
 DataStore.RegisterAdapter = (AdapterName, Adapter) =>
   DataStore._Adapters.push({ AdapterName, Adapter });
+
+DataStore.GetAdapter = AdapterName =>
+  _.find(DataStore._Adapters, adapter => adapter.AdapterName === AdapterName)
+    ?.Adapter ?? null;
 
 // -----------------------------------------------------------------------
 // DataStore creation/deletion functions

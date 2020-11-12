@@ -11,6 +11,7 @@ import TableCell from "@material-ui/core/TableCell";
 import TableRow from "@material-ui/core/TableRow";
 import TableContainer from "@material-ui/core/TableContainer";
 
+import { useSnackbar } from "notistack";
 import { useMutation } from "@apollo/react-hooks";
 
 import { Components, registerComponent } from "../../../components.js";
@@ -74,11 +75,12 @@ const ProjectReviewForm = ({
   // ----------------------------------------------------
 
   const classes = useStyles();
+  const { enqueueSnackbar } = useSnackbar();
   const [createProject] = useMutation(CreateProjectMutation);
 
   // ----------------------------------------------------
 
-  const handleCreateProject = () => {
+  const handleCreateProject = async () => {
     const variables = _.pickBy({
       customer: customers[selectedCustomer].id,
       name: projectName,
@@ -89,11 +91,18 @@ const ProjectReviewForm = ({
       project_networks: projectNetworks
     });
 
-    createProject({
-      variables
-    });
+    try {
+      const result = await createProject({
+        variables
+      });
 
-    handleClose();
+      console.log(result);
+
+      handleClose();
+    } catch (e) {
+      console.error(e);
+      enqueueSnackbar(e.message, { variant: "error", autoHideDuration: 10000 });
+    }
   };
 
   // ----------------------------------------------------

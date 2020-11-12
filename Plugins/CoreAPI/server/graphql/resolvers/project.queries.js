@@ -1,8 +1,8 @@
 export default {
   async getProject(root, { id }, { PenPalCachingAPI }) {
-    return PenPalCachingAPI.Projects.Get({ id });
+    return await PenPalCachingAPI.Projects.Get({ id });
   },
   async getProjects(root, args, { PenPalCachingAPI }) {
-    return PenPalCachingAPI.Projects.GetMany();
+    return await PenPalCachingAPI.Projects.GetMany();
   }
 };

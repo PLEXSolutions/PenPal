@@ -3,11 +3,14 @@ import _ from "lodash";
 
 export default {
   CoreAPIAnalytics: {
-    totalProjects: async () => {
+    async totalProjects() {
+      const MongoAdapter = PenPal.DataStore.GetAdapter("MongoAdapter");
+
       let pipeline = [];
       pipeline.push({ $count: "totalProjects" });
 
-      const results = await PenPal.MongoCollections.CoreAPIProjects.rawCollection()
+      const results = await MongoAdapter.MongoCollections["CoreAPI.Projects"]
+        .rawCollection()
         .aggregate(pipeline)
         .toArray();
 
@@ -25,11 +28,14 @@ export default {
       return result;
     },
 
-    totalCustomers: async () => {
+    async totalCustomers() {
+      const MongoAdapter = PenPal.DataStore.GetAdapter("MongoAdapter");
+
       let pipeline = [];
       pipeline.push({ $count: "totalCustomers" });
 
-      const results = await PenPal.MongoCollections.CoreAPICustomers.rawCollection()
+      const results = await MongoAdapter.MongoCollections["CoreAPI.Customers"]
+        .rawCollection()
         .aggregate(pipeline)
         .toArray();
 
@@ -47,11 +53,14 @@ export default {
       return result;
     },
 
-    totalHosts: async () => {
+    async totalHosts() {
+      const MongoAdapter = PenPal.DataStore.GetAdapter("MongoAdapter");
+
       let pipeline = [];
       pipeline.push({ $count: "totalHosts" });
 
-      const results = await PenPal.MongoCollections.CoreAPIHosts.rawCollection()
+      const results = await MongoAdapter.MongoCollections["CoreAPI.Hosts"]
+        .rawCollection()
         .aggregate(pipeline)
         .toArray();
 
@@ -69,11 +78,14 @@ export default {
       return result;
     },
 
-    totalServices: async () => {
+    async totalServices() {
+      const MongoAdapter = PenPal.DataStore.GetAdapter("MongoAdapter");
+
       let pipeline = [];
       pipeline.push({ $count: "totalServices" });
 
-      const results = await PenPal.MongoCollections.CoreAPIServices.rawCollection()
+      const results = await MongoAdapter.MongoCollections["CoreAPI.Services"]
+        .rawCollection()
         .aggregate(pipeline)
         .toArray();
 
