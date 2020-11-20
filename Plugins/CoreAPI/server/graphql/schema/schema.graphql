@@ -1,3 +1,10 @@
+type PageInfo {
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+  startCursor: String!
+  endCursor: String!
+}
+
 """
 An interface that allows annotations to be supplied to the implementer
 """
@@ -313,15 +320,14 @@ type File {
 This is one of the most important parts of the project as it defines the way in which the user thinks about hosts fit together.
 """
 type ProjectScope {
-  id: ID!
   """
   Groups of hosts that can be defined by subnets
   """
-  networks: [Network]
+  networksConnection(first: Int, after: String, last: Int, before: String): NetworksConnection
   """
   Individual hosts that don't fall under a particular network
   """
-  hosts: [Host]
+  hostsConnection(first: Int, after: String, last: Int, before: String): HostsConnection
 }
 
 """
@@ -357,6 +363,24 @@ type Network implements Annotatable & Auditable {
   Audits for the network
   """
   changes: [Audit]
+}
+
+"""
+An implementation of the Edge spec for a Network
+"""
+type NetworkEdge {
+  node: Network!
+  cursor: String!
+}
+
+"""
+An implementation of the Connection spec for Networks
+"""
+type NetworksConnection {
+  edges: [NetworkEdge]!
+  networks: [Network]!
+  pageInfo: PageInfo!
+  totalCount: Int!
 }
 
 """
@@ -400,6 +424,24 @@ type Host implements Annotatable & Auditable {
   Audits for the host
   """
   changes: [Audit]
+}
+
+"""
+An implementation of the Edge spec for a Network
+"""
+type HostEdge {
+  node: Host!
+  cursor: String!
+}
+
+"""
+An implementation of the Connection spec for Hosts
+"""
+type HostsConnection {
+  edges: [HostEdge]!
+  hosts: [Host]!
+  pageInfo: PageInfo!
+  totalCount: Int!
 }
 
 """

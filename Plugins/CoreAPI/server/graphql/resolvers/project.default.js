@@ -2,7 +2,12 @@ import { CachingDefaultResolvers } from "./common.js";
 
 export default {
   Project: {
-    ...CachingDefaultResolvers("Projects", ["name", "description", "dates"]),
+    ...CachingDefaultResolvers("Projects", [
+      "name",
+      "description",
+      "dates",
+      "scope"
+    ]),
 
     async customer({ customer }, args, { PenPalCachingAPI }) {
       const customer_data = await PenPalCachingAPI.Customers.Get(customer);
@@ -15,15 +20,18 @@ export default {
       }
 
       return { id: customer, ...customer_data };
+    }
+  },
+
+  ProjectScope: {
+    // We pass thru the args here to the connection default resolvers so they can actually do the appropriate fetching
+    async hostsConnection({ hosts }, args, { PenPalCachingAPI }) {
+      return { hosts, args };
     },
 
-    async scope({ scope: { hosts, networks } }, args, { PenPalCachingAPI }) {
-      const result = {
-        hosts: await PenPalCachingAPI.Hosts.GetMany(hosts),
-        networks: await PenPalCachingAPI.Networks.GetMany(networks)
-      };
-
-      return result;
+    // We pass thru the args here to the connection default resolvers so they can actually do the appropriate fetching
+    async networksConnection({ networks }, args, { PenPalCachingAPI }) {
+      return { networks, args };
     }
   }
 };
