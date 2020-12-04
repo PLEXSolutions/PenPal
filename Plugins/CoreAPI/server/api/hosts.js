@@ -8,16 +8,21 @@ import { newHostHooks, deletedHostHooks, updatedHostHooks } from "./hooks.js";
 
 // -----------------------------------------------------------
 
-export const getHost = async host_id => {
+export const getHost = async (host_id, options) => {
   const is_test = isTestData(host_ids);
   return is_test
     ? _.find(mockHosts, host => host.id === host_id)
-    : await PenPal.DataStore.fetchOne("CoreAPI", "Hosts", {
-        id: host_id
-      });
+    : await PenPal.DataStore.fetchOne(
+        "CoreAPI",
+        "Hosts",
+        {
+          id: host_id
+        },
+        options
+      );
 };
 
-export const getHosts = async host_ids => {
+export const getHosts = async (host_ids, options) => {
   const is_test = isTestData(host_ids);
 
   let result = [];
@@ -25,26 +30,41 @@ export const getHosts = async host_ids => {
   if (is_test) {
     result = _.map(args, arg => _.find(mockHosts, host => host.id === arg));
   } else {
-    result = await PenPal.DataStore.fetch("CoreAPI", "Hosts", {
-      id: { $in: host_ids }
-    });
+    result = await PenPal.DataStore.fetch(
+      "CoreAPI",
+      "Hosts",
+      {
+        id: { $in: host_ids }
+      },
+      options
+    );
   }
 
   return result;
 };
 
-export const getHostsByProject = async project_id => {
-  const result = await PenPal.DataStore.fetch("CoreAPI", "Hosts", {
-    project: project_id
-  });
+export const getHostsByProject = async (project_id, options) => {
+  const result = await PenPal.DataStore.fetch(
+    "CoreAPI",
+    "Hosts",
+    {
+      project: project_id
+    },
+    options
+  );
 
   return result;
 };
 
-export const getHostsByNetwork = async network_id => {
-  const result = await PenPal.DataStore.fetch("CoreAPI", "Hosts", {
-    network: network_id
-  });
+export const getHostsByNetwork = async (network_id, options) => {
+  const result = await PenPal.DataStore.fetch(
+    "CoreAPI",
+    "Hosts",
+    {
+      network: network_id
+    },
+    options
+  );
 
   return result;
 };

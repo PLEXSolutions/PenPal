@@ -124,15 +124,23 @@ const CoreAPIPlugin = {
           async Get(key) {
             return await api_dataloader.load(key);
           },
-          async GetMany(keys) {
+          async GetMany(keys, options) {
             if (keys === undefined) {
               // There's no way to use a cache when all records are requested, so get all the records and
               // cache them for any future requests
-              const all_results = await PenPal.API[api_key].GetMany();
-              for (let result of all_results) {
+              const results = await PenPal.API[api_key].GetMany();
+              for (let result of results) {
                 api_dataloader.clear(result.id).prime(result.id, result);
               }
-              return all_results;
+              return results;
+            } else if (options !== undefined) {
+              // There's no simple way to use the cache when doing pagination, so use the underlying DataStore
+              // functionality to do so when options are passed in
+              const results = await PenPal.API[api_key].GetMany(keys, options);
+              for (let result of results) {
+                api_dataloader.clear(result.id).prime(result.id, result);
+              }
+              return results;
             } else {
               return await api_dataloader.loadMany(keys);
             }

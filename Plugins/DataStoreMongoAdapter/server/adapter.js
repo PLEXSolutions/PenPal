@@ -1,6 +1,7 @@
 import PenPal from "meteor/penpal";
 import { Mongo } from "meteor/mongo";
 import { Random } from "meteor/random";
+import { check, Match } from "meteor/check";
 
 const MongoAdapter = {};
 MongoAdapter.MongoCollections = {};
@@ -22,6 +23,14 @@ const normalize_result = ({ _id = null, ...rest }) => {
   return { ...(_id !== null && { id: String(_id) }), ...rest };
 };
 
+const check_options = options => {
+  const { first, after, last, before } = options;
+  check(first, Match.Maybe(Number));
+  check(after, Match.Maybe(String));
+  check(last, Match.Maybe(Number));
+  check(before, Match.Maybe(String));
+};
+
 // -----------------------------------------------------------------------
 // MongoAdapter creation/deletion functions
 
@@ -40,14 +49,43 @@ MongoAdapter.DeleteStore = async (plugin_name, store_name) => {
 // -----------------------------------------------------------------------
 // MongoAdapter operations
 
-MongoAdapter.fetch = async (plugin_name, store_name, selector) => {
-  return get_collection(plugin_name, store_name)
-    .find(normalize_data(selector))
-    .fetch()
-    .map(doc => normalize_result(doc));
+MongoAdapter.fetch = async (
+  plugin_name,
+  store_name,
+  selector,
+  options = {}
+) => {
+  check_options(options);
+  const { first, after, last, before } = options;
+
+  let cursor = get_collection(plugin_name, store_name).rawCollection();
+
+  if (first !== undefined) {
+    let _selector = normalize_data(selector);
+    if (after !== undefined) {
+      _selector = { $and: [{ _id: { $gt: after } }, _selector] };
+    }
+    console.log(JSON.stringify(_selector));
+    cursor = cursor.find(_selector).limit(first);
+  } else if (last !== undefined) {
+    let _selector = normalize_data(selector);
+    if (before !== undefined) {
+      _selector = { $and: [{ _id: { $lt: before } }, _selector] };
+    }
+    cursor = cursor
+      .find(_selector)
+      .sort({ _id: -1 })
+      .limit(last);
+  } else {
+    cursor = cursor.find(normalize_data(selector));
+  }
+
+  const data = await cursor.toArray();
+
+  return data.map(doc => normalize_result(doc));
 };
 
-MongoAdapter.fetchOne = async (plugin_name, store_name, selector) => {
+MongoAdapter.fetchOne = async (plugin_name, store_name, selector, options) => {
   return normalize_result(
     get_collection(plugin_name, store_name).findOne(normalize_data(selector))
   );
@@ -83,8 +121,9 @@ MongoAdapter.update = async (plugin_name, store_name, selector, data) => {
 };
 
 MongoAdapter.delete = async (plugin_name, store_name, selector) => {
-  return;
-  get_collection(plugin_name, store_name).remove(normalize_data(selector));
+  return get_collection(plugin_name, store_name).remove(
+    normalize_data(selector)
+  );
 };
 
 // -----------------------------------------------------------------------

@@ -15,21 +15,18 @@ export default {
 
   HostsConnection: {
     async edges({ hosts: host_ids, args }, _, { PenPalCachingAPI }) {
-      console.log(host_ids, args);
-      const hosts = await PenPalCachingAPI.Hosts.GetMany(host_ids);
+      const hosts = await PenPalCachingAPI.Hosts.GetMany(host_ids, args);
       return hosts.map(host => ({ cursor: host.id, node: host }));
       return result;
     },
 
     async hosts({ hosts: host_ids, args }, _, { PenPalCachingAPI }) {
-      console.log(host_ids, args);
-      const hosts = await PenPalCachingAPI.Hosts.GetMany(host_ids);
+      const hosts = await PenPalCachingAPI.Hosts.GetMany(host_ids, args);
       return hosts;
     },
 
     async pageInfo({ hosts: host_ids, args }, _, { PenPalCachingAPI }) {
-      console.log(host_ids, args);
-      const hosts = await PenPalCachingAPI.Hosts.GetMany(host_ids);
+      const hosts = await PenPalCachingAPI.Hosts.GetMany(host_ids, args);
 
       return {
         hasPreviousPage: false,
@@ -40,7 +37,6 @@ export default {
     },
 
     async totalCount({ hosts: host_ids, args }, _, { PenPalCachingAPI }) {
-      console.log(host_ids, args);
       return host_ids.length;
     }
   }
