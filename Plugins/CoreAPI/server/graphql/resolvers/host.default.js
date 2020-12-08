@@ -8,8 +8,9 @@ export default {
       "hostnames"
     ]),
 
-    async project({ project }, args, { PenPalCachingAPI }) {
-      return await PenPalCachingAPI.Projects.Get(host.project);
+    async project({ id }, args, { PenPalCachingAPI }) {
+      const { project } = await PenPalCachingAPI.Hosts.Get(id);
+      return await PenPalCachingAPI.Projects.Get(project);
     }
   },
 

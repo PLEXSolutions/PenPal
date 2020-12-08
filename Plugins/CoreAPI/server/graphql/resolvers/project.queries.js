@@ -1,8 +1,11 @@
 export default {
   async getProject(root, { id }, { PenPalCachingAPI }) {
-    return await PenPalCachingAPI.Projects.Get({ id });
+    // Return the id and let the default resolvers do the work
+    return { id };
   },
+
   async getProjects(root, args, { PenPalCachingAPI }) {
-    return await PenPalCachingAPI.Projects.GetMany();
+    // Return the args here so they are in the root object for the default resolvers for ProjectsConnection
+    return { args };
   }
 };

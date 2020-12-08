@@ -77,6 +77,25 @@ type Audit {
 }
 
 """
+An implementation of the Connection spec for Projects
+"""
+type ProjectsConnection {
+  edges: [ProjectEdge]!
+  projects: [Project]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+"""
+An implementation of the Edge spec for a Network
+"""
+type ProjectEdge {
+  node: Project!
+  cursor: String!
+}
+
+
+"""
 The root of the PenPal data schema
 """
 type Project implements Annotatable & Auditable {
@@ -183,7 +202,7 @@ type Customer implements Annotatable & Auditable {
   """
   The projects associated with this customer
   """
-  projects: [Project]!
+  projectsConnection(first: Int, after: String, last: Int, before: String): ProjectsConnection!
   """
   Customer annotations
   """

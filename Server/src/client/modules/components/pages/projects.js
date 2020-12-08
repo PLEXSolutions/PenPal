@@ -40,7 +40,12 @@ const useStyles = makeStyles(theme => ({
   },
   container: {
     height: "100%",
-    position: "relative"
+    display: "flex",
+    flexDirection: "column"
+  },
+  projects_container: {
+    flex: 1,
+    width: "100%"
   },
   paper: {
     position: "absolute",
@@ -176,7 +181,9 @@ const Projects = () => {
             ))}
           </Paper>
         )}
-        <Components.ProjectsView view={view} />
+        <div className={classes.projects_container}>
+          <Components.ProjectsView view={view} projects={projects} />
+        </div>
         <Components.NewProjectWorkflow
           open={newProjectOpen}
           handleClose={handleNewProjectClose}

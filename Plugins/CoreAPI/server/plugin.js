@@ -1,6 +1,7 @@
 import _ from "lodash";
 import PenPal from "meteor/penpal";
 import DataLoader from "dataloader";
+import stable_stringify from "fast-json-stable-stringify";
 
 import { types, resolvers, loaders } from "./graphql";
 import * as API from "./api/";
@@ -115,7 +116,16 @@ const CoreAPIPlugin = {
         }
 
         // Build the dataloader
-        const api_dataloader = new DataLoader(keys => batch_api_getter(keys));
+        const api_dataloader = new DataLoader(async keys => {
+          const api_results = await batch_api_getter(keys);
+          const api_results_map = _.keyBy(api_results, "id");
+          return keys.map(key => api_results_map[key]);
+        });
+
+        // When doing pagination, we can't easily decide what IDs are being fetched from the cache to
+        // prevent overfetching. If we can cache the IDs returned per set of "options", then perhaps we
+        // can utilize dataloader more efficiently
+        const pagination_options_id_cache = {};
 
         const { Get, GetMany, ...OtherFunctions } = PenPal.API[api_key];
 
@@ -134,12 +144,48 @@ const CoreAPIPlugin = {
               }
               return results;
             } else if (options !== undefined) {
-              // There's no simple way to use the cache when doing pagination, so use the underlying DataStore
-              // functionality to do so when options are passed in
-              const results = await PenPal.API[api_key].GetMany(keys, options);
-              for (let result of results) {
-                api_dataloader.clear(result.id).prime(result.id, result);
+              // Deterministic stringify of the options to use as a key in the pagination_options_id_cache
+              const options_string = stable_stringify(options);
+
+              let results = [];
+              let cached_ids = pagination_options_id_cache[options_string];
+
+              if (cached_ids === undefined) {
+                // Mark this with a flag to indicate that it's loading to avoid race conditions. The await
+                // later in this block will yield execution on the event loop, potentially allowing other
+                // default resolvers to call this function with the same options string, but we only need to
+                // execute one of them.
+                pagination_options_id_cache[options_string] = true;
+
+                console.log(
+                  `No cached IDs for pagination options ${options_string}`
+                );
+
+                // There's no simple way to use the cache when doing pagination, so use the underlying DataStore
+                // functionality to do so when options are passed in and then store the IDs in the pagination options cache
+                results = await PenPal.API[api_key].GetMany(keys, options);
+
+                for (let result of results) {
+                  api_dataloader.clear(result.id).prime(result.id, result);
+                }
+
+                pagination_options_id_cache[options_string] = results.map(
+                  result => result.id
+                );
+              } else {
+                console.log(`Cache hit for ${options_string}`);
+
+                // This will repeatedly yield to the event loop waiting for the pagination_options_id_cache gets results
+                // from the PenPal API
+                while (cached_ids === true) {
+                  // Yield to event loop for 10 ms
+                  await PenPal.API.AsyncNOOP(10);
+                  cached_ids = pagination_options_id_cache[options_string];
+                }
+
+                results = await api_dataloader.loadMany(cached_ids);
               }
+
               return results;
             } else {
               return await api_dataloader.loadMany(keys);

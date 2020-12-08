@@ -15,11 +15,11 @@ const collection_name = (plugin_name, store_name) =>
 const get_collection = (plugin_name, store_name) =>
   MongoAdapter.MongoCollections[collection_name(plugin_name, store_name)];
 
-const normalize_data = ({ id = null, ...rest }) => {
+const normalize_data = ({ id = null, ...rest } = {}) => {
   return { ...(id !== null && { _id: id }), ...rest };
 };
 
-const normalize_result = ({ _id = null, ...rest }) => {
+const normalize_result = ({ _id = null, ...rest } = {}) => {
   return { ...(_id !== null && { id: String(_id) }), ...rest };
 };
 
@@ -65,7 +65,6 @@ MongoAdapter.fetch = async (
     if (after !== undefined) {
       _selector = { $and: [{ _id: { $gt: after } }, _selector] };
     }
-    console.log(JSON.stringify(_selector));
     cursor = cursor.find(_selector).limit(first);
   } else if (last !== undefined) {
     let _selector = normalize_data(selector);

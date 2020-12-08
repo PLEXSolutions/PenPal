@@ -12,6 +12,7 @@ export const getProject = async project_id => {
 };
 
 export const getProjects = async (project_ids = []) => {
+  console.log("Getting projects in API");
   let result = [];
 
   if (project_ids.length === 0) {
@@ -50,7 +51,7 @@ export const insertProjects = async projects => {
         id: project.customer
       });
 
-      if (customer === undefined) {
+      if (customer?.id === undefined) {
         throw new Meteor.Error(404, `Customer ${project.customer} not found`);
       }
 
