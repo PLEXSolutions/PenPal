@@ -55,14 +55,6 @@ export default {
         totalCount
       } = await PenPalCachingAPI.Projects.GetPaginationInfo([], args);
 
-      console.log(
-        startCursor,
-        startCursorOffset,
-        endCursor,
-        endCursorOffset,
-        totalCount
-      );
-
       return {
         hasPreviousPage: startCursorOffset > 0,
         hasNextPage: endCursorOffset < totalCount - 1,

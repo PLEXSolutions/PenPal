@@ -100,12 +100,10 @@ const CoreAPIPlugin = {
       Get: API.getServices
     };
 
-    // This builds a unique set of wrapped functions that can pass a cache object as the final
-    // argument to each API function. The API function has the ability to interact with the
-    // .get or .add of that cache as they see fit. A nop_cache implementation that does nothing
-    // should be the default final argument of each API function that desires to use the cache
-    // so that there needs not be any logic around whether or not a cache actually exists - the
-    // code just pretends one always exists
+    // This builds a unique set of wrapped functions that can utilize the dataloader utility in
+    // order to efficiently cache information on a per instantiation of the caching API basis.
+    // This is primarily useful for the GraphQL wrapper around the API in order to allow calls
+    // into the API from default resolvers to minimize duplication of database actions
     PenPal.API.CachingAPI = () => {
       const caching_apis = {};
 
@@ -126,15 +124,22 @@ const CoreAPIPlugin = {
         // When doing pagination, we can't easily decide what IDs are being fetched from the cache to
         // prevent overfetching. If we can cache the IDs returned per set of "options", then perhaps we
         // can utilize dataloader more efficiently
-        const pagination_options_id_cache = {};
+        const get_many_pagination_options_id_cache = {};
+        const pagination_info_cache = {};
 
-        const { Get, GetMany, ...OtherFunctions } = PenPal.API[api_key];
+        const {
+          Get,
+          GetMany,
+          GetPaginationInfo,
+          ...OtherFunctions
+        } = PenPal.API[api_key];
 
         // Build the object that's going to hold all the caching functions
         caching_apis[api_key] = {
           async Get(key) {
             return await api_dataloader.load(key);
           },
+
           async GetMany(keys, options) {
             if (keys === undefined) {
               // There's no way to use a cache when all records are requested, so get all the records and
@@ -145,22 +150,19 @@ const CoreAPIPlugin = {
               }
               return results;
             } else if (options !== undefined) {
-              // Deterministic stringify of the options to use as a key in the pagination_options_id_cache
+              // Deterministic stringify of the options to use as a key in the get_many_pagination_options_id_cache
               const options_string = stable_stringify(options);
 
               let results = [];
-              let cached_ids = pagination_options_id_cache[options_string];
+              let cached_ids =
+                get_many_pagination_options_id_cache[options_string];
 
               if (cached_ids === undefined) {
                 // Mark this with a flag to indicate that it's loading to avoid race conditions. The await
                 // later in this block will yield execution on the event loop, potentially allowing other
                 // default resolvers to call this function with the same options string, but we only need to
                 // execute one of them.
-                pagination_options_id_cache[options_string] = true;
-
-                console.log(
-                  `No cached IDs for pagination options ${options_string}`
-                );
+                get_many_pagination_options_id_cache[options_string] = true;
 
                 // There's no simple way to use the cache when doing pagination, so use the underlying DataStore
                 // functionality to do so when options are passed in and then store the IDs in the pagination options cache
@@ -170,18 +172,17 @@ const CoreAPIPlugin = {
                   api_dataloader.clear(result.id).prime(result.id, result);
                 }
 
-                pagination_options_id_cache[options_string] = results.map(
-                  result => result.id
-                );
+                get_many_pagination_options_id_cache[
+                  options_string
+                ] = results.map(result => result.id);
               } else {
-                console.log(`Cache hit for ${options_string}`);
-
-                // This will repeatedly yield to the event loop waiting for the pagination_options_id_cache gets results
+                // This will repeatedly yield to the event loop waiting for the get_many_pagination_options_id_cache gets results
                 // from the PenPal API
                 while (cached_ids === true) {
                   // Yield to event loop for 10 ms
                   await PenPal.API.AsyncNOOP(10);
-                  cached_ids = pagination_options_id_cache[options_string];
+                  cached_ids =
+                    get_many_pagination_options_id_cache[options_string];
                 }
 
                 results = await api_dataloader.loadMany(cached_ids);
@@ -192,6 +193,45 @@ const CoreAPIPlugin = {
               return await api_dataloader.loadMany(keys);
             }
           },
+
+          // This is just syntactic sugar to conditionally create the function
+          ...(GetPaginationInfo && {
+            GetPaginationInfo: async function(keys, options) {
+              // Deterministic stringify of the options to use as a key in the pagination_info_cache
+              const options_string = stable_stringify(options);
+
+              let cached_pagination_info =
+                pagination_info_cache[options_string];
+
+              if (cached_pagination_info === undefined) {
+                // Mark this with a flag to indicate that it's loading to avoid race conditions. The await
+                // later in this block will yield execution on the event loop, potentially allowing other
+                // default resolvers to call this function with the same options string, but we only need to
+                // execute one of them.
+                pagination_info_cache[options_string] = true;
+
+                const result = await PenPal.API[api_key].GetPaginationInfo(
+                  keys,
+                  options
+                );
+
+                pagination_info_cache[options_string] = result;
+                return result;
+              } else {
+                // This will repeatedly yield to the event loop waiting for the pagination_info_cache gets results
+                // from the PenPal API
+                while (cached_pagination_info === true) {
+                  // Yield to event loop for 10 ms
+                  await PenPal.API.AsyncNOOP(10);
+                  cached_pagination_info =
+                    pagination_info_cache[options_string];
+                }
+
+                return cached_pagination_info;
+              }
+            }
+          }),
+
           // TODO: At some point consider using the "prime" functions of the data loader to cache the results
           // of and insert, update, etc
           ...OtherFunctions
