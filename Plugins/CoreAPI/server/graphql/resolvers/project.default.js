@@ -47,18 +47,36 @@ export default {
     },
 
     async pageInfo({ args }, _, { PenPalCachingAPI }) {
-      const projects = await PenPalCachingAPI.Projects.GetMany([], args);
+      const {
+        startCursor,
+        startCursorOffset,
+        endCursor,
+        endCursorOffset,
+        totalCount
+      } = await PenPalCachingAPI.Projects.GetPaginationInfo([], args);
+
+      console.log(
+        startCursor,
+        startCursorOffset,
+        endCursor,
+        endCursorOffset,
+        totalCount
+      );
 
       return {
-        hasPreviousPage: false,
-        hasNextPage: false,
-        startCursor: projects[0]?.id ?? "",
-        endCursor: projects[projects.length - 1]?.id ?? ""
+        hasPreviousPage: startCursorOffset > 0,
+        hasNextPage: endCursorOffset < totalCount - 1,
+        startCursor,
+        endCursor
       };
     },
 
     async totalCount({ args }, _, { PenPalCachingAPI }) {
-      return -1;
+      const { totalCount } = await PenPalCachingAPI.Projects.GetPaginationInfo(
+        [],
+        args
+      );
+      return totalCount;
     }
   }
 };

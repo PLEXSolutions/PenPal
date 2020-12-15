@@ -58,6 +58,7 @@ const CoreAPIPlugin = {
     PenPal.API.Projects = {
       Get: API.getProject,
       GetMany: API.getProjects,
+      GetPaginationInfo: API.getProjectsPaginationInfo,
       Insert: API.insertProject,
       InsertMany: API.insertProjects,
       Remove: API.removeProject,

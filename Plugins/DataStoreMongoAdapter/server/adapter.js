@@ -79,9 +79,138 @@ MongoAdapter.fetch = async (
     cursor = cursor.find(normalize_data(selector));
   }
 
-  const data = await cursor.toArray();
+  let data = await cursor.toArray();
+
+  if (last !== undefined) {
+    // This was reverse sorted for the limit, so flip it back
+    data = data.reverse();
+  }
 
   return data.map(doc => normalize_result(doc));
+};
+
+MongoAdapter.getPaginationInfo = async (
+  plugin_name,
+  store_name,
+  selector,
+  options = {}
+) => {
+  check_options(options);
+  const { first, after, last, before } = options;
+
+  console.log(
+    `Getting pagination options for ${plugin_name} ${store_name} ::: ${JSON.stringify(
+      selector
+    )} : ${JSON.stringify(options)}`
+  );
+
+  let normalized_selector = normalize_data(selector);
+  const cursor = () => get_collection(plugin_name, store_name).rawCollection();
+  let totalCount = await cursor()
+    .find(normalized_selector)
+    .count();
+
+  let result = {
+    startCursor: null,
+    startCursorOffset: 0,
+    endCursor: null,
+    endCursorOffset: first ?? totalCount - 1,
+    totalCount
+  };
+
+  if (first !== undefined) {
+    let page_selector = normalized_selector;
+    let page_offset_selector = null;
+
+    if (after !== undefined) {
+      page_selector = { $and: [{ _id: { $gt: after } }, normalized_selector] };
+      page_offset_selector = {
+        $and: [{ _id: { $lt: after } }, normalized_selector]
+      };
+    }
+
+    const page_count = Math.min(
+      await cursor()
+        .find(page_selector)
+        .count(),
+      first
+    );
+
+    let page = cursor()
+      .find(page_selector)
+      .limit(first);
+    const first_page_match = (await page.hasNext()) && (await page.next());
+
+    page = cursor()
+      .find(page_selector)
+      .skip(Math.max(page_count - 1, 0))
+      .limit(1);
+    const last_page_match = (await page.hasNext()) && (await page.next());
+
+    result.startCursor = first_page_match._id;
+    result.endCursor = last_page_match._id;
+
+    if (page_offset_selector !== null) {
+      result.startCursorOffset =
+        (await cursor()
+          .find(page_offset_selector)
+          .count()) + 1;
+      result.endCursorOffset = result.startCursorOffset + page_count - 1;
+    } else {
+      result.endCursorOffset = first - 1;
+    }
+  } else if (last !== undefined) {
+    let page_selector = normalized_selector;
+    let page_offset_selector = null;
+
+    if (before !== undefined) {
+      page_selector = { $and: [{ _id: { $lt: before } }, normalized_selector] };
+      page_offset_selector = {
+        $and: [{ _id: { $gte: before } }, normalized_selector]
+      };
+    }
+
+    const page_count = Math.min(
+      await cursor()
+        .find(page_selector)
+        .count(),
+      last
+    );
+    console.log("Page count", page_count);
+
+    let page = cursor()
+      .find(page_selector)
+      .sort({ _id: -1 })
+      .limit(last);
+    const last_page_match = (await page.hasNext()) && (await page.next());
+
+    page = cursor()
+      .find(page_selector)
+      .sort({ _id: -1 })
+      .limit(last)
+      .skip(Math.max(page_count - 1, 0));
+    const first_page_match = (await page.hasNext()) && (await page.next());
+
+    result.startCursor = first_page_match._id;
+    result.endCursor = last_page_match._id;
+
+    if (page_offset_selector !== null) {
+      result.endCursorOffset =
+        totalCount -
+        (await cursor()
+          .find(page_offset_selector)
+          .count()) -
+        1;
+      result.startCursorOffset = result.endCursorOffset - last;
+    } else {
+      result.endCursorOffset = totalCount - 1;
+      result.startCursorOffset = result.endCursorOffset - (last - 1);
+    }
+  }
+
+  console.log("In fetch", result);
+
+  return result;
 };
 
 MongoAdapter.fetchOne = async (plugin_name, store_name, selector, options) => {

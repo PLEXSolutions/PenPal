@@ -11,19 +11,22 @@ export const getProject = async project_id => {
   });
 };
 
-export const getProjects = async (project_ids = []) => {
-  console.log("Getting projects in API");
-  let result = [];
+export const getProjects = async (project_ids = [], options) => {
+  return await PenPal.DataStore.fetch(
+    "CoreAPI",
+    "Projects",
+    project_ids.length === 0 ? {} : { id: { $in: project_ids } },
+    options
+  );
+};
 
-  if (project_ids.length === 0) {
-    result = await PenPal.DataStore.fetch("CoreAPI", "Projects", {});
-  } else {
-    result = await PenPal.DataStore.fetch("CoreAPI", "Projects", {
-      id: { $in: project_ids }
-    });
-  }
-
-  return result;
+export const getProjectsPaginationInfo = async (project_ids = [], options) => {
+  return await PenPal.DataStore.getPaginationInfo(
+    "CoreAPI",
+    "Projects",
+    project_ids.length === 0 ? {} : { id: { $in: project_ids } },
+    options
+  );
 };
 
 // -----------------------------------------------------------

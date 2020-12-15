@@ -17,6 +17,7 @@ export {
 export {
   getProject,
   getProjects,
+  getProjectsPaginationInfo,
   insertProject,
   insertProjects,
   updateProject,

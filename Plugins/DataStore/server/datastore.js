@@ -61,6 +61,28 @@ DataStore.fetch = async (plugin_name, store_name, selector, options) => {
   )[0].result;
 };
 
+DataStore.getPaginationInfo = async (
+  plugin_name,
+  store_name,
+  selector,
+  options
+) => {
+  return (
+    await Promise.all(
+      DataStore._Adapters.map(async ({ AdapterName, Adapter }) => ({
+        AdapterName,
+        result:
+          Adapter.getPaginationInfo?.(
+            plugin_name,
+            store_name,
+            selector,
+            options
+          ) ?? null
+      }))
+    )
+  )[0].result;
+};
+
 DataStore.fetchOne = async (plugin_name, store_name, selector, options) => {
   return (
     await Promise.all(
