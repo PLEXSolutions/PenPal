@@ -41,7 +41,6 @@ export default {
     },
 
     async projects({ args }, _, { PenPalCachingAPI }) {
-      console.log("Getting projects", args);
       const projects = await PenPalCachingAPI.Projects.GetMany([], args);
       return projects;
     },

@@ -98,12 +98,6 @@ MongoAdapter.getPaginationInfo = async (
   check_options(options);
   const { first, after, last, before } = options;
 
-  console.log(
-    `Getting pagination options for ${plugin_name} ${store_name} ::: ${JSON.stringify(
-      selector
-    )} : ${JSON.stringify(options)}`
-  );
-
   let normalized_selector = normalize_data(selector);
   const cursor = () => get_collection(plugin_name, store_name).rawCollection();
   let totalCount = await cursor()
@@ -176,7 +170,6 @@ MongoAdapter.getPaginationInfo = async (
         .count(),
       last
     );
-    console.log("Page count", page_count);
 
     let page = cursor()
       .find(page_selector)
@@ -207,8 +200,6 @@ MongoAdapter.getPaginationInfo = async (
       result.startCursorOffset = result.endCursorOffset - (last - 1);
     }
   }
-
-  console.log("In fetch", result);
 
   return result;
 };
