@@ -27,18 +27,30 @@ export default {
     },
 
     async pageInfo({ hosts: host_ids, args }, _, { PenPalCachingAPI }) {
-      const hosts = await PenPalCachingAPI.Hosts.GetMany(host_ids, args);
+      const {
+        startCursor,
+        startCursorOffset,
+        endCursor,
+        endCursorOffset,
+        totalCount
+      } = await PenPalCachingAPI.Hosts.GetPaginationInfo(host_ids, args);
 
       return {
-        hasPreviousPage: false,
-        hasNextPage: false,
-        startCursor: hosts[0]?.id ?? "",
-        endCursor: hosts[hosts.length - 1]?.id ?? ""
+        hasPreviousPage: startCursorOffset > 0,
+        hasNextPage: endCursorOffset < totalCount - 1,
+        startCursor,
+        startCursorOffset,
+        endCursor,
+        endCursorOffset
       };
     },
 
     async totalCount({ hosts: host_ids, args }, _, { PenPalCachingAPI }) {
-      return host_ids.length;
+      const { totalCount } = await PenPalCachingAPI.Hosts.GetPaginationInfo(
+        host_ids,
+        args
+      );
+      return totalCount;
     }
   }
 };

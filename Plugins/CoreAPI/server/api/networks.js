@@ -17,6 +17,15 @@ export const getNetworks = async network_ids => {
   });
 };
 
+export const getNetworksPaginationInfo = async (network_ids = [], options) => {
+  return await PenPal.DataStore.getPaginationInfo(
+    "CoreAPI",
+    "Networks",
+    network_ids.length === 0 ? {} : { id: { $in: network_ids } },
+    options
+  );
+};
+
 export const getNetworksByProject = async project_id => {
   const result = await PenPal.DataStore.fetch("CoreAPI", "Networks", {
     project: project_id

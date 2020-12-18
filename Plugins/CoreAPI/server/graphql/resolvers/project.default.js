@@ -58,7 +58,9 @@ export default {
         hasPreviousPage: startCursorOffset > 0,
         hasNextPage: endCursorOffset < totalCount - 1,
         startCursor,
-        endCursor
+        startCursorOffset,
+        endCursor,
+        endCursorOffset
       };
     },
 

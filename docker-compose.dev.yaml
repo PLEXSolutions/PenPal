@@ -14,17 +14,6 @@ services:
             - ./Plugins/:/app/plugins:consistent
             - /var/run/docker.sock:/var/run/docker.sock
 
-    graphql_editor:
-        # Path to Dockerfile directory
-        build: ./Dev-Tools/GraphqlEditor
-        ports:
-            - "1568:1568"
-        command: npm run start
-        volumes:
-            - ./Server/src/server/graphql/schema/schema.graphql:/app/sandbox/schema/schema.txt
-        networks:
-            - public
-
     storybook:
         build:
             context: ./

@@ -43,6 +43,15 @@ export const getHosts = async (host_ids, options) => {
   return result;
 };
 
+export const getHostsPaginationInfo = async (host_ids = [], options) => {
+  return await PenPal.DataStore.getPaginationInfo(
+    "CoreAPI",
+    "Hosts",
+    host_ids.length === 0 ? {} : { id: { $in: host_ids } },
+    options
+  );
+};
+
 export const getHostsByProject = async (project_id, options) => {
   const result = await PenPal.DataStore.fetch(
     "CoreAPI",

@@ -13,12 +13,22 @@ import Divider from "@material-ui/core/Divider";
 import Paper from "@material-ui/core/Paper";
 import EditIcon from "@material-ui/icons/Edit";
 import CloseIcon from "@material-ui/icons/Close";
-import ViewListIcon from "@material-ui/icons/ViewList";
-import CalendarViewDayIcon from "@material-ui/icons/CalendarViewDay";
-import ViewModuleIcon from "@material-ui/icons/ViewModule";
 import AddIcon from "@material-ui/icons/Add";
 import BuildIcon from "@material-ui/icons/Build";
 import ClearIcon from "@material-ui/icons/Clear";
+
+import {
+  Icon as CardViewIcon,
+  Name as CardViewName
+} from "./projects/views-card-view.js";
+import {
+  Icon as TableViewIcon,
+  Name as TableViewName
+} from "./projects/views-table-view.js";
+import {
+  Icon as TimelineViewIcon,
+  Name as TimelineViewName
+} from "./projects/views-timeline-view.js";
 
 import { Components, registerComponent } from "../../components.js";
 
@@ -43,17 +53,22 @@ const useStyles = makeStyles(theme => ({
     display: "flex",
     flexDirection: "column"
   },
-  projects_container: {
-    flex: 1,
-    width: "100%"
+  toolbar: {
+    flexShrink: 0,
+    width: "100%",
+    marginBottom: theme.spacing(2)
   },
   paper: {
-    position: "absolute",
-    right: 0,
+    width: "auto",
+    float: "right",
     display: "flex",
     border: `1px solid ${theme.palette.divider}`,
     flexWrap: "wrap",
     padding: theme.spacing(0.5)
+  },
+  projects_container: {
+    flex: 1,
+    width: "100%"
   },
   divider: {
     margin: theme.spacing(1)
@@ -71,9 +86,9 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const _actions = [
-  { icon: <ViewListIcon />, name: "Table View" },
-  { icon: <CalendarViewDayIcon />, name: "Timeline View" },
-  { icon: <ViewModuleIcon />, name: "Card View" }
+  { icon: TableViewIcon, name: TableViewName },
+  { icon: TimelineViewIcon, name: TimelineViewName },
+  { icon: CardViewIcon, name: CardViewName }
 ];
 
 const Projects = () => {
@@ -148,41 +163,43 @@ const Projects = () => {
     <div className={classes.root}>
       <Container maxWidth="lg" className={classes.container} disableGutters>
         {!fabVisible && (
-          <Paper className={classes.paper}>
-            {actions.map(({ group, exclusive }, index) => (
-              <React.Fragment key={index}>
-                <ToggleButtonGroup
-                  classes={{ grouped: classes.grouped }}
-                  size="small"
-                  value={view}
-                  exclusive={exclusive}
-                  onChange={(event, newView) =>
-                    newView !== null && setView(newView)
-                  }
-                >
-                  {group.map((item, index) => (
-                    <ToggleButton
-                      key={index}
-                      value={item.name ?? ""}
-                      onClick={item.onClick}
-                    >
-                      {item.icon}
-                    </ToggleButton>
-                  ))}
-                </ToggleButtonGroup>
-                {index !== actions.length - 1 && (
-                  <Divider
-                    flexItem
-                    orientation="vertical"
-                    className={classes.divider}
-                  />
-                )}
-              </React.Fragment>
-            ))}
-          </Paper>
+          <div className={classes.toolbar}>
+            <Paper className={classes.paper}>
+              {actions.map(({ group, exclusive }, index) => (
+                <React.Fragment key={index}>
+                  <ToggleButtonGroup
+                    classes={{ grouped: classes.grouped }}
+                    size="small"
+                    value={view}
+                    exclusive={exclusive}
+                    onChange={(event, newView) =>
+                      newView !== null && setView(newView)
+                    }
+                  >
+                    {group.map((item, index) => (
+                      <ToggleButton
+                        key={index}
+                        value={item.name ?? ""}
+                        onClick={item.onClick}
+                      >
+                        {item.icon}
+                      </ToggleButton>
+                    ))}
+                  </ToggleButtonGroup>
+                  {index !== actions.length - 1 && (
+                    <Divider
+                      flexItem
+                      orientation="vertical"
+                      className={classes.divider}
+                    />
+                  )}
+                </React.Fragment>
+              ))}
+            </Paper>
+          </div>
         )}
         <div className={classes.projects_container}>
-          <Components.ProjectsView view={view} projects={projects} />
+          <Components.ProjectsView view={view} />
         </div>
         <Components.NewProjectWorkflow
           open={newProjectOpen}

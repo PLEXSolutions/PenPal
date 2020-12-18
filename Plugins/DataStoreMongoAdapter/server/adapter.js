@@ -141,8 +141,8 @@ MongoAdapter.getPaginationInfo = async (
       .limit(1);
     const last_page_match = (await page.hasNext()) && (await page.next());
 
-    result.startCursor = first_page_match._id;
-    result.endCursor = last_page_match._id;
+    result.startCursor = first_page_match?._id;
+    result.endCursor = last_page_match?._id;
 
     if (page_offset_selector !== null) {
       result.startCursorOffset =
@@ -184,8 +184,8 @@ MongoAdapter.getPaginationInfo = async (
       .skip(Math.max(page_count - 1, 0));
     const first_page_match = (await page.hasNext()) && (await page.next());
 
-    result.startCursor = first_page_match._id;
-    result.endCursor = last_page_match._id;
+    result.startCursor = first_page_match?._id;
+    result.endCursor = last_page_match?._id;
 
     if (page_offset_selector !== null) {
       result.endCursorOffset =
@@ -199,6 +199,15 @@ MongoAdapter.getPaginationInfo = async (
       result.endCursorOffset = totalCount - 1;
       result.startCursorOffset = result.endCursorOffset - (last - 1);
     }
+  } else {
+    let page = await cursor().find(normalized_selector);
+    result.startCursor = ((await page.hasNext()) && (await page.next()))?._id;
+
+    page = cursor()
+      .find(normalized_selector)
+      .skip(Math.max(totalCount - 1, 0))
+      .limit(1);
+    result.endCursor = ((await page.hasNext()) && (await page.next()))?._id;
   }
 
   return result;

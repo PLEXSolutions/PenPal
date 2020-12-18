@@ -22,18 +22,30 @@ export default {
     },
 
     async pageInfo({ networks: network_ids, args }, _, { PenPalCachingAPI }) {
-      const networks = await PenPalCachingAPI.Networks.GetMany(network_ids);
+      const {
+        startCursor,
+        startCursorOffset,
+        endCursor,
+        endCursorOffset,
+        totalCount
+      } = await PenPalCachingAPI.Networks.GetPaginationInfo(network_ids, args);
 
       return {
-        hasPreviousPage: false,
-        hasNextPage: false,
-        startCursor: networks[0]?.id ?? "",
-        endCursor: networks[networks.length - 1]?.id ?? ""
+        hasPreviousPage: startCursorOffset > 0,
+        hasNextPage: endCursorOffset < totalCount - 1,
+        startCursor,
+        startCursorOffset,
+        endCursor,
+        endCursorOffset
       };
     },
 
     async totalCount({ networks: network_ids, args }, _, { PenPalCachingAPI }) {
-      return network_ids.length;
+      const { totalCount } = await PenPalCachingAPI.Networks.GetPaginationInfo(
+        network_ids,
+        args
+      );
+      return totalCount;
     }
   }
 };

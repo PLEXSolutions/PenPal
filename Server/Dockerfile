@@ -3,10 +3,13 @@ FROM debian:buster-slim
 RUN apt-get update
 RUN apt-get install curl -y
 
-# Install node.js
+# Install node.js and Mongo
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
 RUN curl -sL https://www.mongodb.org/static/pgp/server-4.2.asc | apt-key add -
 RUN echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.2 main" | tee /etc/apt/sources.list.d/mongodb-org-4.2.list
+
+# Mongo wants to run systemctl, so link /bin/true to always return 0
+RUN ln -s /bin/true /bin/systemctl
 
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -28,6 +31,7 @@ RUN npm install -g npm
 
 # Workaround for untar not working on docker overlayFS. Needed for meteor install
 RUN apt-get install -y --no-install-recommends bsdtar
+RUN cp $(which tar) /bin/tar.bak
 RUN ln -sf $(which bsdtar) $(which tar)
 
 # Create an unpriv user for meteor to run as
@@ -107,6 +111,10 @@ RUN curl https://install.meteor.com/ | sh
 
 # Update path so we don't need to put meteor into /usr/bin/meteor
 ENV PATH="${PATH}:/home/node/.meteor"
+
+# Now put the old tar back in place
+USER root
+RUN ln -sf /bin/tar.bak $(which tar)
 
 USER node
 COPY --chown=node:node src/package.json /app/package.json

@@ -30,6 +30,7 @@ export {
 export {
   getHost,
   getHosts,
+  getHostsPaginationInfo,
   getHostsByProject,
   getHostsByNetwork,
   insertHost,
@@ -44,6 +45,7 @@ export {
 export {
   getNetwork,
   getNetworks,
+  getNetworksPaginationInfo,
   getNetworksByProject,
   insertNetwork,
   insertNetworks,

@@ -32,7 +32,9 @@ NoOp.node.ts
 ReadBinaryFile.node.ts
 ReadBinaryFiles.node.ts
 ReadPdf.node.ts
+RenameKeys.node.ts
 Rocketchat
+RunAt.node.ts
 S3
 Set.node.ts
 Switch.node.ts

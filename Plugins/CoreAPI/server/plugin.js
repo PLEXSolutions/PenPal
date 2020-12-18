@@ -71,6 +71,7 @@ const CoreAPIPlugin = {
     PenPal.API.Hosts = {
       Get: API.getHost,
       GetMany: API.getHosts,
+      GetPaginationInfo: API.getHostsPaginationInfo,
       GetManyByProjectID: API.getHostsByProject,
       GetManyByNetworkID: API.getHostsByNetwork,
       Insert: API.insertHost,
@@ -85,6 +86,7 @@ const CoreAPIPlugin = {
     PenPal.API.Networks = {
       Get: API.getNetwork,
       GetMany: API.getNetworks,
+      GetPaginationInfo: API.getNetworksPaginationInfo,
       GetManyByProjectID: API.getNetworksByProject,
       Insert: API.insertNetwork,
       InsertMany: API.insertNetworks,
