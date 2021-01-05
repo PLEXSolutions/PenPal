@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Accounts } from "meteor/accounts-base";
-import { useMutation, useQuery, useApolloClient } from "@apollo/react-hooks";
+import { useMutation, useQuery, useApolloClient } from "@apollo/client";
 import { useSnackbar } from "notistack";
 
 import { storeLoginToken, getLoginToken, resetStore } from "./store.js";

@@ -1,12 +1,11 @@
 import { Meteor } from "meteor/meteor";
 import { Accounts } from "meteor/accounts-base";
-import ApolloClient from "apollo-client";
 import {
   IntrospectionFragmentMatcher,
   InMemoryCache
-} from "apollo-cache-inmemory";
-import { ApolloLink } from "apollo-link";
-import { BatchHttpLink } from "apollo-link-batch-http";
+} from "@apollo/client/cache";
+import { ApolloClient, ApolloLink } from "@apollo/client";
+import { BatchHttpLink } from "@apollo/client/link/batch-http";
 
 const graphql_loc = Meteor.settings.public?.graphql ?? "http://localhost:3000";
 const introspect_schema = async () => {
@@ -33,21 +32,22 @@ const introspect_schema = async () => {
 
   const result_json = await result.json();
 
-  // here we're filtering out any type information unrelated to unions or interfaces
-  const filteredData = result_json.data.__schema.types.filter(
-    type => type.possibleTypes !== null
-  );
+  const possibleTypes = {};
 
-  result_json.data.__schema.types = filteredData;
+  result_json.data.__schema.types.forEach((supertype) => {
+    if (supertype.possibleTypes) {
+      possibleTypes[supertype.name] = supertype.possibleTypes.map(
+        (subtype) => subtype.name
+      );
+    }
+  });
 
-  return result_json.data;
+  return possibleTypes;
 };
 
 const apolloInit = async () => {
-  const fragmentMatcher = new IntrospectionFragmentMatcher({
-    introspectionQueryResultData: await introspect_schema()
-  });
-  const cache = new InMemoryCache({ fragmentMatcher });
+  const possibleTypes = await introspect_schema();
+  const cache = new InMemoryCache({ possibleTypes });
 
   const auth_link = new ApolloLink((operation, forward) => {
     const token = Accounts._storedLoginToken();

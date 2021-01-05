@@ -12,12 +12,12 @@ import TableRow from "@material-ui/core/TableRow";
 import TableContainer from "@material-ui/core/TableContainer";
 
 import { useSnackbar } from "notistack";
-import { useMutation } from "@apollo/react-hooks";
+import { useMutation } from "@apollo/client";
 
 import { Components, registerComponent } from "../../../components.js";
 import CreateProjectMutation from "./mutations/create-project.js";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
     flexDirection: "column",

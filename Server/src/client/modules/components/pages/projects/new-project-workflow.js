@@ -11,7 +11,7 @@ import Divider from "@material-ui/core/Divider";
 import KeyboardArrowLeft from "@material-ui/icons/KeyboardArrowLeft";
 import KeyboardArrowRight from "@material-ui/icons/KeyboardArrowRight";
 
-import { useQuery } from "@apollo/react-hooks";
+import { useQuery } from "@apollo/client";
 import GetCustomersQuery from "../customers/queries/get-customers.js";
 
 import { Components, registerComponent } from "../../../components.js";
@@ -82,12 +82,12 @@ const NewProjectWorkflow = ({ open, handleClose: handleCloseProp }) => {
   const disableNextStep = () => setNextEnabled(false);
 
   const handleNext = () => {
-    setActiveStep(prevActiveStep => prevActiveStep + 1);
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
     disableNextStep();
   };
 
   const handleBack = () => {
-    setActiveStep(prevActiveStep => prevActiveStep - 1);
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
     enableNextStep();
   };
 

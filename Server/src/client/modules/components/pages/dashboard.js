@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import _ from "lodash";
 import { useSnackbar } from "notistack";
-import { useQuery } from "@apollo/react-hooks";
+import { useQuery } from "@apollo/client";
 
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
@@ -16,7 +16,7 @@ import { generateQueryFromSchemas } from "../../graphql-helpers.js";
 import Hooks from "../../hooks.js";
 const { useIntrospection, useImperativeQuery } = Hooks;
 
-const useStyles = makeStyles(theme => ({}));
+const useStyles = makeStyles((theme) => ({}));
 const Dashboard = () => {
   // ---------------------- Hooks ---------------------- //
 
@@ -34,7 +34,7 @@ const Dashboard = () => {
 
   const query = generateQueryFromSchemas(
     types,
-    getDashboardablePlugins.map(dashboardable_plugin => ({
+    getDashboardablePlugins.map((dashboardable_plugin) => ({
       schema_root: dashboardable_plugin.settings.dashboard.schema_root,
       query_name: dashboardable_plugin.settings.dashboard.getter
     }))
@@ -49,7 +49,7 @@ const Dashboard = () => {
         try {
           const dashboard = (await getDashboardData())?.data;
           const _availableDashboardData = {};
-          _.each(dashboard, query_data => {
+          _.each(dashboard, (query_data) => {
             _.each(query_data, (field, key) => {
               if (
                 typeof field === "object" &&

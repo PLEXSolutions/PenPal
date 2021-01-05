@@ -6,7 +6,7 @@ import Divider from "@material-ui/core/Divider";
 import MenuItem from "@material-ui/core/MenuItem";
 import cx from "classnames";
 
-import { useMutation, useQuery, useApolloClient } from "@apollo/react-hooks";
+import { useMutation, useQuery, useApolloClient } from "@apollo/client";
 import CreateNewCustomer from "./mutations/create-new-customer.js";
 import GetCustomers from "./queries/get-customers.js";
 
@@ -14,7 +14,7 @@ import { Components, registerComponent } from "../../../components.js";
 import Hooks from "../../../hooks.js";
 const { useIntrospection } = Hooks;
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
     flexDirection: "column",
@@ -62,12 +62,13 @@ const NewCustomerForm = ({ newCustomerHook = () => null }) => {
 
   const industries = loading
     ? ["Loading industry values..."]
-    : types.Industry.enumValues.map(value => value.name);
+    : types.Industry.enumValues.map((value) => value.name);
 
   // ----------------------------------------------------
 
-  const handleCustomerNameChange = event => setCustomerName(event.target.value);
-  const handleCustomerIndustryChange = event =>
+  const handleCustomerNameChange = (event) =>
+    setCustomerName(event.target.value);
+  const handleCustomerIndustryChange = (event) =>
     setCustomerIndustry(event.target.value);
   const submitNewCustomer = () => {
     setNewCustomerPending(true);

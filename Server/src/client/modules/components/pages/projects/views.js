@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { useQuery } from "@apollo/react-hooks";
+import { useQuery } from "@apollo/client";
 import GetProjectSummaries from "./queries/get-project-summaries.js";
 
 import { Name as CardViewName } from "./views-card-view.js";
@@ -19,7 +19,10 @@ const ProjectsView = ({ view }) => {
     error: projectSummariesError,
     data: { getProjects: projectSummaries } = {}
   } = useQuery(GetProjectSummaries, {
-    pollInterval: 15000
+    pollInterval: 15000,
+    variables: {
+      first: pageSize
+    }
   });
 
   if (projectSummariesLoading) return "Loading...";

@@ -12,7 +12,6 @@ export default [
             id: "mock-customer-id",
             name: "Mock Customer 1",
             industry: "Agriculture",
-            __typename: "Customer"
           }
         ]
       }
