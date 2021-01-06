@@ -1,12 +1,12 @@
 import React from "react";
-import { useQuery } from "@apollo/client";
+import { useApolloClient } from "@apollo/client";
 import { registerHook } from "../../hooks.js";
 
 const useImperativeQuery = (query) => {
-  const { refetch } = useQuery(query, { skip: true });
+  const client = useApolloClient();
 
-  const imperativelyCallQuery = (variables) => {
-    return refetch(variables);
+  const imperativelyCallQuery = async (variables) => {
+    return await client.query({ query, variables });
   };
 
   return imperativelyCallQuery;

@@ -93,13 +93,12 @@ export const generateMutationFromSchema = (types, mutations, mutation_name) => {
   const mutation_schema = mutations[mutation_name];
   const variables = _.chain(mutation_schema.args)
     .keyBy("name")
-    .mapValues(variable => ({
+    .mapValues((variable) => ({
       value: "",
       type: variable.type.name
     }))
     .value();
 
-  console.log(types, mutation_schema);
   const { fields } = process_schema(types, types[mutation_schema.type.name]);
 
   const mutation_config = {
