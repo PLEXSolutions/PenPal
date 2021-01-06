@@ -2,7 +2,7 @@ import faker from "faker";
 import _ from "lodash";
 import GetProjectSummariesQuery from "../../client/modules/components/pages/projects/queries/get-project-summaries.js";
 
-const PROJECT_COUNT = 20;
+const PROJECT_COUNT = 73;
 
 const projects = _.range(PROJECT_COUNT).map((i) => ({
   id: `test-project-id-${i}`,
@@ -19,15 +19,17 @@ const projects = _.range(PROJECT_COUNT).map((i) => ({
   },
   scope: {
     hostsConnection: {
-      totalCount: 6
+      totalCount: Math.ceil(Math.random() * 10)
     },
     networksConnection: {
-      totalCount: 2
+      totalCount: Math.ceil(Math.random() * 10)
     }
   }
 }));
 
-const get_projects_generator = ({ variables: { first, after } = {} }) => {
+const get_projects_generator = ({
+  variables: { first, after, pageSize, pageNumber } = {}
+}) => {
   let _projects = [];
   if (first !== undefined) {
     if (after !== undefined) {
@@ -38,6 +40,11 @@ const get_projects_generator = ({ variables: { first, after } = {} }) => {
     } else {
       _projects = projects.slice(0, first === -1 ? undefined : first);
     }
+  } else if (pageSize !== undefined && pageNumber !== undefined) {
+    _projects = projects.slice(
+      pageSize * pageNumber,
+      pageSize * pageNumber + pageSize
+    );
   } else {
     _projects = projects;
   }
@@ -45,12 +52,19 @@ const get_projects_generator = ({ variables: { first, after } = {} }) => {
   return { projects: _projects, totalCount: projects.length };
 };
 
-const variable_combos = [
-  { first: 5 },
-  { first: 10 },
-  { first: 25 },
-  { first: -1 }
-];
+const pageSizes = [5, 10, 25];
+const pageSize_combos = _.chain(pageSizes)
+  .map((pageSize) =>
+    _.range(0, Math.ceil(PROJECT_COUNT / pageSize)).map((pageNumber) => ({
+      pageSize,
+      pageNumber
+    }))
+  )
+  .flattenDeep()
+  .concat({ pageSize: -1, pageNumber: 0 })
+  .value();
+
+const variable_combos = _.concat(pageSize_combos);
 
 export default variable_combos.map((variables) => ({
   request: {

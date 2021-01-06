@@ -6,8 +6,17 @@ export default gql`
     $after: String
     $last: Int
     $before: String
+    $pageSize: Int
+    $pageNumber: Int
   ) {
-    getProjects(first: $first, after: $after, last: $last, before: $before) {
+    getProjects(
+      first: $first
+      after: $after
+      last: $last
+      before: $before
+      pageSize: $pageSize
+      pageNumber: $pageNumber
+    ) {
       projects {
         id
         name

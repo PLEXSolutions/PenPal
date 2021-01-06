@@ -103,6 +103,12 @@ const ProjectsViewTableView = ({
               <TableCell component="th" scope="row">
                 {project.name}
               </TableCell>
+              <TableCell style={{ width: 100 }} align="right">
+                {project.scope.hostsConnection.totalCount} public hosts
+              </TableCell>
+              <TableCell style={{ width: 100 }} align="right">
+                {project.scope.networksConnection.totalCount} networks
+              </TableCell>
             </TableRow>
           ))}
 

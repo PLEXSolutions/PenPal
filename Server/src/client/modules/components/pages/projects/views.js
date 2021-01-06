@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import { useQuery } from "@apollo/client";
 import GetProjectSummaries from "./queries/get-project-summaries.js";
@@ -12,20 +12,30 @@ import { Components, registerComponent } from "../../../components.js";
 const ProjectsView = ({ view }) => {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
+  const [projectSummaries, setProjectSummaries] = useState({
+    projects: [],
+    totalCount: 0
+  });
   const pageSizeOptions = [5, 10, 25, { label: "All", value: -1 }];
 
   const {
     loading: projectSummariesLoading,
     error: projectSummariesError,
-    data: { getProjects: projectSummaries } = {}
+    data: { getProjects } = {}
   } = useQuery(GetProjectSummaries, {
     pollInterval: 15000,
     variables: {
-      first: pageSize
+      pageSize,
+      pageNumber: page
     }
   });
 
-  if (projectSummariesLoading) return "Loading...";
+  // This is a way to essentially buffer the changes from the GraphQL query so that it looks smoother in the UI
+  useEffect(() => {
+    if (getProjects !== undefined) {
+      setProjectSummaries(getProjects);
+    }
+  }, [getProjects]);
 
   return view === TableViewName ? (
     <Components.ProjectsViewTableView
