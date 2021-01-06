@@ -23,12 +23,14 @@ const normalize_result = ({ _id = null, ...rest } = {}) => {
   return { ...(_id !== null && { id: String(_id) }), ...rest };
 };
 
-const check_options = options => {
-  const { first, after, last, before } = options;
+const check_options = (options) => {
+  const { first, after, last, before, pageSize, pageNumber } = options;
   check(first, Match.Maybe(Number));
   check(after, Match.Maybe(String));
   check(last, Match.Maybe(Number));
   check(before, Match.Maybe(String));
+  check(pageSize, Match.Maybe(Number));
+  check(pageNumber, Match.Maybe(Number));
 };
 
 // -----------------------------------------------------------------------
@@ -41,9 +43,7 @@ MongoAdapter.CreateStore = async (plugin_name, store_name) => {
 };
 
 MongoAdapter.DeleteStore = async (plugin_name, store_name) => {
-  return await get_collection(plugin_name, store_name)
-    .rawCollection()
-    .drop();
+  return await get_collection(plugin_name, store_name).rawCollection().drop();
 };
 
 // -----------------------------------------------------------------------
@@ -56,25 +56,30 @@ MongoAdapter.fetch = async (
   options = {}
 ) => {
   check_options(options);
-  const { first, after, last, before } = options;
+  const { first, after, last, before, pageSize, pageNumber } = options;
 
   let cursor = get_collection(plugin_name, store_name).rawCollection();
 
   if (first !== undefined) {
     let _selector = normalize_data(selector);
+
     if (after !== undefined) {
       _selector = { $and: [{ _id: { $gt: after } }, _selector] };
     }
+
     cursor = cursor.find(_selector).limit(first);
   } else if (last !== undefined) {
     let _selector = normalize_data(selector);
+
     if (before !== undefined) {
       _selector = { $and: [{ _id: { $lt: before } }, _selector] };
     }
-    cursor = cursor
-      .find(_selector)
-      .sort({ _id: -1 })
-      .limit(last);
+
+    cursor = cursor.find(_selector).sort({ _id: -1 }).limit(last);
+  } else if (pageSize !== undefined && pageNumber !== undefined) {
+    let _selector = normalize_data(selector);
+    let offset = pageSize * pageNumber;
+    cursor = cursor.find(_selector).skip(offset).limit(pageSize);
   } else {
     cursor = cursor.find(normalize_data(selector));
   }
@@ -86,7 +91,7 @@ MongoAdapter.fetch = async (
     data = data.reverse();
   }
 
-  return data.map(doc => normalize_result(doc));
+  return data.map((doc) => normalize_result(doc));
 };
 
 MongoAdapter.getPaginationInfo = async (
@@ -96,13 +101,11 @@ MongoAdapter.getPaginationInfo = async (
   options = {}
 ) => {
   check_options(options);
-  const { first, after, last, before } = options;
+  const { first, after, last, before, pageSize, pageNumber } = options;
 
   let normalized_selector = normalize_data(selector);
   const cursor = () => get_collection(plugin_name, store_name).rawCollection();
-  let totalCount = await cursor()
-    .find(normalized_selector)
-    .count();
+  let totalCount = await cursor().find(normalized_selector).count();
 
   let result = {
     startCursor: null,
@@ -124,15 +127,11 @@ MongoAdapter.getPaginationInfo = async (
     }
 
     const page_count = Math.min(
-      await cursor()
-        .find(page_selector)
-        .count(),
+      await cursor().find(page_selector).count(),
       first
     );
 
-    let page = cursor()
-      .find(page_selector)
-      .limit(first);
+    let page = cursor().find(page_selector).limit(first);
     const first_page_match = (await page.hasNext()) && (await page.next());
 
     page = cursor()
@@ -146,9 +145,7 @@ MongoAdapter.getPaginationInfo = async (
 
     if (page_offset_selector !== null) {
       result.startCursorOffset =
-        (await cursor()
-          .find(page_offset_selector)
-          .count()) + 1;
+        (await cursor().find(page_offset_selector).count()) + 1;
       result.endCursorOffset = result.startCursorOffset + page_count - 1;
     } else {
       result.endCursorOffset = first - 1;
@@ -165,16 +162,11 @@ MongoAdapter.getPaginationInfo = async (
     }
 
     const page_count = Math.min(
-      await cursor()
-        .find(page_selector)
-        .count(),
+      await cursor().find(page_selector).count(),
       last
     );
 
-    let page = cursor()
-      .find(page_selector)
-      .sort({ _id: -1 })
-      .limit(last);
+    let page = cursor().find(page_selector).sort({ _id: -1 }).limit(last);
     const last_page_match = (await page.hasNext()) && (await page.next());
 
     page = cursor()
@@ -189,16 +181,32 @@ MongoAdapter.getPaginationInfo = async (
 
     if (page_offset_selector !== null) {
       result.endCursorOffset =
-        totalCount -
-        (await cursor()
-          .find(page_offset_selector)
-          .count()) -
-        1;
+        totalCount - (await cursor().find(page_offset_selector).count()) - 1;
       result.startCursorOffset = result.endCursorOffset - last;
     } else {
       result.endCursorOffset = totalCount - 1;
       result.startCursorOffset = result.endCursorOffset - (last - 1);
     }
+  } else if (pageSize !== undefined && pageNumber !== undefined) {
+    result.startCursorOffset = pageSize * pageNumber;
+    const page_count = Math.min(
+      (await cursor().find(normalized_selector).count()) -
+        result.startCursorOffset,
+      pageSize
+    );
+    result.endCursorOffset = result.startCursorOffset + page_count - 1;
+
+    page = cursor()
+      .find(normalized_selector)
+      .skip(result.startCursorOffset)
+      .limit(1);
+    result.startCursor = ((await page.hasNext()) && (await page.next()))?._id;
+
+    page = cursor()
+      .find(normalized_selector)
+      .skip(result.endCursorOffset)
+      .limit(1);
+    result.endCursor = ((await page.hasNext()) && (await page.next()))?._id;
   } else {
     let page = await cursor().find(normalized_selector);
     result.startCursor = ((await page.hasNext()) && (await page.next()))?._id;
@@ -230,10 +238,10 @@ MongoAdapter.insertMany = async (plugin_name, store_name, data = []) => {
   // We don't use normalize_result on this because it returns an array of ObjectIds instead of an array of objects
   const results = await get_collection(plugin_name, store_name)
     .rawCollection()
-    .insertMany(data.map(datum => normalize_data(datum)));
+    .insertMany(data.map((datum) => normalize_data(datum)));
 
   return (
-    Object.values(results.insertedIds)?.map(object_id => ({
+    Object.values(results.insertedIds)?.map((object_id) => ({
       id: String(object_id)
     })) ?? []
   );

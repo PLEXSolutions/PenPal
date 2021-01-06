@@ -17,7 +17,7 @@ import { makeStyles, useTheme } from "@material-ui/core/styles";
 
 import { Components, registerComponent } from "../../../components.js";
 
-const useStyles1 = makeStyles(theme => ({
+const useStyles1 = makeStyles((theme) => ({
   root: {
     flexShrink: 0,
     marginLeft: theme.spacing(2.5)
@@ -27,19 +27,19 @@ const useStyles1 = makeStyles(theme => ({
 const TablePaginationActions = ({ count, page, rowsPerPage, onChangePage }) => {
   const classes = useStyles1();
 
-  const handleFirstPageButtonClick = event => {
+  const handleFirstPageButtonClick = (event) => {
     onChangePage(event, 0);
   };
 
-  const handleBackButtonClick = event => {
+  const handleBackButtonClick = (event) => {
     onChangePage(event, page - 1);
   };
 
-  const handleNextButtonClick = event => {
+  const handleNextButtonClick = (event) => {
     onChangePage(event, page + 1);
   };
 
-  const handleLastPageButtonClick = event => {
+  const handleLastPageButtonClick = (event) => {
     onChangePage(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
   };
 
@@ -89,7 +89,7 @@ const ProjectsViewTableView = ({
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = event => {
+  const handleChangeRowsPerPage = (event) => {
     setPageSize(parseInt(event.target.value, 10));
     setPage(0);
   };
@@ -98,7 +98,7 @@ const ProjectsViewTableView = ({
     <TableContainer component={Paper}>
       <Table className={classes.table}>
         <TableBody>
-          {projects.map(project => (
+          {projects.map((project) => (
             <TableRow key={project.id}>
               <TableCell component="th" scope="row">
                 {project.name}
@@ -119,6 +119,9 @@ const ProjectsViewTableView = ({
               colSpan={3}
               count={totalCount}
               rowsPerPage={pageSize}
+              labelDisplayedRows={({ from, to, count }) =>
+                `${from}-${to === -1 ? totalCount : to} of ${count}`
+              }
               page={page}
               SelectProps={{
                 native: true

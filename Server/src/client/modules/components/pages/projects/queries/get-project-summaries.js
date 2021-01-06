@@ -1,8 +1,13 @@
 import gql from "graphql-tag";
 
 export default gql`
-  query getProjectSummaries {
-    getProjects(first: 10) {
+  query getProjectSummaries(
+    $first: Int
+    $after: String
+    $last: Int
+    $before: String
+  ) {
+    getProjects(first: $first, after: $after, last: $last, before: $before) {
       projects {
         id
         name

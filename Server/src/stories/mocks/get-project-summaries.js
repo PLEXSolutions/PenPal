@@ -28,20 +28,21 @@ const projects = _.range(PROJECT_COUNT).map((i) => ({
 }));
 
 const get_projects_generator = ({ variables: { first, after } = {} }) => {
+  let _projects = [];
   if (first !== undefined) {
     if (after !== undefined) {
       const start = _.findIndex(projects, (project) => project.id === after);
       if (start !== -1) {
-        return projects.slice(start, start + first);
-      } else {
-        return null;
+        _projects = projects.slice(start, start + first);
       }
     } else {
-      return projects.slice(0, first);
+      _projects = projects.slice(0, first === -1 ? undefined : first);
     }
   } else {
-    return projects;
+    _projects = projects;
   }
+
+  return { projects: _projects, totalCount: projects.length };
 };
 
 const variable_combos = [
