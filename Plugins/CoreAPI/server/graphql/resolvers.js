@@ -11,5 +11,6 @@ export default [
       ...resolvers.mutations
     }
   },
-  ...resolvers.default_resolvers
+  ...resolvers.default_resolvers,
+  ...resolvers.scalars
 ];

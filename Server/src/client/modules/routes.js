@@ -1,6 +1,7 @@
 import _ from "lodash";
 
 import HomeIcon from "@material-ui/icons/Home";
+import AccountTreeIcon from "@material-ui/icons/AccountTree";
 import SettingsInputSvideoIcon from "@material-ui/icons/SettingsInputSvideo";
 
 const routes = [
@@ -10,6 +11,13 @@ const routes = [
     componentName: "Dashboard",
     prettyName: "Dashboard",
     icon: HomeIcon
+  },
+  {
+    name: "projects",
+    path: "/projects",
+    componentName: "Projects",
+    prettyName: "Projects",
+    icon: AccountTreeIcon
   },
   {
     name: "configuration",

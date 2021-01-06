@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useQuery } from "@apollo/react-hooks";
+import { useQuery } from "@apollo/client";
 
 import { Components, registerComponent } from "../../components.js";
 import { registerHook } from "../../hooks.js";

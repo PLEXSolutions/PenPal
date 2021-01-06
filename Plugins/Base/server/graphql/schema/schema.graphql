@@ -7,10 +7,16 @@ type Plugin {
 
 type PluginSettings {
   configuration: PluginConfigurationSettings
+  dashboard: PluginDashboardSettings
 }
 
 type PluginConfigurationSettings {
   schema_root: String!
   getter: String!
   setter: String!
+}
+
+type PluginDashboardSettings {
+  schema_root: String!
+  getter: String!
 }

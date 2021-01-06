@@ -1,4 +1,8 @@
 {
-    "public": {},
-    "private": {}
+    "public": {
+        "graphql": "http://localhost:3000"
+    },
+    "private": {
+        "disableGraphQLAuth": true
+    }
 }

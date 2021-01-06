@@ -11,7 +11,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import { indigo } from "@material-ui/core/colors";
 import cx from "classnames";
 
-import { useQuery } from "@apollo/react-hooks";
+import { useQuery, useMutation } from "@apollo/client";
 import { useSnackbar } from "notistack";
 
 import GetConfigurablePluginsQuery from "./queries/get-configurable-plugins.js";
@@ -21,11 +21,10 @@ import {
   generateQueryFromSchema,
   generateMutationFromSchema
 } from "../../../graphql-helpers.js";
-import { useMutation } from "@apollo/react-hooks";
 import Hooks from "../../../hooks.js";
 const { useIntrospection, useImperativeQuery } = Hooks;
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   main: {
     width: "100%",
     height: "100%",
@@ -159,7 +158,7 @@ const Selector = () => {
 
   // ---------------------- Hooks ---------------------- //
 
-  const handleChange = event => setSelected(event.target.value);
+  const handleChange = (event) => setSelected(event.target.value);
   const handleConfigChange = (path, newValue) => {
     // Need to clone the object so that the reference changes on setLocalConfig
     const newLocalConfig = _.cloneDeep(localConfig);
@@ -186,7 +185,7 @@ const Selector = () => {
     }
   };
 
-  const iconComponent = props => {
+  const iconComponent = (props) => {
     return <ExpandMoreIcon className={cx(props.className, classes.icon)} />;
   };
 

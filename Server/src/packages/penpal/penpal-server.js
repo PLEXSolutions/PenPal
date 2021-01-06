@@ -25,8 +25,8 @@ const check_manifest = ({ name, version, dependsOn }) => {
 
 // ----------------------------------------------------------------------------
 
-const isFunction = (obj) => !!(obj && obj.constructor && obj.call && obj.apply);
-const check_plugin = (plugin) => {
+const isFunction = obj => !!(obj && obj.constructor && obj.call && obj.apply);
+const check_plugin = plugin => {
   let plugin_accept = true;
 
   const try_check = (value, type, repr_value, repr_type) => {
@@ -57,7 +57,7 @@ const check_plugin = (plugin) => {
 
 // ----------------------------------------------------------------------------
 
-const check_n8n = (n8n) => {
+const check_n8n = n8n => {
   let n8n_accept = true;
 
   const try_check = (value, type, repr_value, repr_type) => {
@@ -156,7 +156,7 @@ const check_n8n = (n8n) => {
 };
 
 // ----------------------------------------------------------------------------
-const build_docker = async (docker) => {
+const build_docker = async docker => {
   if (docker) {
     await PenPal.API.Docker.Build(docker);
   }
@@ -178,15 +178,23 @@ PenPal.registerPlugin = (manifest, plugin) => {
     return;
   }
 
-  const { name, version, dependsOn } = manifest;
+  const {
+    name,
+    version,
+    dependsOn,
+    requiresImplementation = false,
+    implements = ""
+  } = manifest;
   const name_version = `${name}@${version}`;
   console.log(`[+] Registered plugin: ${name_version}`);
 
   PenPal.RegisteredPlugins[name_version] = {
     dependsOn,
+    requiresImplementation,
     name,
     version,
     plugin,
+    implements
   };
 };
 
@@ -196,7 +204,7 @@ PenPal.loadPlugins = async () => {
   PenPal.LoadedPlugins = _.mapValues(PenPal.RegisteredPlugins, plugin => ({
     loaded: false,
     name: plugin.name,
-    version: plugin.version,
+    version: plugin.version
   }));
 
   let plugins_types = {};
@@ -207,7 +215,11 @@ PenPal.loadPlugins = async () => {
   const plugins_to_load = Object.keys(PenPal.RegisteredPlugins);
   while (plugins_to_load.length > 0) {
     const plugin_name = plugins_to_load.shift();
-    const { dependsOn, plugin } = PenPal.RegisteredPlugins[plugin_name];
+    const {
+      requiresImplementation,
+      dependsOn,
+      plugin
+    } = PenPal.RegisteredPlugins[plugin_name];
 
     // Ensure that all prerequisites are available.  If not, it's impossible to load
     const all_prereqs_available = _.reduce(
@@ -233,6 +245,24 @@ PenPal.loadPlugins = async () => {
     if (!all_prereqs_loaded) {
       plugins_to_load.push(plugin_name);
       continue;
+    }
+
+    // Check to see if there is something that implements this plugin if it requires an implementation
+    if (requiresImplementation) {
+      const implementation_exists = _.reduce(
+        PenPal.RegisteredPlugins,
+        (result, other_plugin) =>
+          result || other_plugin.implements === plugin_name,
+        false
+      );
+
+      if (!implementation_exists) {
+        console.error(
+          `[!] Failed to load ${plugin_name}. It requires an implementation, but none exists.`
+        );
+        delete PenPal.RegisteredPlugins[plugin_name];
+        continue;
+      }
     }
 
     // Now merge the types from this plugin into the schema
@@ -264,9 +294,9 @@ PenPal.loadPlugins = async () => {
     plugins_loaders = _.merge(plugins_loaders, loaders);
 
     if (settings.datastores) {
-      PenPal.DataStore.createStorage(
+      PenPal.DataStore.CreateStores(
         PenPal.LoadedPlugins[plugin_name].name,
-        settings.datastores
+        settings.datastores.map(({ name }) => name)
       );
     }
 
@@ -288,7 +318,7 @@ PenPal.loadPlugins = async () => {
   return {
     plugins_types,
     plugins_resolvers,
-    plugins_loaders,
+    plugins_loaders
   };
 };
 

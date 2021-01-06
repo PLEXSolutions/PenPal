@@ -1,90 +1,590 @@
+type PageInfo {
+  hasPreviousPage: Boolean!
+  hasNextPage: Boolean!
+  startCursor: String
+  startCursorOffset: Int
+  endCursor: String
+  endCursorOffset: Int
+}
+
+"""
+An interface that allows annotations to be supplied to the implementer
+"""
+interface Annotatable {
+  annotations: Annotations
+}
+
+"""
+This is a container for annotations, which are a way of adding information to any type that implements Annotatable
+"""
+type Annotations {
+  id: ID!
+  """
+  A link back to the Type to which the annotations apply
+  """
+  annotatee: Annotatable
+  """
+  Notes about the annotatee
+  """
+  notes: [Note]
+  """
+  Files related to the annotatee
+  """
+  files: [File]
+  """
+  Tags that apply to the annotatee (one-word notes)
+  """
+  tags: [String]
+}
+
+"""
+An interface that allows audit trails to be applied to the implementer
+"""
+interface Auditable {
+  changes: [Audit]
+}
+
+"""
+A way to implement plugin "users" that can allow auditing of when a plugin causes a change
+"""
+type PluginUser {
+  id: ID!
+  """
+  The plugin name
+  """
+  name: String!
+}
+
+"""
+An Audit user is one of WebappUser or PluginUser
+"""
+union AuditUser = WebappUser | PluginUser
+
+"""
+This contains the audit trail for any type that implementes Auditable
+"""
+type Audit {
+  """
+  The user that caused the change
+  """
+  user: AuditUser!
+  """
+  The date that the change happened on
+  """
+  date: Date!
+  """
+  A message to go along with the audit trail
+  """
+  message: String!
+}
+
+"""
+An implementation of the Connection spec for Projects
+"""
+type ProjectsConnection {
+  edges: [ProjectEdge]!
+  projects: [Project]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+"""
+An implementation of the Edge spec for a Network
+"""
+type ProjectEdge {
+  node: Project!
+  cursor: String!
+}
+
+
+"""
+The root of the PenPal data schema
+"""
+type Project implements Annotatable & Auditable {
+  id: ID!
+  """
+  The customer for this project
+  """
+  customer: Customer!
+  """
+  The user-friendly name for the particular project
+  """
+  name: String!
+  """
+  Important dates for the project
+  """
+  dates: ProjectDates!
+  """
+  Project description
+  """
+  description: String
+  """
+  All WebappUsers associated with this project
+  """
+  users: ProjectUsers!
+  """
+  Project annotations
+  """
+  annotations: Annotations
+  """
+  The networks and domains that represent the project's scope of project
+  """
+  scope: ProjectScope
+  """
+  Audits for the project
+  """
+  changes: [Audit]
+}
+
+"""
+Fields for createProject mutation
+"""
+input CreateProjectInput {
+  """
+  Sets the customer for the project
+  """
+  customer: ID!
+  """
+  Sets the name of the project (e.g. "Q1 Pentest")
+  """
+  name: String!
+  """
+  Sets the description of the project
+  """
+  description: String!
+  """
+  Sets the appropriate dates for the project
+  """
+  dates: ProjectInputDates
+  """
+  Sets the scope for the project
+  """
+  scope: ProjectInputScope
+}
+
+"""
+Fields for updateProject mutation
+"""
+input UpdateProjectInput {
+  """
+  The ID of the project to update
+  """
+  id: ID!
+  """
+  Sets the customer for the project
+  """
+  customer: ID
+  """
+  Updates the name of the project
+  """
+  name: String
+  """
+  Sets the description of the project
+  """
+  description: String
+  """
+  Sets the appropriate dates for the project
+  """
+  dates: ProjectInputDates
+}
+
+"""
+Customers are a type that allows projects to be grouped together and holds metadata about the customer
+"""
+type Customer implements Annotatable & Auditable {
+  id: ID!
+  """
+  Customer name (e.g. Acme, Inc)
+  """
+  name: String!
+  """
+  The customer's industry type
+  """
+  industry: Industry
+  """
+  The projects associated with this customer
+  """
+  projectsConnection(first: Int, after: String, last: Int, before: String): ProjectsConnection!
+  """
+  Customer annotations
+  """
+  annotations: Annotations
+  """
+  Audits for the customer
+  """
+  changes: [Audit]
+}
+
+"""
+Fields for the createCustomer mutation
+"""
+input CreateCustomerInput {
+  """
+  Sets the name of the customer (e.g. "Acme, Inc")
+  """
+  name: String!
+  """
+  Sets the industry of the customer
+  """
+  industry: Industry!
+}
+
+"""
+Fields for the createCustomer mutation
+"""
+input UpdateCustomerInput {
+  """
+  The ID of the customer to update
+  """
+  id: ID!
+  """
+  Updates the name of the customer
+  """
+  name: String
+  """
+  Updates the industry of the customer
+  """
+  industry: Industry
+}
+
+"""
+Important dates with regards to a project
+"""
+type ProjectDates {
+  """
+  Date this project was created
+  """
+  created_at: Date!
+  """
+  The date that action for the project starts
+  """
+  start: Date
+  """
+  The date that action for the project ends
+  """
+  end: Date
+}
+
+"""
+An input for project dates. Neither a start nor an end date are required for a project
+"""
+input ProjectInputDates {
+  start: Date
+  end: Date
+}
+
+input ProjectInputScope {
+  hosts: [IPAddress]
+  networks: [IPSubnet]
+}
+
+"""
+Users associated with this project
+"""
+type ProjectUsers {
+  """
+  The user that created the project
+  """
+  creator: WebappUser!
+  """
+  The user that owns the project
+  """
+  owner: WebappUser!
+  """
+  Any user that has made a contribution to the project
+  """
+  contributors: [WebappUser]!
+}
+
+enum Industry {
+  Agriculture
+  Finance
+  Software
+  Other
+}
+
+"""
+A note that can be used to store some information about an Annotatable Type
+"""
+type Note {
+  id: ID!
+  """
+  The note's title
+  """
+  title: String!
+  """
+  The note's body
+  """
+  content: String!
+  """
+  The user that wrote the note
+  """
+  last_modified_by: WebappUser!
+}
+
+"""
+A file that can be used to store some information about an Annotatable Type
+"""
+type File {
+  id: ID!
+  """
+  The file's name
+  """
+  filename: String!
+  """
+  The downloadable URL
+  """
+  url: String!
+}
+
+"""
+This is one of the most important parts of the project as it defines the way in which the user thinks about hosts fit together.
+"""
+type ProjectScope {
+  """
+  Groups of hosts that can be defined by subnets
+  """
+  networksConnection(first: Int, after: String, last: Int, before: String): NetworksConnection
+  """
+  Individual hosts that don't fall under a particular network
+  """
+  hostsConnection(first: Int, after: String, last: Int, before: String): HostsConnection
+}
+
+"""
+Input for project scope
+"""
+input ProjectScopeInput {
+  ip_addresses: [IPAddress]
+  subnets: [IPSubnet]
+}
+
+"""
+A logical grouping of hosts
+"""
+type Network implements Annotatable & Auditable {
+  id: ID!
+  """
+  The network address (e.g. 10.0.0.0)
+  """
+  subnet: IPSubnet!
+  """
+  The domain associated with this network (e.g. acme.com)
+  """
+  domain: String
+  """
+  The hosts that are associated with this network
+  """
+  hosts: [Host]!
+  """
+  Annotations about the network as a whole
+  """
+  annotations: Annotations
+  """
+  Audits for the network
+  """
+  changes: [Audit]
+}
+
+"""
+An implementation of the Edge spec for a Network
+"""
+type NetworkEdge {
+  node: Network!
+  cursor: String!
+}
+
+"""
+An implementation of the Connection spec for Networks
+"""
+type NetworksConnection {
+  edges: [NetworkEdge]!
+  networks: [Network]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+"""
+An individual host, usually associated with a single IP Address
+"""
+type Host implements Annotatable & Auditable {
+  id: ID!
+  """
+  A link back to the project.
+  """
+  project: Project!
+  """
+  A link back to the network. Can be null if not a part of the network.
+  """
+  network: Network
+  """
+  IP Address (e.g. 10.0.0.1)
+  """
+  ip_address: IPAddress!
+  """
+  MAC Address (e.g. 00:11:22:33:44:55)
+  """
+  mac_address: String
+  """
+  Hostnames associated with this host (e.g ["localhost", "ns1"])
+  """
+  hostnames: [String]
+  """
+  The identified operating system for this host (e.g. Windows 10)
+  """
+  os: HostOS
+  """
+  Services associated with this host
+  """
+  services: [Service]
+  """
+  Annotations about this host
+  """
+  annotations: Annotations
+  """
+  Audits for the host
+  """
+  changes: [Audit]
+}
+
+"""
+An implementation of the Edge spec for a Network
+"""
+type HostEdge {
+  node: Host!
+  cursor: String!
+}
+
+"""
+An implementation of the Connection spec for Hosts
+"""
+type HostsConnection {
+  edges: [HostEdge]!
+  hosts: [Host]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+"""
+A way of identifying what a host's OS is. 
+"""
+type HostOS {
+  id: ID!
+  """
+  The OS name
+  """
+  name: String!
+  """
+  The method by which the OS was determined (TODO make this more granular based on a new "Tool" type)
+  """
+  method: String!
+}
+
+"""
+The generic interface for services. This allows for enforcement of certain fields while allowing for customized service types to be created.
+"""
+interface Service implements Annotatable & Auditable {
+  id: ID!
+  """
+  The host to which the service belongs
+  """
+  host: Host!
+  """
+  The name of the service
+  """
+  name: String!
+  """
+  Annotations about the service
+  """
+  annotations: Annotations
+  """
+  Audits for the service
+  """
+  changes: [Audit]
+}
+
+interface NetworkService implements Service & Annotatable & Auditable {
+  id: ID!
+  """
+  The host to which the service belongs
+  """
+  host: Host!
+  """
+  The name of the service
+  """
+  name: String!
+  """
+  Annotations about the service
+  """
+  annotations: Annotations
+  """
+  Which IP Protocol on which the service operates
+  """
+  ip_protocol: IPProtocol!
+  """
+  The port number on which the service operates
+  """
+  port: Int!
+  """
+  Audits for the service
+  """
+  changes: [Audit]
+}
+
+enum IPProtocol {
+  TCP
+  UDP
+}
+
+type GenericNetworkService implements NetworkService & Service & Annotatable & Auditable {
+  id: ID!
+  """
+  The host to which the service belongs
+  """
+  host: Host!
+  """
+  The name of the service
+  """
+  name: String!
+  """
+  Annotations about the service
+  """
+  annotations: Annotations
+  """
+  Which IP Protocol on which the service operates
+  """
+  ip_protocol: IPProtocol!
+  """
+  The port number on which the service operates
+  """
+  port: Int!
+  """
+  Audits for the service
+  """
+  changes: [Audit]
+}
+
+type MutationResponse {
+  status: String
+  was_success: Boolean
+  affected_records: [ID]
+}
+
 type CoreAPIConfiguration {
   hookURL: String
 }
 
-input ProjectInput {
-  id: ID
-  name: String!
-  industry: String
-  description: String
-}
-
-type Project {
-  id: ID
-  name: String
-  industry: String
-  createdAt: Date
-  description: String
-  owner: User
-  contributors: [User]
-  commands:[String]
-  notes:[Note]
-  files:[File]
-}
-
-input HostInput {
-  id: ID
-  project: ProjectInput
-  ipv4: String
-  mac: String
-  hostnames: [String]
-  os: OSInput
-  notes: [NoteInput]
-  status_message: String
-  tags: [String]
-  status: String
-  last_modified_by: UserInput
-  is_flagged: Boolean
-  files: [FileInput]
-  services: [ServiceInput]
-}
-
-type Host {
-  id: ID
-  project: Project
-  ipv4: String
-  mac: String
-  hostnames: [String]
-  os: OS
-  notes: [Note]
-  status_message: String
-  tags: [String]
-  status: String
-  last_modified_by: User
-  is_flagged: Boolean
-  files: [File]
-  services: [Service]
-}
-
-input UserInput {
-  username: String
-  email: String
-} 
-type User {
-  id: ID
-  username: String
-  email: String
-} 
-
 input NoteInput {
   title: String
   content: String
-  last_modified_by: UserInput
+  last_modified_by: WebappUserInput
 }
-type Note {
-  id: ID
-  title: String
-  content: String
-  last_modified_by: User
+
+input WebappUserInput {
+  email: String!
 }
 
 input FileInput {
-  filename: String
-  url: String
-}
-
-type File {
-  id: ID
   filename: String
   url: String
 }
@@ -95,15 +595,8 @@ input OSInput {
   weight: Int
 }
 
-type OS {
-  id: ID
-  tool: String
-  fingerprint: String
-  weight: Int
-}
-
-input ServiceInput { 
-  project: ProjectInput
+input ServiceInput {
+  project: ID!
   hostID: ID!
   port: Int!
   protocol: String!
@@ -115,23 +608,21 @@ input ServiceInput {
   files: [FileInput]
 }
 
-type Service { 
+input HostInput {
   id: ID
-  project: Project
-  host: Host
-  port: Int
-  protocol: String
-  service: String
-  product: String
+  project: ID!
+  ipv4: String
+  mac: String
+  hostnames: [String]
+  os: OSInput
+  notes: [NoteInput]
+  status_message: String
+  tags: [String]
   status: String
   is_flagged: Boolean
-  last_modified_by: User
-  notes: [Note]
-  files: [File]
+  files: [FileInput]
+  services: [ServiceInput]
 }
 
-type MutationResponse {
-  status: String
-  was_success: Boolean
-  affected_records: [ID]
- }
+scalar IPAddress
+scalar IPSubnet

@@ -1,6 +1,7 @@
 import PenPal from "meteor/penpal";
-import { spawnSync, spawn } from "child_process";
+import { spawn } from "child_process";
 import { promises as fs } from "fs";
+import util from "util";
 import path from "path";
 import fetch from "node-fetch";
 
@@ -64,38 +65,47 @@ const generateNodes = async () => {
 };
 
 const buildNodes = () => {
-  console.log("[.] Building static n8n nodes");
+  return new Promise(resolve => {
+    console.log("[.] Building n8n nodes");
 
-  spawnSync(`n8n-node-dev build`, {
-    stdio: "inherit",
-    shell: true,
-    cwd: N8N_NODES_DIR
-  });
+    let processes = [
+      spawn(`n8n-node-dev build`, {
+        stdio: ["ignore", "ignore", "inherit"],
+        shell: true,
+        cwd: N8N_NODES_DIR
+      }),
+      spawn(
+        `for d in ./*/; do echo; echo "Building $d"; (cd $d && n8n-node-dev build) & done`,
+        {
+          stdio: ["ignore", "ignore", "inherit"],
+          shell: true,
+          cwd: N8N_NODES_DIR
+        }
+      )
+    ];
 
-  console.log();
-  console.log("[.] Building dynamic n8n nodes");
-
-  spawnSync(
-    `for d in ./*/; do echo; echo "Building $d"; (cd $d && n8n-node-dev build); done`,
-    {
-      stdio: "inherit",
-      shell: true,
-      cwd: N8N_NODES_DIR
+    let finished_processes = 0;
+    for (let process of processes) {
+      process.on("close", code => {
+        finished_processes += 1;
+        if (finished_processes === processes.length) {
+          console.log("[.] Finished building n8n nodes");
+          resolve();
+        }
+      });
     }
-  );
+  });
 };
 
-const killOldServer = () => {
-  console.log();
+const killOldServer = async () => {
   console.log("[.] Killing old n8n server if still running");
-  spawnSync(`ps -ef | grep "n8n" | awk '{print $2}' | xargs kill -9`, {
+  spawn(`ps -ef | grep "n8n" | awk '{print $2}' | xargs kill -9`, {
     stdio: "ignore",
     shell: true
   });
 };
 
-const startN8nServer = () => {
-  console.log();
+const startN8nServer = async () => {
   console.log("[.] Starting N8n server");
   spawn("npm run start", {
     stdio: "inherit",
@@ -105,8 +115,10 @@ const startN8nServer = () => {
 };
 
 export default async () => {
+  await PenPal.API.AsyncNOOP();
+  console.log();
   killOldServer();
   await generateNodes();
-  buildNodes();
+  await buildNodes();
   startN8nServer();
 };

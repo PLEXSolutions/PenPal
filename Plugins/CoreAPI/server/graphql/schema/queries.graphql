@@ -1,9 +1,24 @@
 type Query {
+  getCoreAPIAnalytics: CoreAPIAnalytics!
   getCoreAPIConfiguration: CoreAPIConfiguration!
-  getHosts(projectID: ID!, hostIDs: [ID]): [Host]!
-  getHost(id: ID!): Host!
-  getProjects: [Project]!
+
+  getCustomer(id: ID!): Customer!
+  getCustomers: [Customer]!
+
   getProject(id: ID!): Project!
+  getProjects(
+    first: Int
+    after: String
+    last: Int
+    before: String
+    pageSize: Int
+    pageNumber: Int
+  ): ProjectsConnection!
+
+  getHost(id: ID!): Host!
+  getHosts(ids: [ID!]!): [Host]!
+  getHostsByProjectID(id: ID!): [Host]!
+
   getServices(projectID: ID!): [Service]!
   getService(id: ID!): Service!
 }

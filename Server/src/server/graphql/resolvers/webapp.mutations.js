@@ -20,7 +20,7 @@ const _signup = async (email, password) => {
     throw new Meteor.Error(500, "Signup failed");
   }
 
-  const redball_user_settings = {
+  const user_settings = {
     roles: [],
     enabled: true
   };
@@ -32,16 +32,15 @@ const _signup = async (email, password) => {
   ) {
     // If we are the first user, become an admin
     if (is_first_user) {
-      redball_user_settings.roles.push(CONSTANTS.ROLE.ADMIN);
-      redball_user_settings.roles.push(CONSTANTS.ROLE.READ_WRITE);
+      user_settings.roles.push(CONSTANTS.ROLE.ADMIN);
     } else {
-      redball_user_settings.roles.push(CONSTANTS.ROLE.READ_ONLY);
+      user_settings.roles.push(CONSTANTS.ROLE.USER);
     }
   } else {
-    redball_user_settings.enabled = false;
+    user_settings.enabled = false;
   }
 
-  const update = { settings: redball_user_settings };
+  const update = { settings: user_settings };
 
   await Meteor.users.update({ _id: userId }, { $set: update });
 
@@ -94,6 +93,7 @@ const _logout = async (userId, token) => {
 const notImplemented = () => {
   throw new Meteor.Error(500, "Not yet implemented");
 };
+
 const _sendVerificationEmail = async email => {
   notImplemented();
 };
@@ -146,11 +146,10 @@ export default {
   async updateUser(
     root,
     { user_id, update: { roles, enabled } = {} },
-    { user, redball_loaders }
+    { user }
   ) {
     restrictToRole(user, CONSTANTS.ROLE.ADMIN);
 
-    console.log(user_id, roles, enabled);
     const updated_user = await Meteor.users.findOne({ _id: user_id });
     if (updated_user === undefined) {
       throw new Meteor.Error(404, "User not found");
@@ -178,6 +177,6 @@ export default {
   },
 
   async nop() {
-    return false
+    return false;
   }
 };

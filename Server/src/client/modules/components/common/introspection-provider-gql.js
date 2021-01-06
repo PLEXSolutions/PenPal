@@ -6,6 +6,10 @@ export default gql`
       types {
         name
         description
+        enumValues {
+          name
+          description
+        }
         fields {
           name
           type {
