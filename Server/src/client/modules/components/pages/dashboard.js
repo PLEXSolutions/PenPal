@@ -65,7 +65,7 @@ const Dashboard = () => {
         }
       }
     })();
-  }, [loading, getDashboardablePlugins.length]);
+  }, [loading, query]);
 
   // ---------------------- Hooks ---------------------- //
 
