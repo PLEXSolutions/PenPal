@@ -6,11 +6,6 @@ export default gql`
       id
       name
       industry
-      projects {
-        id
-        name
-        description
-      }
     }
   }
 `;
