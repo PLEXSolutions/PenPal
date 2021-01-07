@@ -20,6 +20,25 @@ export default gql`
       }
     ) {
       id
+      name
+      description
+      customer {
+        id
+        name
+      }
+      dates {
+        created_at
+        start
+        end
+      }
+      scope {
+        hostsConnection {
+          totalCount
+        }
+        networksConnection {
+          totalCount
+        }
+      }
     }
   }
 `;

@@ -16,6 +16,7 @@ import { useMutation } from "@apollo/client";
 
 import { Components, registerComponent } from "../../../components.js";
 import CreateProjectMutation from "./mutations/create-project.js";
+import GetProjectSummaries from "./queries/get-project-summaries.js";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -76,7 +77,28 @@ const ProjectReviewForm = ({
 
   const classes = useStyles();
   const { enqueueSnackbar } = useSnackbar();
-  const [createProject] = useMutation(CreateProjectMutation);
+  const [createProject] = useMutation(CreateProjectMutation, {
+    // TODO: Ideally we will update the cache directly instead of using the refetch queies, but this
+    // is complicated because the variables are not currently present in a parent of this component.
+    // I will need to re-arrange some logic for this to work.
+    refetchQueries: ["getProjectSummaries"]
+
+    /*update(cache, { data: { createProject: new_project } }) {
+      const current = cache.readQuery({ query: GetProjectSummaries })
+        ?.getProjects ?? { projects: [], totalCount: 0 };
+      const data = {
+        getProjects: {
+          projects: [...current.projects, new_project],
+          totalCount: current.totalCount + 1
+        }
+      };
+      console.log(`Modified cache: ${JSON.stringify(data, null, 4)}`);
+      cache.writeQuery({
+        query: GetProjectSummaries,
+        data
+      });
+    }*/
+  });
 
   // ----------------------------------------------------
 
@@ -95,8 +117,6 @@ const ProjectReviewForm = ({
       const result = await createProject({
         variables
       });
-
-      console.log(result);
 
       handleClose();
     } catch (e) {
