@@ -17,7 +17,7 @@ export default {
   HostsConnection: {
     async edges({ hosts: host_ids, args }, _, { PenPalCachingAPI }) {
       const hosts = await PenPalCachingAPI.Hosts.GetMany(host_ids, args);
-      return hosts.map(host => ({ cursor: host.id, node: host }));
+      return hosts.map((host) => ({ cursor: host.id, node: host }));
       return result;
     },
 

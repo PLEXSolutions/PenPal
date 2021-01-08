@@ -5,13 +5,13 @@ import { required_field } from "./common.js";
 
 // -----------------------------------------------------------
 
-export const getNetwork = async network_id => {
+export const getNetwork = async (network_id) => {
   return await PenPal.DataStore.fetchOne("CoreAPI", "Networks", {
     id: network_id
   });
 };
 
-export const getNetworks = async network_ids => {
+export const getNetworks = async (network_ids) => {
   return await PenPal.DataStore.fetch("CoreAPI", "Networks", {
     id: { $in: network_ids }
   });
@@ -21,12 +21,12 @@ export const getNetworksPaginationInfo = async (network_ids = [], options) => {
   return await PenPal.DataStore.getPaginationInfo(
     "CoreAPI",
     "Networks",
-    network_ids.length === 0 ? {} : { id: { $in: network_ids } },
+    { id: { $in: network_ids } },
     options
   );
 };
 
-export const getNetworksByProject = async project_id => {
+export const getNetworksByProject = async (project_id) => {
   const result = await PenPal.DataStore.fetch("CoreAPI", "Networks", {
     project: project_id
   });
@@ -36,11 +36,11 @@ export const getNetworksByProject = async project_id => {
 
 // -----------------------------------------------------------
 
-export const insertNetwork = async network => {
+export const insertNetwork = async (network) => {
   return await insertNetworks([network]);
 };
 
-export const insertNetworks = async networks => {
+export const insertNetworks = async (networks) => {
   const rejected = [];
   const _accepted = [];
   const accepted = [];
@@ -70,11 +70,11 @@ export const insertNetworks = async networks => {
 
 // -----------------------------------------------------------
 
-export const updateNetwork = async network => {
+export const updateNetwork = async (network) => {
   return await updateNetworks([network]);
 };
 
-export const updateNetworks = async networks => {
+export const updateNetworks = async (networks) => {
   const rejected = [];
   const _accepted = [];
   const accepted = [];
@@ -89,7 +89,7 @@ export const updateNetworks = async networks => {
   }
 
   let matched_networks = await PenPal.DataStore.fetch("CoreAPI", "Networks", {
-    id: { $in: _accepted.map(network => network.id) }
+    id: { $in: _accepted.map((network) => network.id) }
   });
 
   if (matched_networks.length !== _accepted.length) {
@@ -114,11 +114,11 @@ export const updateNetworks = async networks => {
 
 // -----------------------------------------------------------
 
-export const removeNetwork = async network_id => {
+export const removeNetwork = async (network_id) => {
   return await removeNetworks([network_id]);
 };
 
-export const removeNetworks = async network_ids => {
+export const removeNetworks = async (network_ids) => {
   // Get all the network data for hooks so the deleted network hook has some info for notifications and such
   let networks = await PenPal.DataStore.fetch("CoreAPI", "Networks", {
     id: { $in: network_ids }

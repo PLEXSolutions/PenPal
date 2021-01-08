@@ -6,6 +6,6 @@ export default {
 
   async getProjects(root, args, { PenPalCachingAPI }) {
     // Return the args here so they are in the root object for the default resolvers for ProjectsConnection
-    return { args };
+    return { args: { ...args, sort: -1 } };
   }
 };

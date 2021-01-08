@@ -1,4 +1,5 @@
 import gql from "graphql-tag";
+import { ProjectFields } from "./project-summary-fragment.js";
 
 export default gql`
   query getProjectSummaries(
@@ -18,26 +19,7 @@ export default gql`
       pageNumber: $pageNumber
     ) {
       projects {
-        id
-        name
-        description
-        customer {
-          id
-          name
-        }
-        dates {
-          created_at
-          start
-          end
-        }
-        scope {
-          hostsConnection {
-            totalCount
-          }
-          networksConnection {
-            totalCount
-          }
-        }
+        ${ProjectFields}
       }
       totalCount
     }

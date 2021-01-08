@@ -117,10 +117,10 @@ const CoreAPIPlugin = {
         }
 
         // Build the dataloader
-        const api_dataloader = new DataLoader(async keys => {
+        const api_dataloader = new DataLoader(async (keys) => {
           const api_results = await batch_api_getter(keys);
           const api_results_map = _.keyBy(api_results, "id");
-          return keys.map(key => api_results_map[key]);
+          return keys.map((key) => api_results_map[key]);
         });
 
         // When doing pagination, we can't easily decide what IDs are being fetched from the cache to
@@ -176,7 +176,7 @@ const CoreAPIPlugin = {
 
                 get_many_pagination_options_id_cache[
                   options_string
-                ] = results.map(result => result.id);
+                ] = results.map((result) => result.id);
               } else {
                 // This will repeatedly yield to the event loop waiting for the get_many_pagination_options_id_cache gets results
                 // from the PenPal API
@@ -198,26 +198,27 @@ const CoreAPIPlugin = {
 
           // This is just syntactic sugar to conditionally create the function
           ...(GetPaginationInfo && {
-            GetPaginationInfo: async function(keys, options) {
+            GetPaginationInfo: async function (keys, options) {
               // Deterministic stringify of the options to use as a key in the pagination_info_cache
+              const keys_string = stable_stringify(keys);
               const options_string = stable_stringify(options);
+              const cache_key = `${keys_string}:::${options_string}`;
 
-              let cached_pagination_info =
-                pagination_info_cache[options_string];
+              let cached_pagination_info = pagination_info_cache[cache_key];
 
               if (cached_pagination_info === undefined) {
                 // Mark this with a flag to indicate that it's loading to avoid race conditions. The await
                 // later in this block will yield execution on the event loop, potentially allowing other
                 // default resolvers to call this function with the same options string, but we only need to
                 // execute one of them.
-                pagination_info_cache[options_string] = true;
+                pagination_info_cache[cache_key] = true;
 
                 const result = await PenPal.API[api_key].GetPaginationInfo(
                   keys,
                   options
                 );
 
-                pagination_info_cache[options_string] = result;
+                pagination_info_cache[cache_key] = result;
                 return result;
               } else {
                 // This will repeatedly yield to the event loop waiting for the pagination_info_cache gets results
@@ -225,8 +226,7 @@ const CoreAPIPlugin = {
                 while (cached_pagination_info === true) {
                   // Yield to event loop for 10 ms
                   await PenPal.API.AsyncNOOP(10);
-                  cached_pagination_info =
-                    pagination_info_cache[options_string];
+                  cached_pagination_info = pagination_info_cache[cache_key];
                 }
 
                 return cached_pagination_info;

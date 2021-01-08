@@ -17,6 +17,7 @@ import { useMutation } from "@apollo/client";
 import { Components, registerComponent } from "../../../components.js";
 import CreateProjectMutation from "./mutations/create-project.js";
 import GetProjectSummaries from "./queries/get-project-summaries.js";
+import ProjectFieldsFragment from "./queries/project-summary-fragment.js";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -77,32 +78,36 @@ const ProjectReviewForm = ({
 
   const classes = useStyles();
   const { enqueueSnackbar } = useSnackbar();
-  const [createProject] = useMutation(CreateProjectMutation, {
-    // TODO: Ideally we will update the cache directly instead of using the refetch queies, but this
-    // is complicated because the variables are not currently present in a parent of this component.
-    // I will need to re-arrange some logic for this to work.
-    refetchQueries: ["getProjectSummaries"]
 
-    /*update(cache, { data: { createProject: new_project } }) {
-      const current = cache.readQuery({ query: GetProjectSummaries })
-        ?.getProjects ?? { projects: [], totalCount: 0 };
-      const data = {
-        getProjects: {
-          projects: [...current.projects, new_project],
-          totalCount: current.totalCount + 1
+  const [projectCreationInProgress, setProjectCreationInProgress] = useState(
+    false
+  );
+
+  const [createProject] = useMutation(CreateProjectMutation, {
+    update(cache, { data: { createProject: new_project } }) {
+      cache.modify({
+        fields: {
+          getProjects({ projects, totalCount, ...other }) {
+            const newProjectRef = cache.writeFragment({
+              data: new_project,
+              fragment: ProjectFieldsFragment
+            });
+            return {
+              projects: [newProjectRef, ...projects],
+              totalCount: totalCount + 1,
+              ...other
+            };
+          }
         }
-      };
-      console.log(`Modified cache: ${JSON.stringify(data, null, 4)}`);
-      cache.writeQuery({
-        query: GetProjectSummaries,
-        data
       });
-    }*/
+    }
   });
 
   // ----------------------------------------------------
 
   const handleCreateProject = async () => {
+    setProjectCreationInProgress(true);
+
     const variables = _.pickBy({
       customer: customers[selectedCustomer].id,
       name: projectName,
@@ -123,6 +128,8 @@ const ProjectReviewForm = ({
       console.error(e);
       enqueueSnackbar(e.message, { variant: "error", autoHideDuration: 10000 });
     }
+
+    setProjectCreationInProgress(false);
   };
 
   // ----------------------------------------------------
@@ -166,7 +173,11 @@ const ProjectReviewForm = ({
         </Table>
       </div>
       <div className={classes.bottom_pane}>
-        <Components.StyledButton color="primary" onClick={handleCreateProject}>
+        <Components.StyledButton
+          color="primary"
+          onClick={handleCreateProject}
+          disabled={projectCreationInProgress}
+        >
           Create Project
         </Components.StyledButton>
       </div>

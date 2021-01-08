@@ -11,7 +11,7 @@ import { newHostHooks, deletedHostHooks, updatedHostHooks } from "./hooks.js";
 export const getHost = async (host_id, options) => {
   const is_test = isTestData(host_ids);
   return is_test
-    ? _.find(mockHosts, host => host.id === host_id)
+    ? _.find(mockHosts, (host) => host.id === host_id)
     : await PenPal.DataStore.fetchOne(
         "CoreAPI",
         "Hosts",
@@ -28,7 +28,7 @@ export const getHosts = async (host_ids, options) => {
   let result = [];
   // Pass in an array of host IDs
   if (is_test) {
-    result = _.map(args, arg => _.find(mockHosts, host => host.id === arg));
+    result = _.map(args, (arg) => _.find(mockHosts, (host) => host.id === arg));
   } else {
     result = await PenPal.DataStore.fetch(
       "CoreAPI",
@@ -47,7 +47,7 @@ export const getHostsPaginationInfo = async (host_ids = [], options) => {
   return await PenPal.DataStore.getPaginationInfo(
     "CoreAPI",
     "Hosts",
-    host_ids.length === 0 ? {} : { id: { $in: host_ids } },
+    { id: { $in: host_ids } },
     options
   );
 };
@@ -80,11 +80,11 @@ export const getHostsByNetwork = async (network_id, options) => {
 
 // -----------------------------------------------------------
 
-export const insertHost = async host => {
+export const insertHost = async (host) => {
   return await insertHosts([host]);
 };
 
-export const insertHosts = async hosts => {
+export const insertHosts = async (hosts) => {
   const rejected = [];
   const _accepted = [];
   const accepted = [];
@@ -118,11 +118,11 @@ export const insertHosts = async hosts => {
 
 // -----------------------------------------------------------
 
-export const updateHost = async host => {
+export const updateHost = async (host) => {
   return await updateHosts([host]);
 };
 
-export const updateHosts = async hosts => {
+export const updateHosts = async (hosts) => {
   const rejected = [];
   const _accepted = [];
   const accepted = [];
@@ -137,7 +137,7 @@ export const updateHosts = async hosts => {
   }
 
   let matched_hosts = await PenPal.DataStore.fetch("CoreAPI", "Hosts", {
-    id: { $in: _accepted.map(host => host.id) }
+    id: { $in: _accepted.map((host) => host.id) }
   });
 
   if (matched_hosts.length !== _accepted.length) {
@@ -211,7 +211,7 @@ export const upsertHosts = async (project_id, hosts) => {
   for (let existing_host of exists) {
     let to_check_host = _.remove(
       to_check,
-      host =>
+      (host) =>
         host.ip_address === existing_host.ip_address ||
         host.mac_address === existing_host.mac_address
     );
@@ -233,10 +233,10 @@ export const upsertHosts = async (project_id, hosts) => {
   }
 
   // Make sure that the project field is present on all hosts
-  _.each(to_insert, host => {
+  _.each(to_insert, (host) => {
     host.project = project_id;
   });
-  _.each(to_update, host => {
+  _.each(to_update, (host) => {
     host.project = project_id;
   });
 
@@ -253,11 +253,11 @@ export const upsertHosts = async (project_id, hosts) => {
 
 // -----------------------------------------------------------
 
-export const removeHost = async host_id => {
+export const removeHost = async (host_id) => {
   return await removeHosts([host_id]);
 };
 
-export const removeHosts = async host_ids => {
+export const removeHosts = async (host_ids) => {
   // Get all the host data for hooks so the deleted host hook has some info for notifications and such
   let hosts = await PenPal.DataStore.fetch("CoreAPI", "Hosts", {
     id: { $in: host_ids }
