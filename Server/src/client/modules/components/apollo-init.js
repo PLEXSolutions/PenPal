@@ -1,4 +1,5 @@
 import { Meteor } from "meteor/meteor";
+import _ from "lodash";
 import { Accounts } from "meteor/accounts-base";
 import {
   IntrospectionFragmentMatcher,
@@ -47,7 +48,68 @@ const introspect_schema = async () => {
 
 const apolloInit = async () => {
   const possibleTypes = await introspect_schema();
-  const cache = new InMemoryCache({ possibleTypes });
+  const cache = new InMemoryCache({
+    possibleTypes,
+    typePolicies: {
+      Query: {
+        fields: {
+          getProjects: {
+            keyArgs: false,
+            merge(existing, incoming, { args: { pageSize, pageNumber } }) {
+              if (existing === undefined) {
+                return incoming;
+              }
+
+              const { projects, ...other } = existing;
+
+              const merged = projects ? projects.slice(0) : [];
+
+              if (pageSize !== undefined && pageNumber !== undefined) {
+                const offset = pageSize * pageNumber;
+                for (
+                  let i = offset;
+                  i < offset + incoming.projects.length;
+                  i++
+                ) {
+                  merged[i] = incoming.projects[i - offset];
+                }
+              }
+
+              return { projects: merged, ...other };
+            },
+
+            read(existing, { args: { pageSize: _pageSize, pageNumber } }) {
+              if (existing === undefined) {
+                return;
+              }
+
+              if (_pageSize !== undefined && pageNumber !== undefined) {
+                const pageSize =
+                  _pageSize === -1 ? existing.totalCount : _pageSize;
+                const offset = pageNumber * pageSize;
+                const page = { ...existing };
+                page.projects =
+                  page.projects?.slice(offset, offset + pageSize) ?? [];
+
+                // If there are spots on a page that aren't filled in, we need to fetch from the server instead of the cache
+                if (
+                  (page.projects.length < pageSize &&
+                    page.projects.length + offset !== existing.totalCount) ||
+                  _.some(page.projects, (project) => project === undefined)
+                ) {
+                  return undefined;
+                }
+
+                return page;
+              }
+
+              return existing;
+            }
+          }
+        }
+      }
+    }
+  });
 
   const auth_link = new ApolloLink((operation, forward) => {
     const token = Accounts._storedLoginToken();

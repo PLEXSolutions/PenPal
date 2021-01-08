@@ -16,7 +16,7 @@ const ProjectsView = ({ view }) => {
     projects: [],
     totalCount: 0
   });
-  const pageSizeOptions = [5, 10, 25, { label: "All", value: -1 }];
+  const pageSizeOptions = [5, 10, 20, { label: "All", value: -1 }];
 
   const {
     loading: projectSummariesLoading,

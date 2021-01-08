@@ -36,7 +36,7 @@ export default {
   ProjectsConnection: {
     async edges({ args }, _, { PenPalCachingAPI }) {
       const projects = await PenPalCachingAPI.Project.GetMany([], args);
-      return projects.map(project => ({ cursor: project.id, node: project }));
+      return projects.map((project) => ({ cursor: project.id, node: project }));
       return result;
     },
 

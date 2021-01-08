@@ -1,4 +1,5 @@
 import gql from "graphql-tag";
+import { ProjectFields } from "../queries/project-summary-fragment.js";
 
 export default gql`
   mutation createProjectMutation(
@@ -19,26 +20,7 @@ export default gql`
         scope: { hosts: $project_ips, networks: $project_networks }
       }
     ) {
-      id
-      name
-      description
-      customer {
-        id
-        name
-      }
-      dates {
-        created_at
-        start
-        end
-      }
-      scope {
-        hostsConnection {
-          totalCount
-        }
-        networksConnection {
-          totalCount
-        }
-      }
+      ${ProjectFields}
     }
   }
 `;

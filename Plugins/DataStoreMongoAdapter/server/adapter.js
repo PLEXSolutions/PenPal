@@ -24,13 +24,14 @@ const normalize_result = ({ _id = null, ...rest } = {}) => {
 };
 
 const check_options = (options) => {
-  const { first, after, last, before, pageSize, pageNumber } = options;
+  const { first, after, last, before, pageSize, pageNumber, sort } = options;
   check(first, Match.Maybe(Number));
   check(after, Match.Maybe(String));
   check(last, Match.Maybe(Number));
   check(before, Match.Maybe(String));
   check(pageSize, Match.Maybe(Number));
   check(pageNumber, Match.Maybe(Number));
+  check(sort, Match.Maybe(Match.Where((x) => x === 1 || x === -1)));
 };
 
 // -----------------------------------------------------------------------
@@ -56,7 +57,15 @@ MongoAdapter.fetch = async (
   options = {}
 ) => {
   check_options(options);
-  const { first, after, last, before, pageSize, pageNumber } = options;
+  const {
+    first,
+    after,
+    last,
+    before,
+    pageSize,
+    pageNumber,
+    sort = 1
+  } = options;
 
   let cursor = get_collection(plugin_name, store_name).rawCollection();
 
@@ -67,7 +76,7 @@ MongoAdapter.fetch = async (
       _selector = { $and: [{ _id: { $gt: after } }, _selector] };
     }
 
-    cursor = cursor.find(_selector).limit(first);
+    cursor = cursor.find(_selector).sort({ _id: sort }).limit(first);
   } else if (last !== undefined) {
     let _selector = normalize_data(selector);
 
@@ -75,13 +84,20 @@ MongoAdapter.fetch = async (
       _selector = { $and: [{ _id: { $lt: before } }, _selector] };
     }
 
-    cursor = cursor.find(_selector).sort({ _id: -1 }).limit(last);
+    cursor = cursor
+      .find(_selector)
+      .sort({ _id: sort * -1 })
+      .limit(last);
   } else if (pageSize !== undefined && pageNumber !== undefined) {
     let _selector = normalize_data(selector);
     let offset = pageSize * pageNumber;
-    cursor = cursor.find(_selector).skip(offset).limit(pageSize);
+    cursor = cursor.find(_selector).sort({ _id: sort }).skip(offset);
+
+    if (pageSize >= 0) {
+      cursor = cursor.limit(pageSize);
+    }
   } else {
-    cursor = cursor.find(normalize_data(selector));
+    cursor = cursor.find(normalize_data(selector)).sort({ _id: sort });
   }
 
   let data = await cursor.toArray();
@@ -101,7 +117,15 @@ MongoAdapter.getPaginationInfo = async (
   options = {}
 ) => {
   check_options(options);
-  const { first, after, last, before, pageSize, pageNumber } = options;
+  const {
+    first,
+    after,
+    last,
+    before,
+    pageSize: _pageSize,
+    pageNumber,
+    sort = 1
+  } = options;
 
   let normalized_selector = normalize_data(selector);
   const cursor = () => get_collection(plugin_name, store_name).rawCollection();
@@ -131,11 +155,12 @@ MongoAdapter.getPaginationInfo = async (
       first
     );
 
-    let page = cursor().find(page_selector).limit(first);
+    let page = cursor().find(page_selector).sort({ _id: sort }).limit(first);
     const first_page_match = (await page.hasNext()) && (await page.next());
 
     page = cursor()
       .find(page_selector)
+      .sort({ _id: sort })
       .skip(Math.max(page_count - 1, 0))
       .limit(1);
     const last_page_match = (await page.hasNext()) && (await page.next());
@@ -166,12 +191,15 @@ MongoAdapter.getPaginationInfo = async (
       last
     );
 
-    let page = cursor().find(page_selector).sort({ _id: -1 }).limit(last);
+    let page = cursor()
+      .find(page_selector)
+      .sort({ _id: sort * -1 })
+      .limit(last);
     const last_page_match = (await page.hasNext()) && (await page.next());
 
     page = cursor()
       .find(page_selector)
-      .sort({ _id: -1 })
+      .sort({ _id: sort * -1 })
       .limit(last)
       .skip(Math.max(page_count - 1, 0));
     const first_page_match = (await page.hasNext()) && (await page.next());
@@ -187,7 +215,8 @@ MongoAdapter.getPaginationInfo = async (
       result.endCursorOffset = totalCount - 1;
       result.startCursorOffset = result.endCursorOffset - (last - 1);
     }
-  } else if (pageSize !== undefined && pageNumber !== undefined) {
+  } else if (_pageSize !== undefined && pageNumber !== undefined) {
+    const pageSize = _pageSize === -1 ? totalCount : _pageSize;
     result.startCursorOffset = pageSize * pageNumber;
     const page_count = Math.min(
       (await cursor().find(normalized_selector).count()) -
@@ -198,21 +227,24 @@ MongoAdapter.getPaginationInfo = async (
 
     page = cursor()
       .find(normalized_selector)
+      .sort({ _id: sort })
       .skip(result.startCursorOffset)
       .limit(1);
     result.startCursor = ((await page.hasNext()) && (await page.next()))?._id;
 
     page = cursor()
       .find(normalized_selector)
+      .sort({ _id: sort })
       .skip(result.endCursorOffset)
       .limit(1);
     result.endCursor = ((await page.hasNext()) && (await page.next()))?._id;
   } else {
-    let page = await cursor().find(normalized_selector);
+    let page = await cursor().find(normalized_selector).sort({ _id: sort });
     result.startCursor = ((await page.hasNext()) && (await page.next()))?._id;
 
     page = cursor()
       .find(normalized_selector)
+      .sort({ _id: sort })
       .skip(Math.max(totalCount - 1, 0))
       .limit(1);
     result.endCursor = ((await page.hasNext()) && (await page.next()))?._id;
