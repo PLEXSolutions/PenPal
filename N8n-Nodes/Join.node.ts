@@ -61,7 +61,6 @@ export class Join implements INodeType {
 
         let result = "";
 
-        console.log(join_char, array, field);
         if (field !== undefined) {
             result = array.map((item) => item[field]).join(join_char);
         } else {

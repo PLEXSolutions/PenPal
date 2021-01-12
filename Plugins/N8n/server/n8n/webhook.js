@@ -109,7 +109,6 @@ const WebhookManager = {
 
   async executeWebhook(id, url, args = {}) {
     console.log(`[.] Executing webhook: ${url}`);
-    console.log(args);
     const result = await fetch(url, {
       method: "POST",
       body: JSON.stringify(args),

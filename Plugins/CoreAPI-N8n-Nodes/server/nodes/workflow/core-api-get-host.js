@@ -1,7 +1,7 @@
 const host_ids_variable_field = "host_ids";
 const project_id_variable_field = "project_id";
-const ipv4_graphql_field = "ipv4";
-const mac_graphql_field = "mac";
+const ipv4_graphql_field = "ip_address";
+const mac_graphql_field = "mac_address";
 const hostnames_graphql_field = "hostnames";
 
 export default {
@@ -23,7 +23,7 @@ export default {
         default: "",
         description:
           "The field that represents the project ID coming into this node",
-        required: true,
+        required: true
       },
       {
         displayName: "Host IDs",
@@ -32,29 +32,29 @@ export default {
         default: "",
         description:
           "The field that represents the host ID coming into this node",
-        required: true,
+        required: true
       },
       {
         displayName: "IP Address",
         name: ipv4_graphql_field,
         type: "boolean",
         default: true,
-        description: "Host IP Address",
+        description: "Host IP Address"
       },
       {
         displayName: "MAC Address",
         name: mac_graphql_field,
         type: "boolean",
         default: false,
-        description: "Host MAC Address",
+        description: "Host MAC Address"
       },
       {
         displayName: "Hostname(s)",
         name: hostnames_graphql_field,
         type: "boolean",
         default: true,
-        description: "One or more hostnames",
-      },
-    ],
-  },
+        description: "One or more hostnames"
+      }
+    ]
+  }
 };
