@@ -28,7 +28,9 @@ export const getHosts = async (host_ids, options) => {
   let result = [];
   // Pass in an array of host IDs
   if (is_test) {
-    result = _.map(args, (arg) => _.find(mockHosts, (host) => host.id === arg));
+    result = _.map(host_ids, (id) =>
+      _.find(mockHosts, (host) => host.id === id)
+    );
   } else {
     result = await PenPal.DataStore.fetch(
       "CoreAPI",
@@ -110,7 +112,10 @@ export const insertHosts = async (hosts) => {
   }
 
   if (accepted.length > 0) {
-    newHostHooks(accepted);
+    newHostHooks(
+      hosts[0].project,
+      accepted.map(({ id }) => id)
+    );
   }
 
   return { accepted, rejected };

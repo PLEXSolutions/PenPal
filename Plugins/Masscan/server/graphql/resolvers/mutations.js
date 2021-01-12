@@ -7,17 +7,18 @@ function customizer(objValue, srcValue) {
     return objValue.concat(srcValue);
   }
 }
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-async function parseMasscan(projectID, jsonData) {
+
+const parseMasscan = async (projectID, jsonData) => {
   console.log("[.] Parsing masscan results");
+
   let res = {
     status: "Error Uploading Data",
     was_success: false,
     affected_records: []
   };
+
   let parsedJson = hjson.parse(jsonData.toString());
+
   const ips = _.reduce(
     parsedJson,
     (result, value) => {
@@ -30,51 +31,58 @@ async function parseMasscan(projectID, jsonData) {
     },
     {}
   );
+
   let hosts = _.map(ips, ({ ip }) => {
-    return { ipv4: ip };
+    return { ip_address: ip };
   });
-  // 1. Upsert Hosts
-  let upsertHostResp = await PenPal.API.Hosts.Upsert({
-    projectID: projectID,
-    hosts: hosts
-  });
-  let ids = [];
-  _.each(upsertHostResp.affected_records, record => {
-    if (typeof record._str !== "undefined") {
-      ids.push(record._str);
-    } else {
-      ids.push(record);
-    }
-  });
-  // 2. Get IP -> hostID mapping
-  let hostRecords = await PenPal.API.Hosts.Get({
-    projectID: projectID,
-    hostIDs: ids
-  });
-  // 3. Create proper services insertion for each host and insert...
-  let servicesArray = [];
-  _.each(hostRecords, host => {
-    _.each(ips[host.ipv4].ports, foundPort => {
-      servicesArray.push({
-        hostID: host._id._str,
-        port: foundPort.port,
-        protocol: foundPort.proto
-      });
-    });
-  });
-  let servicesResp = await PenPal.API.Services.Upsert({
-    projectID: projectID,
-    services: servicesArray
-  });
-  if (servicesResp.affected_records.length > 0) {
-    res = {
-      status: "Services Created",
-      was_success: true,
-      affected_records: servicesResp.affected_records
-    };
+
+  if (hosts.length === 0) {
+    return { inserted: [], updated: [], rejected: [] };
   }
-  return res;
-}
+
+  // 1. Upsert Hosts
+  let { inserted, updated, rejected } = await PenPal.API.Hosts.UpsertMany(
+    projectID,
+    hosts
+  );
+
+  console.log(`Inserted: ${JSON.stringify(inserted)}`);
+  console.log(`Updated: ${JSON.stringify(updated)}`);
+  console.log(`Rejected: ${JSON.stringify(rejected)}`);
+
+  // 2. Get IP -> hostID mapping
+  //let hostRecords = await PenPal.API.Hosts.Get({
+  //  projectID: projectID,
+  //  hostIDs: ids
+  //});
+
+  // 3. Create proper services insertion for each host and insert...
+  //let servicesArray = [];
+  //_.each(hostRecords, (host) => {
+  //  _.each(ips[host.ipv4].ports, (foundPort) => {
+  //    servicesArray.push({
+  //      hostID: host._id._str,
+  //      port: foundPort.port,
+  //      protocol: foundPort.proto
+  //    });
+  //  });
+  //});
+
+  //let servicesResp = await PenPal.API.Services.Upsert({
+  //  projectID: projectID,
+  //  services: servicesArray
+  //});
+
+  //if (servicesResp.affected_records.length > 0) {
+  //  res = {
+  //    status: "Services Created",
+  //    was_success: true,
+  //    affected_records: servicesResp.affected_records
+  //  };
+  //}
+
+  return { inserted, updated, rejected };
+};
 
 export default {
   async parseMasscanFile(root, args, context) {
@@ -91,16 +99,17 @@ export default {
     res = await parseMasscan(args.submissionDoc.projectID, jsonData);
     return res;
   },
+
   async performMasscan(root, { data: args }, context) {
-    await delay(0);
+    console.log(`Starting masscan for ${args.ips}`);
+
+    await PenPal.API.AsyncNOOP();
     let response = {
       status: "Masscan Failed",
       was_success: false
     };
     PenPal.API.Docker.Exec(
-      `masscan bash -c "masscan -oJ res.json --rate=${args.scanRate} -p${
-        args.ports
-      } ${args.ips.join(" ")} 1>&2 2>/dev/null && cat res.json"`
+      `masscan bash -c "masscan -oJ res.json --rate=${args.scanRate} -p${args.ports} ${args.ips} 1>&2 2>/dev/null && cat res.json"`
     ).then((res, err) => {
       if (err) {
         console.log(err);
