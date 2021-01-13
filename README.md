@@ -26,6 +26,8 @@ PenPal is an automation and reporting all-in-one tool that is meant to enable Cy
          - [ ] Amazon S3 (Plugin)
  - [x] Docker support for plugins
  - [x] [N8n](https://n8n.io) for custom workflow automation (Plugin)
+ - [ ] Report generation
+     - [ ] [Writehat](https://github.com/blacklanternsecurity/writehat) (Plugin)
 
 ## Plugin Ideas
 
