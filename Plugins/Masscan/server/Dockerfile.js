@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+export default `FROM ubuntu:14.04
 
 # Set locales
 RUN locale-gen en_GB.UTF-8
@@ -23,4 +23,4 @@ RUN make -j
 RUN cp /opt/masscan/bin/masscan /usr/local/bin
 
 # Launch Bash
-CMD ["/bin/bash"]
+CMD ["/bin/bash"]`;
