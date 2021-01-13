@@ -22,7 +22,7 @@ PenPal is an automation and reporting all-in-one tool that is meant to enable Cy
      - [ ] Postgres Adapter (Plugin)
      - [ ] Grepable Filesystem Adapter (Plugin)
      - [ ] S3 Adapter
-         - [ ] [https://min.io](MinIO) (Plugin)
+         - [ ] [MinIO](https://min.io) (Plugin)
          - [ ] Amazon S3 (Plugin)
  - [x] Docker support for plugins
  - [x] [N8n](https://n8n.io) for custom workflow automation (Plugin)
