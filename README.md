@@ -28,6 +28,11 @@ PenPal is an automation and reporting all-in-one tool that is meant to enable Cy
  - [x] [N8n](https://n8n.io) for custom workflow automation (Plugin)
  - [ ] Report generation
      - [ ] [Writehat](https://github.com/blacklanternsecurity/writehat) (Plugin)
+ - [ ] Plugin agents system for distributing the various plugins for internal/external combo scans
+     - [ ] Tunneling
+     - [ ] Cross platform agent
+     - [ ] Data flow
+     - [ ] Agent selection based on nearby networks (for automations)
 
 ## Plugin Ideas
 
@@ -40,6 +45,20 @@ PenPal is an automation and reporting all-in-one tool that is meant to enable Cy
  - [ ] [Gowitness](https://hub.docker.com/r/leonjza/gowitness) for screenshots of websites
  - [ ] [Eyeballer](https://github.com/BishopFox/eyeballer) for searching screenshots for interesting things
  - [ ] [Changeme](https://github.com/ztgrace/changeme) for default password checking
+ 
+## Dependencies
+
+PenPal is purely dependent on `docker` and `docker-compose`
+
+## Running PenPal
+
+Currently there are a number of services and endpoints that are interesting/useful. The current way to run it is by executing `dev.sh` -- if you add more plugins to the Plugins folder they will automatically mount with the `docker-compose` scripts and mount into the container. Here's a list of interesting URLs:
+
+ - Web UI - http://localhost:3000
+ - GraphQL Playground - http://localhost:3000/graphql
+ - GraphQL Voyager - http://localhost:3000/voyager
+ - N8n - http://localhost:5678
+ - Storybook - http://localhost:6006
 
 ## Plugin Development
 
