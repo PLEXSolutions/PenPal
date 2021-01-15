@@ -15,7 +15,7 @@ RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     sudo git-core build-essential openssl libssl-dev \
     procps entr nodejs python mongodb-org file lsof \
-    netcat
+    netcat ca-certificates
 
 # Install docker in docker....
 ENV DOCKERVERSION=19.03.12
@@ -34,9 +34,17 @@ RUN apt-get install -y --no-install-recommends bsdtar
 RUN cp $(which tar) /bin/tar.bak
 RUN ln -sf $(which bsdtar) $(which tar)
 
+# Add gosu for our user ID magic
+RUN gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4
+RUN curl -o /usr/local/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/1.12/gosu-$(dpkg --print-architecture)" \
+    && curl -o /usr/local/bin/gosu.asc -SL "https://github.com/tianon/gosu/releases/download/1.12/gosu-$(dpkg --print-architecture).asc" \
+    && gpg --verify /usr/local/bin/gosu.asc \
+    && rm /usr/local/bin/gosu.asc \
+    && chmod +x /usr/local/bin/gosu
+
 # Create an unpriv user for meteor to run as
-RUN groupadd -r node
-RUN useradd --no-log-init -r -g node node
+RUN groupadd -g 1000 -r node
+RUN useradd --no-log-init -r -u 1000 -g node node
 RUN cp -rT /etc/skel /home/node
 RUN chown -R node:node /home/node
 RUN echo 'node ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
@@ -49,13 +57,6 @@ RUN chown node:node /app
 RUN mkdir /n8n
 RUN chown node:node /n8n
 RUN chown -R node:node /usr/lib/node_modules
-
-# Also setup the environment for "production"
-RUN mkdir /app-production
-RUN chown node:node /app-production
-
-# Chown the mongo datastore
-RUN chown -R node:node /data/db
 
 # Drop privs to the node user
 USER node
@@ -136,6 +137,9 @@ RUN EXIT=1 meteor run --once; exit 0
 RUN export BIND_IP=0.0.0.0
 EXPOSE 3000
 EXPOSE 9229
+
+# Drop back to root. The docker entrypoint will drop to a node privileges
+USER root
 
 # For `docker run CONTAINER_ID`
 COPY ./docker-entrypoint.sh /usr/bin/docker-entrypoint.sh

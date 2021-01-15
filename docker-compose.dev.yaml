@@ -13,6 +13,9 @@ services:
             - ./Server/src/packages:/app/packages:consistent
             - ./Plugins/:/app/plugins:consistent
             - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            - LOCAL_USER_ID=${LOCAL_USER_ID}
+            - LOCAL_GROUP_ID=${LOCAL_GROUP_ID}
 
     storybook:
         build:
