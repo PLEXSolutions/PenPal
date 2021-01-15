@@ -1,8 +1,6 @@
 #!/bin/bash
 
-USER_ID=${LOCAL_USER_ID:-1000}
-GROUP_ID=${LOCAL_GROUP_ID:-1000}
-
+USER_ID=${LOCAL_USER_ID:-$(id -u node)}
 CURRENT_NODE_UID=$(id -u node)
 
 if [[ $USER_ID -eq 0 ]]; then
@@ -19,9 +17,8 @@ if [[ $USER_ID -eq 0 ]]; then
 fi
 
 if [[ ! $CURRENT_NODE_UID -eq $USER_ID ]]; then
-	echo Changing UID/GID of 'node' user to $USER_ID:$GROUP_ID
+	echo Changing UID of 'node' user to $USER_ID
 	usermod -u $USER_ID node
-	groupmod -g $GROUP_ID node
 
 	echo Restarting sudo
 	service sudo restart

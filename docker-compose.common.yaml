@@ -3,7 +3,7 @@ services:
     penpal-server:
         build: ./Server
         volumes:
-            - npm-cache:/home/node/.npm
+            - penpal-npm-cache:/home/node/.npm
             - ./N8n-Nodes/:/home/node/custom-n8n-nodes/
         ports:
             - "3000:3000"
@@ -13,9 +13,7 @@ services:
             - public
 
 volumes:
-    npm-cache:
-        external: false
-    n8n-cache:
+    penpal-npm-cache:
         external: false
 
 networks:

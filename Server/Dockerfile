@@ -1,5 +1,7 @@
 FROM debian:buster-slim
 
+ARG UID=1000
+
 RUN apt-get update
 RUN apt-get install curl -y
 
@@ -43,8 +45,8 @@ RUN curl -o /usr/local/bin/gosu -SL "https://github.com/tianon/gosu/releases/dow
     && chmod +x /usr/local/bin/gosu
 
 # Create an unpriv user for meteor to run as
-RUN groupadd -g 1000 -r node
-RUN useradd --no-log-init -r -u 1000 -g node node
+RUN groupadd -r node
+RUN useradd --no-log-init -r -u $UID -g node node
 RUN cp -rT /etc/skel /home/node
 RUN chown -R node:node /home/node
 RUN echo 'node ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
@@ -138,7 +140,7 @@ RUN export BIND_IP=0.0.0.0
 EXPOSE 3000
 EXPOSE 9229
 
-# Drop back to root. The docker entrypoint will drop to a node privileges
+# Drop back to root. The docker entrypoint will drop to node user privileges
 USER root
 
 # For `docker run CONTAINER_ID`
