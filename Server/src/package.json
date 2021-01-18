@@ -63,11 +63,11 @@
     },
     "devDependencies": {
         "@babel/core": "^7.10.2",
-        "@storybook/addon-actions": "6.0.26",
-        "@storybook/addon-links": "6.0.26",
-        "@storybook/react": "^6.0.26",
-        "core-js": "^3.6.5",
+        "@storybook/addon-actions": "6.1.14",
+        "@storybook/addon-links": "6.1.14",
+        "@storybook/react": "^6.1.14",
         "babel-loader": "^8.1.0",
+        "core-js": "^3.6.5",
         "scrap-meteor-loader": "^0.0.1",
         "storybook-react-router": "1.0.8"
     },
