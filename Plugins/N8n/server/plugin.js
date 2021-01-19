@@ -6,6 +6,7 @@ import { name as PLUGIN_NAME } from "./manifest.json";
 import startN8nServer from "./n8n/n8n.js";
 import WebhookManager from "./n8n/webhook.js";
 import { WebhooksCollectionName } from "./constants.js";
+import NodeBuilder from "./n8n/node-builder.js";
 
 const settings = {
   datastores: [
@@ -17,6 +18,8 @@ const settings = {
 
 const N8nPlugin = {
   loadPlugin() {
+    PenPal.N8n = { NodeBuilder };
+
     return {
       types,
       resolvers,
@@ -33,7 +36,7 @@ const N8nPlugin = {
       {}
     );
 
-    _.each(stored_webhooks, webhook =>
+    _.each(stored_webhooks, (webhook) =>
       WebhookManager.registerWebhook(webhook, true)
     );
 

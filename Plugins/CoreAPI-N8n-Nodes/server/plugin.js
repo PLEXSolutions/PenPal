@@ -3,20 +3,22 @@ import { workflow_nodes, trigger_nodes } from "./nodes";
 
 const settings = {
   n8n: {
-    workflow_nodes,
-    trigger_nodes,
-  },
+    //workflow_nodes,
+    trigger_nodes
+  }
 };
 
 const CoreAPIN8nNodesPlugin = {
   loadPlugin() {
+    console.log(workflow_nodes[0]());
+
     return {
       types,
       resolvers,
       loaders: {},
-      settings,
+      settings
     };
-  },
+  }
 };
 
 export default CoreAPIN8nNodesPlugin;
