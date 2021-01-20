@@ -25,8 +25,8 @@ const check_manifest = ({ name, version, dependsOn }) => {
 
 // ----------------------------------------------------------------------------
 
-const isFunction = obj => !!(obj && obj.constructor && obj.call && obj.apply);
-const check_plugin = plugin => {
+const isFunction = (obj) => !!(obj && obj.constructor && obj.call && obj.apply);
+const check_plugin = (plugin) => {
   let plugin_accept = true;
 
   const try_check = (value, type, repr_value, repr_type) => {
@@ -57,7 +57,7 @@ const check_plugin = plugin => {
 
 // ----------------------------------------------------------------------------
 
-const check_n8n = n8n => {
+const check_n8n = (n8n) => {
   let n8n_accept = true;
 
   const try_check = (value, type, repr_value, repr_type) => {
@@ -76,36 +76,12 @@ const check_n8n = n8n => {
       console.log(`settings.n8n.workflow_nodes must be of type Array`);
     } else {
       for (let i = 0; i < n8n.workflow_nodes.length; i++) {
-        const { executeHandler, node } = n8n.workflow_nodes[i];
+        const nodeBuilder = n8n.workflow_nodes[i];
         try_check(
-          executeHandler,
-          String,
-          `workflow_nodes.${i}.executeHandler`,
-          "String"
-        );
-
-        try_check(
-          node.displayName,
-          String,
-          `workflow_nodes.${i}.node.displayName`,
-          "String"
-        );
-
-        try_check(node.name, String, `workflow_nodes.${i}.node.name`, "String");
-        try_check(node.icon, String, `workflow_nodes.${i}.node.icon`, "String");
-
-        try_check(
-          node.description,
-          String,
-          `workflow_nodes.${i}.node.description`,
-          "String"
-        );
-
-        try_check(
-          node.properties,
-          Match.Where(Array.isArray),
-          `workflow_nodes.${i}.node.properties`,
-          "Array"
+          nodeBuilder,
+          Match.Where(isFunction),
+          `workflow_nodes.${i}`,
+          "Function"
         );
       }
     }
@@ -116,37 +92,12 @@ const check_n8n = n8n => {
       console.log(`settings.n8n.trigger_nodes must be of type Array`);
     } else {
       for (let i = 0; i < n8n.trigger_nodes.length; i++) {
-        const { trigger, node } = n8n.trigger_nodes[i];
-
+        const nodeBuilder = n8n.trigger_nodes[i];
         try_check(
-          trigger,
-          { name: String, type: String, trigger: String },
-          `trigger_nodes.${i}.trigger`,
-          "{ name: String, type: String, trigger: String }"
-        );
-
-        try_check(
-          node.displayName,
-          String,
-          `trigger_nodes.${i}.node.displayName`,
-          "String"
-        );
-
-        try_check(node.name, String, `trigger_nodes.${i}.node.name`, "String");
-        try_check(node.icon, String, `trigger_nodes.${i}.node.icon`, "String");
-
-        try_check(
-          node.description,
-          String,
-          `trigger_nodes.${i}.node.description`,
-          "String"
-        );
-
-        try_check(
-          node.properties,
-          Match.Where(Array.isArray),
-          `trigger_nodes.${i}.node.properties`,
-          "Array"
+          nodeBuilder,
+          Match.Where(isFunction),
+          `trigger_nodes.${i}`,
+          "Function"
         );
       }
     }
@@ -156,7 +107,7 @@ const check_n8n = n8n => {
 };
 
 // ----------------------------------------------------------------------------
-const build_docker = async docker => {
+const build_docker = async (docker) => {
   if (docker) {
     await PenPal.API.Docker.Build(docker);
   }
@@ -201,7 +152,7 @@ PenPal.registerPlugin = (manifest, plugin) => {
 // ----------------------------------------------------------------------------
 
 PenPal.loadPlugins = async () => {
-  PenPal.LoadedPlugins = _.mapValues(PenPal.RegisteredPlugins, plugin => ({
+  PenPal.LoadedPlugins = _.mapValues(PenPal.RegisteredPlugins, (plugin) => ({
     loaded: false,
     name: plugin.name,
     version: plugin.version
