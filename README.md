@@ -26,6 +26,7 @@ PenPal is an automation and reporting all-in-one tool that is meant to enable Cy
          - [ ] Amazon S3 (Plugin)
  - [x] Docker support for plugins
  - [x] [N8n](https://n8n.io) for custom workflow automation (Plugin)
+     - [x] N8n Node Builder wrapper (similar to knex) to simplify node creation
  - [ ] Report generation
      - [ ] [Writehat](https://github.com/blacklanternsecurity/writehat) (Plugin)
  - [ ] Plugin agents system for distributing the various plugins for internal/external combo scans
@@ -182,8 +183,12 @@ This section of the settings object is used to automatically generate data store
 
 This section of the settings object is used to automatically pull docker images (not yet implemented) or build provided docker files (implemented) at runtime. This is an easy way to make sure that your particular plugin is cross platform and can be executed regardless of where PenPal is running. See the [Masscan Plugin](https://github.com/PLEXSolutions/PenPal/blob/master/Plugins/Masscan/server/plugin.js#L4) for an example.
 
-#### N8n (unstable)
+#### N8n
 
-You can define n8n nodes and then PenPal will automatically generate them at runtime, including connecting the plumbing between the N8n server and your functions you define. This is a bit rigid at the moment and relies a lot on naming -- there are plans in place to make this a bit more API-like, similar to how knex abstracts SQL queries. See [CoreAPI-N8n-Nodes/server/plugin.js](https://github.com/PLEXSolutions/PenPal/blob/master/Plugins/CoreAPI-N8n-Nodes/server/plugin.js#L5) for an example.
+You can define n8n nodes and then PenPal will automatically generate them at runtime, including connecting the plumbing between the N8n server and your functions you define. To simplify this, a knex-like wrapper has been built to generate the objects necessary for PenPal to generate Nodes. 
+
+Examples:
+ - Workflow Node: [Plugins/CoreAPI-N8n-Nodes/server/nodes/workflow/core-api-get-host.js](https://github.com/PLEXSolutions/PenPal/blob/master/Plugins/CoreAPI-N8n-Nodes/server/nodes/workflow/core-api-get-host.js)
+ - Trigger Node: [Plugins/CoreAPI-N8n-Nodes/server/nodes/trigger/core-api-new-host.js](https://github.com/PLEXSolutions/PenPal/blob/master/Plugins/CoreAPI-N8n-Nodes/server/nodes/trigger/core-api-new-host.js)
 
 

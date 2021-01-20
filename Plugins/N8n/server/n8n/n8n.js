@@ -11,6 +11,47 @@ import template_trigger_ts_file from "./templates/TriggerTemplate.node.ts.js";
 const N8N_DIR = "/n8n";
 const N8N_NODES_DIR = "/home/node/custom-n8n-nodes/";
 
+const killOldServer = async () => {
+  console.log("[.] Killing old n8n server if still running");
+  spawn(`ps -ef | grep "n8n" | awk '{print $2}' | xargs kill -9`, {
+    stdio: "ignore",
+    shell: true
+  });
+};
+
+const cleanOldNodes = async () => {
+  return new Promise((resolve) => {
+    console.log("[.] Removing old custom n8n nodes");
+
+    let processes = [
+      spawn(`rm /home/node/.n8n/custom/*`, {
+        stdio: ["ignore", "ignore", "inherit"],
+        shell: true,
+        cwd: N8N_DIR
+      }),
+      spawn(
+        `for d in ./*/; do rm -rf $d; done`,
+        {
+          stdio: ["ignore", "ignore", "inherit"],
+          shell: true,
+          cwd: N8N_NODES_DIR
+        }
+      )
+    ];
+
+    let finished_processes = 0;
+    for (let process of processes) {
+      process.on("close", (code) => {
+        finished_processes += 1;
+        if (finished_processes === processes.length) {
+          console.log("[.] Finished removing old n8n nodes");
+          resolve();
+        }
+      });
+    }
+  });
+}
+
 const generateNode = async (options, is_trigger_node) => {
   const output_dir = path.join(N8N_NODES_DIR, options.node.name);
 
@@ -54,18 +95,20 @@ const generateNodes = async () => {
 
     const { workflow_nodes = [], trigger_nodes = [] } = n8n;
 
-    for (let node of workflow_nodes) {
+    for (let buildNode of workflow_nodes) {
+      const node = buildNode();
       await generateNode(node, false);
     }
 
-    for (let node of trigger_nodes) {
+    for (let buildNode of trigger_nodes) {
+      const node = buildNode();
       await generateNode(node, true);
     }
   }
 };
 
 const buildNodes = () => {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     console.log("[.] Building n8n nodes");
 
     let processes = [
@@ -86,7 +129,7 @@ const buildNodes = () => {
 
     let finished_processes = 0;
     for (let process of processes) {
-      process.on("close", code => {
+      process.on("close", (code) => {
         finished_processes += 1;
         if (finished_processes === processes.length) {
           console.log("[.] Finished building n8n nodes");
@@ -94,14 +137,6 @@ const buildNodes = () => {
         }
       });
     }
-  });
-};
-
-const killOldServer = async () => {
-  console.log("[.] Killing old n8n server if still running");
-  spawn(`ps -ef | grep "n8n" | awk '{print $2}' | xargs kill -9`, {
-    stdio: "ignore",
-    shell: true
   });
 };
 
@@ -118,6 +153,7 @@ export default async () => {
   await PenPal.API.AsyncNOOP();
   console.log();
   killOldServer();
+  await cleanOldNodes();
   await generateNodes();
   await buildNodes();
   startN8nServer();

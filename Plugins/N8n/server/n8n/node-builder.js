@@ -19,6 +19,12 @@ class NodeBuilder {
   }
 
   name(name) {
+    if (!/[a-zA-Z0-9_]+/.test(name)) {
+      throw new Error(
+        `Node name ${name} must consist of letters, numbers, and underscores`
+      );
+    }
+
     this.node.node.name = name;
     return this;
   }
@@ -40,6 +46,19 @@ class NodeBuilder {
 
     this.node.executeHandler = query_handler.name;
     this.node.executeHandlerType = "query";
+
+    return this;
+  }
+
+  addMutationHandler(mutation_handler) {
+    if (typeof mutation_handler !== "function") {
+      throw new Error(
+        `Mutation Handler ${mutation_handler} must be a function`
+      );
+    }
+
+    this.node.executeHandler = mutation_handler.name;
+    this.node.executeHandlerType = "mutation";
 
     return this;
   }
@@ -76,6 +95,21 @@ class NodeBuilder {
     return this;
   }
 
+  trigger(callback) {
+    if (typeof callback !== "function") {
+      throw new Error(
+        `trigger argument must be a function that accepts the trigger as an argument`
+      );
+    }
+
+    const trigger = new TriggerBuilder();
+    callback(trigger);
+
+    this.node.trigger = trigger._trigger;
+
+    return this;
+  }
+
   value() {
     return this.node;
   }
@@ -99,6 +133,12 @@ class VariableBuilder {
   }
 
   name(name) {
+    if (!/[a-zA-Z0-9_]+/.test(name)) {
+      throw new Error(
+        `Variable name ${name} must consist of letters, numbers, and underscores`
+      );
+    }
+
     this.variable.name = name;
     return this;
   }
@@ -119,9 +159,11 @@ class VariableBuilder {
         break;
       case "boolean":
         break;
+      case "number":
+        break;
       default:
         throw new Error(
-          `Unsupported type ${type}. Currently allowed: 'string', 'boolean'`
+          `Unsupported type ${type}. Currently allowed: 'string', 'boolean', 'number'`
         );
     }
 
@@ -132,6 +174,59 @@ class VariableBuilder {
 
   required() {
     this.variable.required = true;
+    return this;
+  }
+}
+
+class TriggerBuilder {
+  constructor() {
+    this._trigger = {
+      name: "DefaultTriggerName",
+      type: "",
+      trigger: ""
+    };
+  }
+
+  name(name) {
+    if (!/[a-zA-Z0-9_]+/.test(name)) {
+      throw new Error(
+        `Variable name ${name} must consist of letters, numbers, and underscores`
+      );
+    }
+
+    this._trigger.name = name;
+    return this;
+  }
+
+  type(type) {
+    switch (type) {
+      case "host":
+        break;
+      default:
+        throw new Error(`Unsupported type ${type}. Currently allowed: 'host'`);
+    }
+
+    this._trigger.type = type;
+
+    return this;
+  }
+
+  trigger(trigger) {
+    switch (trigger) {
+      case "new":
+        break;
+      case "update":
+        break;
+      case "delete":
+        break;
+      default:
+        throw new Error(
+          `Unsupported type ${trigger}. Currently allowed: 'new', 'update', 'delete'`
+        );
+    }
+
+    this._trigger.trigger = trigger;
+
     return this;
   }
 }
