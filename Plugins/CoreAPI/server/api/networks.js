@@ -1,20 +1,35 @@
 import PenPal from "meteor/penpal";
 import _ from "lodash";
 
-import { required_field } from "./common.js";
+import { required_field, isTestData } from "./common.js";
+import { networks as mockNetworks } from "../test/mock-networks.json";
+import {
+  newNetworkHooks,
+  deletedNetworkHooks,
+  updatedNetworkHooks
+} from "./hooks.js";
 
 // -----------------------------------------------------------
 
 export const getNetwork = async (network_id) => {
-  return await PenPal.DataStore.fetchOne("CoreAPI", "Networks", {
-    id: network_id
-  });
+  const is_test = isTestData(network_id);
+  return is_test
+    ? _.find(mockNetworks, (network) => network.id === network_id)
+    : await PenPal.DataStore.fetchOne("CoreAPI", "Networks", {
+        id: network_id
+      });
 };
 
 export const getNetworks = async (network_ids) => {
-  return await PenPal.DataStore.fetch("CoreAPI", "Networks", {
-    id: { $in: network_ids }
-  });
+  const is_test = isTestData(network_ids);
+
+  return is_test
+    ? _.map(network_ids, (id) =>
+        _.find(mockNetworks, (network) => network.id === id)
+      )
+    : await PenPal.DataStore.fetch("CoreAPI", "Networks", {
+        id: { $in: network_ids }
+      });
 };
 
 export const getNetworksPaginationInfo = async (network_ids = [], options) => {
@@ -65,6 +80,13 @@ export const insertNetworks = async (networks) => {
     accepted.push(...result);
   }
 
+  if (accepted.length > 0) {
+    newNetworkHooks(
+      networks[0].project,
+      accepted.map(({ id }) => id)
+    );
+  }
+
   return { accepted, rejected };
 };
 
@@ -109,6 +131,10 @@ export const updateNetworks = async (networks) => {
     if (res > 0) accepted.push({ id, ...network });
   }
 
+  if (accepted.length > 0) {
+    updatedNetworkHooks(accepted);
+  }
+
   return { accepted, rejected };
 };
 
@@ -129,6 +155,7 @@ export const removeNetworks = async (network_ids) => {
   });
 
   if (res > 0) {
+    deletedNetworkHooks(networks);
     return true;
   }
 
