@@ -3,26 +3,18 @@ import _ from "lodash";
 
 // Hooks for getting IDs
 
-const HOOKS = {
-  PROJECT: {
-    NEW: [],
-    UPDATE: [],
-    DELETE: []
-  },
-  HOST: {
-    NEW: [],
-    UPDATE: [],
-    DELETE: []
-  },
-  SERVICE: {
-    NEW: [],
-    UPDATE: [],
-    DELETE: []
-  }
-};
+const implemented_hooks = ["host", "network"];
+const non_implemented_hooks = ["project", "service"];
+const hooks = {};
+_.each(implemented_hooks, (hook) => {
+  hooks[hook] = { new: [], delete: [], update: [] };
+});
+_.each(non_implemented_hooks, (hook) => {
+  hooks[hook] = { new: [], delete: [], update: [] };
+});
 
 // Register a hook
-// target = 'project' | 'host' | 'service'
+// target = 'project' | 'host' | 'network' | 'service'
 // trigger = 'new' | 'update' | 'delete'
 // name = 'unique hook name'
 // func = a function to call that takes a single argument that is an array of type IDs
@@ -30,26 +22,10 @@ export function registerHook(target, trigger, id, func) {
   const hook = { id, hook: func };
   let hook_location = null;
 
-  switch (target) {
-    case "project":
-      console.log("Project hooks not yet implemented");
-      break;
-    case "host":
-      switch (trigger) {
-        case "delete":
-          hook_location = HOOKS.HOST.DELETE;
-          break;
-        case "new":
-          hook_location = HOOKS.HOST.NEW;
-          break;
-        case "update":
-          hook_location = HOOKS.HOST.UPDATE;
-          break;
-      }
-      break;
-    case "service":
-      console.log("Service hooks not yet implemented");
-      break;
+  if (_.includes(non_implemented_hooks, target)) {
+    console.log(`${target} hooks not yet implemented`);
+  } else if (_.includes(implemented_hooks, target)) {
+    hook_location = hooks[target]?.[trigger];
   }
 
   if (hook_location === null) {
@@ -63,27 +39,45 @@ export function registerHook(target, trigger, id, func) {
 }
 
 export function deleteHook(id) {
-  _.each(HOOKS, (hook_type, key1) => {
+  _.each(hooks, (hook_type, key1) => {
     _.each(hook_type, (hook_array, key2) => {
-      HOOKS[key1][key2] = hook_array.filter(hook => hook.id !== id);
+      hooks[key1][key2] = hook_array.filter((hook) => hook.id !== id);
     });
   });
 }
 
 export function newHostHooks(project_id, host_ids) {
-  for (let { hook } of HOOKS.HOST.NEW) {
+  for (let { hook } of hooks.host.new) {
     hook({ projectID: project_id, hostIDs: host_ids });
   }
 }
 
 export function updatedHostHooks(host_ids) {
-  for (let { hook } of HOOKS.HOST.UPDATE) {
+  for (let { hook } of hooks.host.update) {
     hook(host_ids);
   }
 }
 
 export function deletedHostHooks(hosts) {
-  for (let { hook } of HOOKS.HOST.DELETE) {
+  for (let { hook } of hooks.host.delete) {
     hook(hosts);
+  }
+}
+
+export function newNetworkHooks(project_id, network_ids) {
+  for (let { hook } of hooks.network.new) {
+    hook({ projectID: project_id, networkIDs: network_ids });
+  }
+}
+
+export function updatedNetworkHooks(network_ids) {
+  for (let { hook } of hooks.network.update) {
+    hook(network_ids);
+  }
+}
+
+export function deletedNetworkHooks(networks) {
+  for (let { hook } of hooks.network.delete) {
+    hook(networks);
   }
 }

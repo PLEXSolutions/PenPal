@@ -15,7 +15,7 @@ import cx from "classnames";
 
 import { Components, registerComponent } from "../../../components.js";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     height: "100%"
   },
