@@ -5,7 +5,6 @@ import stable_stringify from "fast-json-stable-stringify";
 
 import { types, resolvers, loaders } from "./graphql";
 import * as API from "./api/";
-import { dockerExec, dockerBuild, dockerRun } from "./api/docker";
 import { mocks } from "./test/";
 
 const settings = {
@@ -182,7 +181,7 @@ const CoreAPIPlugin = {
                 // from the PenPal API
                 while (cached_ids === true) {
                   // Yield to event loop for 10 ms
-                  await PenPal.API.AsyncNOOP(10);
+                  await PenPal.Utils.AsyncNOOP(10);
                   cached_ids =
                     get_many_pagination_options_id_cache[options_string];
                 }
@@ -225,7 +224,7 @@ const CoreAPIPlugin = {
                 // from the PenPal API
                 while (cached_pagination_info === true) {
                   // Yield to event loop for 10 ms
-                  await PenPal.API.AsyncNOOP(10);
+                  await PenPal.Utils.AsyncNOOP(10);
                   cached_pagination_info = pagination_info_cache[cache_key];
                 }
 
@@ -243,22 +242,16 @@ const CoreAPIPlugin = {
       return caching_apis;
     };
 
-    PenPal.API.Docker = {
-      Exec: API.dockerExec,
-      Build: API.dockerBuild
-    };
-
-    PenPal.API.AsyncNOOP = API.AsyncNOOP;
-
     PenPal.API.registerHook = API.registerHook;
     PenPal.API.deleteHook = API.deleteHook;
 
     PenPal.Test.CoreAPI = { ...mocks };
 
     return {
-      types,
-      resolvers,
-      loaders: {},
+      graphql: {
+        types,
+        resolvers
+      },
       settings
     };
   }

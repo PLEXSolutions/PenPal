@@ -4,6 +4,27 @@ import { mergeTypeDefs } from "@graphql-tools/merge";
 
 // ----------------------------------------------------------------------------
 
+const PenPal = {};
+PenPal.RegisteredPlugins = {};
+PenPal.LoadedPlugins = {};
+PenPal.Utils = {};
+
+// ----------------------------------------------------------------------------
+
+PenPal.Utils.Sleep = async (ms) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
+PenPal.Utils.AsyncNOOP = async () => {
+  await PenPal.Utils.Sleep(0);
+};
+
+// ----------------------------------------------------------------------------
+
+PenPal.Utils.isFunction = (obj) =>
+  !!(obj && obj.constructor && obj.call && obj.apply);
+
+// ----------------------------------------------------------------------------
+
 const check_manifest = ({ name, version, dependsOn }) => {
   let manifest_accept = true;
 
@@ -25,7 +46,6 @@ const check_manifest = ({ name, version, dependsOn }) => {
 
 // ----------------------------------------------------------------------------
 
-const isFunction = (obj) => !!(obj && obj.constructor && obj.call && obj.apply);
 const check_plugin = (plugin) => {
   let plugin_accept = true;
 
@@ -40,84 +60,20 @@ const check_plugin = (plugin) => {
 
   try_check(
     plugin.loadPlugin,
-    Match.Where(isFunction),
+    Match.Where(PenPal.Utils.isFunction),
     "loadPlugin",
     "Function"
   );
 
   try_check(
     plugin.startupHook,
-    Match.Optional(Match.Where(isFunction)),
+    Match.Optional(Match.Where(PenPal.Utils.isFunction)),
     "startupHook",
     "Function"
   );
 
   return plugin_accept;
 };
-
-// ----------------------------------------------------------------------------
-
-const check_n8n = (n8n) => {
-  let n8n_accept = true;
-
-  const try_check = (value, type, repr_value, repr_type) => {
-    try {
-      check(value, type);
-    } catch (e) {
-      console.error(
-        `[!] settings.n8n.${repr_value} must be of type ${repr_type}`
-      );
-      n8n_accept = false;
-    }
-  };
-
-  if (n8n.workflow_nodes !== undefined) {
-    if (!Array.isArray(n8n.workflow_nodes)) {
-      console.log(`settings.n8n.workflow_nodes must be of type Array`);
-    } else {
-      for (let i = 0; i < n8n.workflow_nodes.length; i++) {
-        const nodeBuilder = n8n.workflow_nodes[i];
-        try_check(
-          nodeBuilder,
-          Match.Where(isFunction),
-          `workflow_nodes.${i}`,
-          "Function"
-        );
-      }
-    }
-  }
-
-  if (n8n.trigger_nodes !== undefined) {
-    if (!Array.isArray(n8n.trigger_nodes)) {
-      console.log(`settings.n8n.trigger_nodes must be of type Array`);
-    } else {
-      for (let i = 0; i < n8n.trigger_nodes.length; i++) {
-        const nodeBuilder = n8n.trigger_nodes[i];
-        try_check(
-          nodeBuilder,
-          Match.Where(isFunction),
-          `trigger_nodes.${i}`,
-          "Function"
-        );
-      }
-    }
-  }
-
-  return n8n_accept;
-};
-
-// ----------------------------------------------------------------------------
-const build_docker = async (docker) => {
-  if (docker) {
-    await PenPal.API.Docker.Build(docker);
-  }
-};
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
-
-const PenPal = {};
-PenPal.RegisteredPlugins = {};
-PenPal.LoadedPlugins = {};
 
 // ----------------------------------------------------------------------------
 
@@ -136,6 +92,7 @@ PenPal.registerPlugin = (manifest, plugin) => {
     requiresImplementation = false,
     implements = ""
   } = manifest;
+
   const name_version = `${name}@${version}`;
   console.log(`[+] Registered plugin: ${name_version}`);
 
@@ -161,7 +118,8 @@ PenPal.loadPlugins = async () => {
   let plugins_types = {};
   let plugins_resolvers = [{ Query: {} }, { Mutation: {} }];
   let plugins_loaders = {};
-  let plugins_n8n_configs = {};
+  let extra_settings_checkers = {};
+  let postload_hooks = [];
 
   const plugins_to_load = Object.keys(PenPal.RegisteredPlugins);
   while (plugins_to_load.length > 0) {
@@ -217,44 +175,65 @@ PenPal.loadPlugins = async () => {
     }
 
     // Now merge the types from this plugin into the schema
-    const { types, resolvers, loaders, settings } = await plugin.loadPlugin();
+    const { graphql, settings, hooks } = await plugin.loadPlugin();
 
-    if (settings.n8n !== undefined) {
-      if (!check_n8n(settings.n8n)) {
-        console.error(
-          `[!] Failed to load ${plugin_name}. N8n config is improper`
-        );
-        delete PenPal.RegisteredPlugins[plugin_name];
-        continue;
+    if (hooks !== undefined) {
+      const { postload, settings: settings_hooks, startup } = hooks;
+
+      if (settings_hooks !== undefined) {
+        if (typeof settings_hooks !== "object") {
+          console.error(
+            `[!] Failed to load ${plugin_name}. hooks.settings must be an object`
+          );
+          delete PenPal.RegisteredPlugins[plugin_name];
+          continue;
+        }
+
+        for (let key in settings_hooks) {
+          extra_settings_checkers[key] = settings_hooks[key];
+        }
+      }
+
+      if (postload !== undefined) {
+        postload_hooks.push(postload);
+      }
+
+      if (startup !== undefined) {
+        PenPal.LoadedPlugins[plugin_name].startupHook = startup;
       }
     }
 
-    // Now check and build Dockerfile if applicable
-    if (settings.docker !== undefined) {
-      build_docker(settings.docker).then((err, res) => {
-        if (err) {
-          console.error(`[!] Failed to load ${plugin_name}. Docker issue`);
+    for (let settings_property in extra_settings_checkers) {
+      if (settings?.[settings_property] !== undefined) {
+        if (
+          !extra_settings_checkers[settings_property](
+            settings[settings_property]
+          )
+        ) {
+          console.error(
+            `[!] Failed to load ${plugin_name}. ${settings_property} config is improper`
+          );
           delete PenPal.RegisteredPlugins[plugin_name];
-          delete PenPal.LoadedPlugins[plugin_name];
+          continue;
         }
-      });
+      }
     }
 
-    plugins_types = mergeTypeDefs([plugins_types, types]);
-    plugins_resolvers = _.merge(plugins_resolvers, resolvers);
-    plugins_loaders = _.merge(plugins_loaders, loaders);
-
-    if (settings.datastores) {
-      PenPal.DataStore.CreateStores(
-        PenPal.LoadedPlugins[plugin_name].name,
-        settings.datastores.map(({ name }) => name)
-      );
+    if (graphql !== undefined) {
+      const { types, resolvers, loaders } = graphql;
+      if (types !== undefined)
+        plugins_types = mergeTypeDefs([plugins_types, types]);
+      if (resolvers !== undefined)
+        plugins_resolvers = _.merge(plugins_resolvers, resolvers);
+      if (loaders !== undefined)
+        plugins_loaders = _.merge(plugins_loaders, loaders);
     }
 
     PenPal.LoadedPlugins[plugin_name].loaded = true;
     PenPal.LoadedPlugins[plugin_name].settings = settings;
-    if (plugin.startupHook !== undefined) {
-      PenPal.LoadedPlugins[plugin_name].startupHook = plugin.startupHook;
+
+    for (let postload_hook of postload_hooks) {
+      await postload_hook(plugin_name);
     }
 
     console.log(`[+] Loaded ${plugin_name}`);
@@ -276,12 +255,9 @@ PenPal.loadPlugins = async () => {
 // ----------------------------------------------------------------------------
 
 PenPal.runStartupHooks = () => {
-  _.each(PenPal.LoadedPlugins, ({ startupHook }, plugin_name) => {
-    if (startupHook !== undefined) {
-      console.log(`[.] Executing ${plugin_name} startup hook`);
-      startupHook();
-    }
-  });
+  for (let plugin_name in PenPal.LoadedPlugins) {
+    PenPal.LoadedPlugins[plugin_name].startupHook?.();
+  }
 };
 
 // ----------------------------------------------------------------------------

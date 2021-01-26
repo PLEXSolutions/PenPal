@@ -7,6 +7,9 @@ import startN8nServer from "./n8n/n8n.js";
 import WebhookManager from "./n8n/webhook.js";
 import { WebhooksCollectionName } from "./constants.js";
 import NodeBuilder from "./n8n/node-builder.js";
+import check_n8n from "./n8n/check-n8n.js";
+
+PenPal.N8n = { NodeBuilder };
 
 const settings = {
   datastores: [
@@ -16,32 +19,35 @@ const settings = {
   ]
 };
 
+const loadN8n = async () => {
+  // Load stored webhooks
+  const stored_webhooks = PenPal.DataStore.fetch(
+    PLUGIN_NAME,
+    WebhooksCollectionName,
+    {}
+  );
+
+  _.each(stored_webhooks, (webhook) =>
+    WebhookManager.registerWebhook(webhook, true)
+  );
+
+  // And then start the N8n server
+  startN8nServer();
+};
+
 const N8nPlugin = {
   loadPlugin() {
-    PenPal.N8n = { NodeBuilder };
-
     return {
-      types,
-      resolvers,
-      loaders: {},
-      settings
+      graphql: {
+        types,
+        resolvers
+      },
+      settings,
+      hooks: {
+        settings: { n8n: check_n8n },
+        startup: loadN8n
+      }
     };
-  },
-
-  startupHook() {
-    // Load stored webhooks
-    const stored_webhooks = PenPal.DataStore.fetch(
-      PLUGIN_NAME,
-      WebhooksCollectionName,
-      {}
-    );
-
-    _.each(stored_webhooks, (webhook) =>
-      WebhookManager.registerWebhook(webhook, true)
-    );
-
-    // And then start the N8n server
-    startN8nServer();
   }
 };
 

@@ -20,9 +20,10 @@ const MongoDataStorePlugin = {
     PenPal.DataStore.RegisterAdapter("MongoAdapter", MongoAdapter);
 
     return {
-      types,
-      resolvers,
-      loaders: {},
+      graphql: {
+        types,
+        resolvers
+      },
       settings
     };
   }

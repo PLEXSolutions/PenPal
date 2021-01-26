@@ -11,9 +11,10 @@ const settings = {
 const CoreAPIN8nNodesPlugin = {
   loadPlugin() {
     return {
-      types,
-      resolvers,
-      loaders: {},
+      graphql: {
+        types,
+        resolvers
+      },
       settings
     };
   }
