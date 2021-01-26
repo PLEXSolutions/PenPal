@@ -233,4 +233,6 @@ Examples:
  - Trigger Node: [Plugins/CoreAPI-N8n-Nodes/server/nodes/trigger/core-api-new-host.js](https://github.com/PLEXSolutions/PenPal/blob/master/Plugins/CoreAPI-N8n-Nodes/server/nodes/trigger/core-api-new-host.js)
  - Saved/Auto-reloaded Workflow: [Plugins/Masscan/server/workflows/New\_Network\_Host\_Discovery.json](https://github.com/PLEXSolutions/PenPal/blob/master/Plugins/Masscan/server/workflows/New_Network_Host_Discovery.json), [Plugins/Masscan/server/plugin.js](https://github.com/PLEXSolutions/PenPal/blob/master/Plugins/Masscan/server/plugin.js#L14)
 
+### GraphQL
 
+The `graphql` field of the `loadPlugin` return value can have any of three fields: `types`, `resolvers`, and `loaders`. These are automatically merged into the overall GraphQL schema to add API endpoints that are accessible on the `/graphql` endpoint.
