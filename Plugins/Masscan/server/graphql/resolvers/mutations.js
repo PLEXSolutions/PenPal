@@ -8,7 +8,7 @@ function customizer(objValue, srcValue) {
   }
 }
 
-const parseMasscan = async (projectID, jsonData) => {
+const parseMasscan = async (project_id, jsonData) => {
   console.log("[.] Parsing masscan results");
 
   let res = {
@@ -44,7 +44,7 @@ const parseMasscan = async (projectID, jsonData) => {
 
   // 1. Upsert Hosts
   let { inserted, updated, rejected } = await PenPal.API.Hosts.UpsertMany(
-    projectID,
+    project_id,
     hosts
   );
 
@@ -54,7 +54,7 @@ const parseMasscan = async (projectID, jsonData) => {
 
   // 2. Get IP -> hostID mapping
   //let hostRecords = await PenPal.API.Hosts.Get({
-  //  projectID: projectID,
+  //  project_id: project_id,
   //  hostIDs: ids
   //});
 
@@ -71,7 +71,7 @@ const parseMasscan = async (projectID, jsonData) => {
   //});
 
   //let servicesResp = await PenPal.API.Services.Upsert({
-  //  projectID: projectID,
+  //  project_id: project_id,
   //  services: servicesArray
   //});
 
@@ -98,7 +98,7 @@ export default {
       return res;
     }
     let jsonData = Buffer.from(args.submissionDoc.base64_content, "base64");
-    res = await parseMasscan(args.submissionDoc.projectID, jsonData);
+    res = await parseMasscan(args.submissionDoc.project_id, jsonData);
     return res;
   },
 
@@ -134,7 +134,7 @@ export default {
         return response;
       }
       const buff = Buffer.from(res, "utf-8");
-      parseMasscan(args.projectID, buff.toString());
+      parseMasscan(args.project_id, buff.toString());
     });
     response.status = "Masscan Started";
     response.was_success = true;
