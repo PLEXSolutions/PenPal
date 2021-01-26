@@ -19,6 +19,8 @@ const parseMasscan = async (projectID, jsonData) => {
 
   let parsedJson = hjson.parse(jsonData.toString());
 
+  console.log("[.] Masscan results:", JSON.stringify(parsedJson, null, 4));
+
   const ips = _.reduce(
     parsedJson,
     (result, value) => {
@@ -101,16 +103,32 @@ export default {
   },
 
   async performMasscan(root, { data: args }, context) {
-    console.log(`Starting masscan for ${args.ips}`);
+    console.log(`[.] Starting masscan for ${args.ips}`);
 
-    await PenPal.API.AsyncNOOP();
+    let ports = "";
+    if (args.tcp_ports?.length > 0) {
+      ports += args.tcp_ports;
+    }
+    if (args.udp_ports?.length > 0) {
+      const udp_ports = args.udp_ports
+        .split(",")
+        .map((port) => `U:${port}`)
+        .join(",");
+      ports += `${ports.length > 0 && ","}${udp_ports}`;
+    }
+
+    const command = `masscan bash -c "masscan -oJ res.json --rate=${
+      args.scanRate
+    } -p${ports}${args.ping && " --ping"} ${
+      args.ips
+    } 1>&2 2>/dev/null && cat res.json"`;
+
+    await PenPal.Utils.AsyncNOOP();
     let response = {
       status: "Masscan Failed",
       was_success: false
     };
-    PenPal.API.Docker.Exec(
-      `masscan bash -c "masscan -oJ res.json --rate=${args.scanRate} -p${args.ports} ${args.ips} 1>&2 2>/dev/null && cat res.json"`
-    ).then((res, err) => {
+    PenPal.Docker.Exec(command).then((res, err) => {
       if (err) {
         console.log(err);
         return response;

@@ -27,6 +27,7 @@ PenPal is an automation and reporting all-in-one tool that is meant to enable Cy
  - [x] Docker support for plugins
  - [x] [N8n](https://n8n.io) for custom workflow automation (Plugin)
      - [x] N8n Node Builder wrapper (similar to knex) to simplify node creation
+     - [x] Save n8n workflows into a plugin and automatically load and activate them
  - [ ] Report generation
      - [ ] [Writehat](https://github.com/blacklanternsecurity/writehat) (Plugin)
  - [ ] Plugin agents system for distributing the various plugins for internal/external combo scans
@@ -38,7 +39,7 @@ PenPal is an automation and reporting all-in-one tool that is meant to enable Cy
 ## Plugin Ideas
 
  - [ ] Really anything from the core
- - [ ] Ping sweep for IP range (host discovery -> add hosts via API)
+ - [x] Ping sweep for IP range (host discovery -> add hosts via API) <-- Implemented in the Masscan plugin as a scanning option
  - [ ] Nmap for service discovery for hosts or networks (host/service discovery -> add hosts/services via API)
  - [x] Masscan for service discovery for hosts or networks (host/service discovery -> add hosts/services via API)
  - [ ] Burpsuite for vulnerability scanning
@@ -116,12 +117,19 @@ import { types, resolvers, loaders } from "./graphql";
 const settings = {};
 
 const MyCoolPlugin = {
-  loadPlugin() {
+  loadPlugin() {               // Required
     return {
-      types,
-      resolvers,
-      loaders,
-      settings
+      graphql: {               // Optional
+        types,                 // Optional
+        resolvers,             // Optional
+        loaders                // Optional
+      },
+      settings,                // Optional
+      hooks: {                 // Optional
+        settings: {},          // Optional
+        postload: () => null,  // Optional
+        startup: () => null    // Optional
+      }
     };
   }
 };
@@ -145,7 +153,40 @@ export default MyCoolPlugin;
 
 `Plugin`
  - `loadPlugin()` - This function takes no arguments and returns one object with `types`, `resolvers`, `loaders`, and `settings` fields to define the schema and resolvers that can be used to interact with the plugin. The settings object contains all of the specific info that defines how the plugin queries will interact with the user interface and other server-side APIs (more on this in the `Settings` section).
- - `startupHook()` - This function takes no arguments but is guaranteed to execute _after_ all other plugins have been loaded and after all core services are running (databases, the GraphQL server, etc). This is useful for loading persisted data, as shown in [Plugins/N8n/server/plugin.js](https://github.com/PLEXSolutions/PenPal/blob/master/Plugins/N8n/server/plugin.js#L28) -- this startup hook is used to load all saved webhooks from a database so that N8n workflows can be persisted across runs of PenPal.
+
+### Hooks
+
+The hooks property that is returned from the `loadPlugin` function allows you to pass in functions that can be called to validate and/or execute code when other plugins are loaded. The three hooks available are described below.
+
+#### Startup
+
+`startup` - This function takes no arguments but is guaranteed to execute _after_ all other plugins have been loaded and after all core services are running (databases, the GraphQL server, etc). This is useful for loading persisted data, as shown in [Plugins/N8n/server/plugin.js](https://github.com/PLEXSolutions/PenPal/blob/master/Plugins/N8n/server/plugin.js#L28) -- this startup hook is used to load all saved webhooks from a database so that N8n workflows can be persisted across runs of PenPal.
+
+```js
+hooks: {
+    startup: () => null
+}
+```
+
+#### Settings
+
+`settings` - This hook takes an object where each key describes a section of the `settings` object (described later) and the value is a function that is used to validate the settings in question. For example, the `Docker` plugin uses this hook in [Plugins/Docker/server/plugin.js](https://github.com/PLEXSolutions/PenPal/blob/master/Plugins/Docker/server/plugin.js#L64) to check other plugins' usage of the `docker` field of the settings object.
+
+```js
+hooks: {
+    settings: { my_cool_settings_field: check_my_cool_settings_field }
+}
+```
+
+#### Postload
+
+`postload` - This hook will fire after a plugin loads with a single argument of the `plugin_name`. This can be used to take settings information and do _something_ with it. For example, the `DataStore` plugin uses this hook in [Plugins/DataStore/server/plugin.js](https://github.com/PLEXSolutions/PenPal/blob/master/Plugins/DataStore/server/plugin.js#L33) to fire a function that creates datastores for each plugin immediately after they are loaded. We do this after the plugin is loaded because we know all of its dependencies exist and before the startup hook in order to make sure that everything is ready for those hooks to fire.
+
+```js
+hooks: {
+    postload: (plugin_name) => null
+}
+```
 
 ### Settings
 
@@ -185,10 +226,13 @@ This section of the settings object is used to automatically pull docker images 
 
 #### N8n
 
-You can define n8n nodes and then PenPal will automatically generate them at runtime, including connecting the plumbing between the N8n server and your functions you define. To simplify this, a knex-like wrapper has been built to generate the objects necessary for PenPal to generate Nodes. 
+You can define n8n nodes and then PenPal will automatically generate them at runtime, including connecting the plumbing between the N8n server and your functions you define. To simplify this, a knex-like wrapper has been built to generate the objects necessary for PenPal to generate Nodes. You can also save workflows from n8n (utilizing the web interface "Download" functionality, and include the workflow in your plugin to automatically load it as necessary.
 
 Examples:
  - Workflow Node: [Plugins/CoreAPI-N8n-Nodes/server/nodes/workflow/core-api-get-host.js](https://github.com/PLEXSolutions/PenPal/blob/master/Plugins/CoreAPI-N8n-Nodes/server/nodes/workflow/core-api-get-host.js)
  - Trigger Node: [Plugins/CoreAPI-N8n-Nodes/server/nodes/trigger/core-api-new-host.js](https://github.com/PLEXSolutions/PenPal/blob/master/Plugins/CoreAPI-N8n-Nodes/server/nodes/trigger/core-api-new-host.js)
+ - Saved/Auto-reloaded Workflow: [Plugins/Masscan/server/workflows/New\_Network\_Host\_Discovery.json](https://github.com/PLEXSolutions/PenPal/blob/master/Plugins/Masscan/server/workflows/New_Network_Host_Discovery.json), [Plugins/Masscan/server/plugin.js](https://github.com/PLEXSolutions/PenPal/blob/master/Plugins/Masscan/server/plugin.js#L14)
 
+### GraphQL
 
+The `graphql` field of the `loadPlugin` return value can have any of three fields: `types`, `resolvers`, and `loaders`. These are automatically merged into the overall GraphQL schema to add API endpoints that are accessible on the `/graphql` endpoint.

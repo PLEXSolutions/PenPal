@@ -37,9 +37,10 @@ const settings = {
 const BurpsuiteProPlugin = {
   loadPlugin() {
     return {
-      types,
-      resolvers,
-      loaders: {},
+      graphql: {
+        types,
+        resolvers,
+      },
       settings
     };
   }

@@ -1,17 +1,15 @@
 import { types, resolvers, loaders } from "./graphql";
 import PenPal from "meteor/penpal";
 
-const settings = {};
+PenPal.Test = {};
 
 const BasePlugin = {
   loadPlugin() {
-    PenPal.Test = {};
-
     return {
-      types,
-      resolvers,
-      loaders: {},
-      settings
+      graphql: {
+        types,
+        resolvers
+      }
     };
   }
 };

@@ -1,4 +1,6 @@
 import PenPal from "meteor/penpal";
+
+import _ from "lodash";
 import { spawn } from "child_process";
 import { promises as fs } from "fs";
 import util from "util";
@@ -29,14 +31,11 @@ const cleanOldNodes = async () => {
         shell: true,
         cwd: N8N_DIR
       }),
-      spawn(
-        `for d in ./*/; do rm -rf $d; done`,
-        {
-          stdio: ["ignore", "ignore", "inherit"],
-          shell: true,
-          cwd: N8N_NODES_DIR
-        }
-      )
+      spawn(`for d in ./*/; do rm -rf $d; done`, {
+        stdio: ["ignore", "ignore", "inherit"],
+        shell: true,
+        cwd: N8N_NODES_DIR
+      })
     ];
 
     let finished_processes = 0;
@@ -50,7 +49,7 @@ const cleanOldNodes = async () => {
       });
     }
   });
-}
+};
 
 const generateNode = async (options, is_trigger_node) => {
   const output_dir = path.join(N8N_NODES_DIR, options.node.name);
@@ -89,7 +88,7 @@ const generateNode = async (options, is_trigger_node) => {
 };
 
 const generateNodes = async () => {
-  for (let key of Object.keys(PenPal.LoadedPlugins)) {
+  for (let key in PenPal.LoadedPlugins) {
     const { settings: { n8n } = {} } = PenPal.LoadedPlugins[key];
     if (n8n === undefined) continue;
 
@@ -149,12 +148,85 @@ const startN8nServer = async () => {
   });
 };
 
+const createDefaultWorkflows = async () => {
+  console.log("[.] Loading default workflows");
+  const default_workflows = [];
+  for (let key in PenPal.LoadedPlugins) {
+    const workflows = PenPal.LoadedPlugins[key].settings?.n8n?.workflows;
+    if (workflows?.length > 0) {
+      default_workflows.push(...workflows);
+    }
+  }
+
+  if (default_workflows.length === 0) {
+    console.log("[.] Found no default workflows to create in n8n");
+    return;
+  }
+
+  console.log(`[.] Found ${default_workflows.length} default workflows`);
+
+  console.log("[.] Checking n8n for existing workflows...");
+
+  let data = "";
+  const max_attempts = 3;
+  const attempt_delay = 3000;
+  for (let attempt = 0; attempt < max_attempts; attempt += 1) {
+    try {
+      data = await (await fetch(`http://localhost:5678/rest/workflows`)).json();
+      break;
+    } catch (e) {
+      if (attempt === max_attempts - 1) {
+        console.error(
+          `[!] Failed to fetch existing workflows within ${max_attempts} attempts. Bailing.`
+        );
+        return;
+      }
+      console.error(
+        `[!] Failed to fetch existing workflows. Sleeping ${
+          attempt_delay / 1000
+        } seconds before trying again`
+      );
+      await PenPal.Utils.Sleep(attempt_delay);
+    }
+  }
+
+  const existing_workflows = data?.data ?? [];
+  const workflows_to_add = default_workflows.filter(
+    (workflow) =>
+      _.findIndex(
+        existing_workflows,
+        (existing_workflow) => existing_workflow.name === workflow.name
+      ) === -1
+  );
+
+  console.log(`[.] Adding ${workflows_to_add.length} new default workflows`);
+
+  for (let workflow of workflows_to_add) {
+    try {
+      console.log(`[.] Creating default workflow "${workflow.name}"`);
+      data = await (
+        await fetch("http://localhost:5678/rest/workflows", {
+          method: "post",
+          body: JSON.stringify(workflow),
+          headers: { "Content-Type": "application/json" }
+        })
+      ).json();
+      console.log(`[+] "${workflow.name}" created with ID ${data?.data?.id}`);
+    } catch (e) {
+      console.error(`[!] Failed to create workflow "${workflow.name}"`);
+      console.error(e);
+    }
+  }
+};
+
 export default async () => {
-  await PenPal.API.AsyncNOOP();
+  await PenPal.Utils.AsyncNOOP();
   console.log();
   killOldServer();
   await cleanOldNodes();
   await generateNodes();
   await buildNodes();
   startN8nServer();
+  await PenPal.Utils.Sleep(5000);
+  await createDefaultWorkflows();
 };

@@ -9,7 +9,7 @@ import { newHostHooks, deletedHostHooks, updatedHostHooks } from "./hooks.js";
 // -----------------------------------------------------------
 
 export const getHost = async (host_id, options) => {
-  const is_test = isTestData(host_ids);
+  const is_test = isTestData(host_id);
   return is_test
     ? _.find(mockHosts, (host) => host.id === host_id)
     : await PenPal.DataStore.fetchOne(
@@ -25,24 +25,16 @@ export const getHost = async (host_id, options) => {
 export const getHosts = async (host_ids, options) => {
   const is_test = isTestData(host_ids);
 
-  let result = [];
-  // Pass in an array of host IDs
-  if (is_test) {
-    result = _.map(host_ids, (id) =>
-      _.find(mockHosts, (host) => host.id === id)
-    );
-  } else {
-    result = await PenPal.DataStore.fetch(
-      "CoreAPI",
-      "Hosts",
-      {
-        id: { $in: host_ids }
-      },
-      options
-    );
-  }
-
-  return result;
+  return is_test
+    ? _.map(host_ids, (id) => _.find(mockHosts, (host) => host.id === id))
+    : await PenPal.DataStore.fetch(
+        "CoreAPI",
+        "Hosts",
+        {
+          id: { $in: host_ids }
+        },
+        options
+      );
 };
 
 export const getHostsPaginationInfo = async (host_ids = [], options) => {

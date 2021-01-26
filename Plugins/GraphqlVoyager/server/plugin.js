@@ -1,22 +1,21 @@
 import { express as voyagerMiddleware } from "graphql-voyager/middleware";
 import { WebApp } from "meteor/webapp";
 
+const startGraphQLVoyager = async () => {
+  console.log("[.] Starting GraphQL Voyager");
+  WebApp.connectHandlers.use(
+    "/voyager",
+    voyagerMiddleware({ endpointUrl: "/graphql" })
+  );
+};
+
 const GraphqlVoyagerPlugin = {
   loadPlugin() {
     return {
-      types: {},
-      resolvers: {},
-      loaders: {},
-      settings: {}
+      hooks: {
+        startup: startGraphQLVoyager
+      }
     };
-  },
-
-  startupHook() {
-    console.log("[.] Starting GraphQL Voyager");
-    WebApp.connectHandlers.use(
-      "/voyager",
-      voyagerMiddleware({ endpointUrl: "/graphql" })
-    );
   }
 };
 

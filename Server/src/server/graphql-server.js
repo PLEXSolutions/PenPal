@@ -30,6 +30,14 @@ const startGraphQLServer = (
     schema,
     introspection: true,
     playground: true,
+    formatError: (err) => {
+      console.error(
+        `${err.name} ::: ${
+          err.message
+        }\n${err.extensions?.exception?.stacktrace.join("\n")}`
+      );
+      return err;
+    },
     context: async ({ req }) => {
       let loaders = {};
 

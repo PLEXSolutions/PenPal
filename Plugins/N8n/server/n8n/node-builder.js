@@ -199,13 +199,6 @@ class TriggerBuilder {
   }
 
   type(type) {
-    switch (type) {
-      case "host":
-        break;
-      default:
-        throw new Error(`Unsupported type ${type}. Currently allowed: 'host'`);
-    }
-
     this._trigger.type = type;
 
     return this;
