@@ -51,6 +51,10 @@ export const getNetworksByProject = async (project_id) => {
 
 // -----------------------------------------------------------
 
+const default_network = {
+  hosts: []
+};
+
 export const insertNetwork = async (network) => {
   return await insertNetworks([network]);
 };
@@ -65,7 +69,8 @@ export const insertNetworks = async (networks) => {
       required_field(network, "project", "insertion");
       required_field(network, "subnet", "insertion");
 
-      _accepted.push(network);
+      const _network = { ...network, ...default_network };
+      _accepted.push(_network);
     } catch (e) {
       rejected.push({ network, error: e });
     }
@@ -120,7 +125,6 @@ export const updateNetworks = async (networks) => {
   }
 
   for (let { id, ...network } of _accepted) {
-    // TODO: Needs some work, but I'd prefer to update the datastore layer than here
     let res = await PenPal.DataStore.update(
       "CoreAPI",
       "Networks",
@@ -136,6 +140,12 @@ export const updateNetworks = async (networks) => {
   }
 
   return { accepted, rejected };
+};
+
+export const addHostsToNetwork = async (network_id, host_ids) => {
+  const network = await getNetwork(network_id);
+  network.hosts.push(...host_ids);
+  await updateNetwork({ id: network_id, hosts: network.hosts });
 };
 
 // -----------------------------------------------------------
