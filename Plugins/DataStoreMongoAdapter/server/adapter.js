@@ -91,7 +91,10 @@ MongoAdapter.fetch = async (
   } else if (pageSize !== undefined && pageNumber !== undefined) {
     let _selector = normalize_data(selector);
     let offset = pageSize * pageNumber;
-    cursor = cursor.find(_selector).sort({ _id: sort }).skip(offset);
+    cursor = cursor
+      .find(_selector)
+      .sort({ _id: sort })
+      .skip(Math.max(offset, 0));
 
     if (pageSize >= 0) {
       cursor = cursor.limit(pageSize);
@@ -228,14 +231,14 @@ MongoAdapter.getPaginationInfo = async (
     page = cursor()
       .find(normalized_selector)
       .sort({ _id: sort })
-      .skip(result.startCursorOffset)
+      .skip(Math.max(result.startCursorOffset, 0))
       .limit(1);
     result.startCursor = ((await page.hasNext()) && (await page.next()))?._id;
 
     page = cursor()
       .find(normalized_selector)
       .sort({ _id: sort })
-      .skip(result.endCursorOffset)
+      .skip(Math.max(result.endCursorOffset, 0))
       .limit(1);
     result.endCursor = ((await page.hasNext()) && (await page.next()))?._id;
   } else {

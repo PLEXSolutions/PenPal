@@ -203,7 +203,11 @@ const createDefaultWorkflows = async () => {
 
   for (let workflow of workflows_to_add) {
     try {
+      const auto_activate = workflow.active === true;
+
       console.log(`[.] Creating default workflow "${workflow.name}"`);
+
+      workflow.active = false;
       data = await (
         await fetch("http://localhost:5678/rest/workflows", {
           method: "post",
@@ -211,7 +215,31 @@ const createDefaultWorkflows = async () => {
           headers: { "Content-Type": "application/json" }
         })
       ).json();
+
+      const workflow_id = data?.data?.id;
       console.log(`[+] "${workflow.name}" created with ID ${data?.data?.id}`);
+
+      if (auto_activate) {
+        if (workflow_id === undefined) {
+          console.error(`[!] Cannot activate "${workflow.name}" without an ID`);
+          continue;
+        }
+
+        console.log(`[.] Activating workflow "${workflow.name}"`);
+
+        workflow.active = true;
+        data = await (
+          await fetch(`http://localhost:5678/rest/workflows/${workflow_id}`, {
+            method: "patch",
+            body: JSON.stringify(workflow),
+            headers: { "Content-Type": "application/json" }
+          })
+        ).json();
+
+        if (data?.data?.active === true) {
+          console.log(`[+] Activated worflow "${workflow.name}"`);
+        }
+      }
     } catch (e) {
       console.error(`[!] Failed to create workflow "${workflow.name}"`);
       console.error(e);

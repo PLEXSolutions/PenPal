@@ -1,8 +1,10 @@
 import PenPal from "meteor/penpal";
 import _ from "lodash";
+import ip from "ip";
 
 import { required_field, isTestData } from "./common.js";
 
+import { getNetworksByProject, addHostsToNetwork } from "./networks.js";
 import { hosts as mockHosts } from "../test/mock-hosts.json";
 import { newHostHooks, deletedHostHooks, updatedHostHooks } from "./hooks.js";
 
@@ -74,6 +76,11 @@ export const getHostsByNetwork = async (network_id, options) => {
 
 // -----------------------------------------------------------
 
+const default_host = {
+  hostnames: [],
+  services: []
+};
+
 export const insertHost = async (host) => {
   return await insertHosts([host]);
 };
@@ -88,26 +95,64 @@ export const insertHosts = async (hosts) => {
       required_field(host, "project", "insertion");
       required_field(host, "ip_address", "insertion");
 
-      _accepted.push(host);
+      const _host = { ...host, ...default_host };
+      _accepted.push(_host);
     } catch (e) {
       rejected.push({ host, error: e });
     }
   }
 
   if (_accepted.length > 0) {
-    let result = await PenPal.DataStore.insertMany(
+    const project_networks = (
+      await getNetworksByProject(_accepted[0].project)
+    ).reduce(
+      (sum, network) => ({
+        ...sum,
+        [network.id]: ip.cidrSubnet(
+          `${network.subnet.network_address}/${network.subnet.subnet_mask}`
+        )
+      }),
+      {}
+    );
+
+    for (let host of _accepted) {
+      for (let network_id in project_networks) {
+        if (project_networks[network_id].contains(host.ip_address)) {
+          host.network = network_id;
+        }
+      }
+    }
+
+    let new_host_ids = await PenPal.DataStore.insertMany(
       "CoreAPI",
       "Hosts",
       _accepted
     );
-    accepted.push(...result);
+
+    const new_hosts = _.zipWith(new_host_ids, _accepted, ({ id }, _host) => ({
+      id,
+      ..._host
+    }));
+
+    const network_new_hosts = _.groupBy(new_hosts, "network");
+    for (let network_id in network_new_hosts) {
+      if (network_id !== undefined) {
+        console.log(
+          `Adding ${network_new_hosts[network_id].length} hosts to network ${network_id}`
+        );
+        await addHostsToNetwork(
+          network_id,
+          network_new_hosts[network_id].map(({ id }) => id)
+        );
+      }
+    }
+
+    accepted.push(...new_hosts);
   }
 
   if (accepted.length > 0) {
-    newHostHooks(
-      hosts[0].project,
-      accepted.map(({ id }) => id)
-    );
+    const new_host_ids = accepted.map(({ id }) => id);
+    newHostHooks(hosts[0].project, new_host_ids);
   }
 
   return { accepted, rejected };
