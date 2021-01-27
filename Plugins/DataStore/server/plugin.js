@@ -1,4 +1,6 @@
 import PenPal from "meteor/penpal";
+
+import { types, resolvers } from "./graphql";
 import DataStore from "./datastore.js";
 
 const check_datastores = (datastores) => {
@@ -24,8 +26,8 @@ const DataStorePlugin = {
 
     return {
       graphql: {
-        types: {},
-        resolvers: {}
+        types,
+        resolvers
       },
       settings: {},
       hooks: {

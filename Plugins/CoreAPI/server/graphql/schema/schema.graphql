@@ -96,7 +96,6 @@ type ProjectEdge {
   cursor: String!
 }
 
-
 """
 The root of the PenPal data schema
 """
@@ -204,7 +203,12 @@ type Customer implements Annotatable & Auditable {
   """
   The projects associated with this customer
   """
-  projectsConnection(first: Int, after: String, last: Int, before: String): ProjectsConnection!
+  projectsConnection(
+    first: Int
+    after: String
+    last: Int
+    before: String
+  ): ProjectsConnection!
   """
   Customer annotations
   """
@@ -344,11 +348,21 @@ type ProjectScope {
   """
   Groups of hosts that can be defined by subnets
   """
-  networksConnection(first: Int, after: String, last: Int, before: String): NetworksConnection
+  networksConnection(
+    first: Int
+    after: String
+    last: Int
+    before: String
+  ): NetworksConnection
   """
   Individual hosts that don't fall under a particular network
   """
-  hostsConnection(first: Int, after: String, last: Int, before: String): HostsConnection
+  hostsConnection(
+    first: Int
+    after: String
+    last: Int
+    before: String
+  ): HostsConnection
 }
 
 """
@@ -373,9 +387,14 @@ type Network implements Annotatable & Auditable {
   """
   domain: String
   """
-  The hosts that are associated with this network
+  Individual hosts that don't fall under a particular network
   """
-  hosts: [Host]!
+  hostsConnection(
+    first: Int
+    after: String
+    last: Int
+    before: String
+  ): HostsConnection
   """
   Annotations about the network as a whole
   """
@@ -466,7 +485,7 @@ type HostsConnection {
 }
 
 """
-A way of identifying what a host's OS is. 
+A way of identifying what a host's OS is.
 """
 type HostOS {
   id: ID!

@@ -4,15 +4,16 @@ export default {
   Network: {
     ...CachingDefaultResolvers("Networks", ["subnet", "domain"]),
 
-    async hosts({ id }, args, { PenPalCachingAPI }) {
-      return await PenPalCachingAPI.Hosts.GetManyByNetworkID(id);
+    async hostsConnection({ id }, args, { PenPalCachingAPI }) {
+      const network = await PenPalCachingAPI.Networks.Get(id);
+      return { hosts: network.hosts, args };
     }
   },
 
   NetworksConnection: {
     async edges({ networks: network_ids, args }, _, { PenPalCachingAPI }) {
       const networks = await PenPalCachingAPI.Networks.GetMany(network_ids);
-      return networks.map(network => ({ cursor: network.id, node: network }));
+      return networks.map((network) => ({ cursor: network.id, node: network }));
       return result;
     },
 
