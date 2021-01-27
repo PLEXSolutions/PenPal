@@ -8,6 +8,13 @@ export default {
       "hostnames"
     ]),
 
+    async network({ id }, args, { PenPalCachingAPI }) {
+      const host = await PenPalCachingAPI.Hosts.Get(id);
+      return host.network === undefined
+        ? null
+        : await PenPalCachingAPI.Networks.Get(host.network);
+    },
+
     async project({ id }, args, { PenPalCachingAPI }) {
       const { project } = await PenPalCachingAPI.Hosts.Get(id);
       return await PenPalCachingAPI.Projects.Get(project);
