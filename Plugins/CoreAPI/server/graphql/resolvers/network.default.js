@@ -2,7 +2,12 @@ import { CachingDefaultResolvers } from "./common.js";
 
 export default {
   Network: {
-    ...CachingDefaultResolvers("Networks", ["subnet", "domain"]),
+    ...CachingDefaultResolvers("Networks", [
+      "id",
+      "project",
+      "subnet",
+      "domain"
+    ]),
 
     async hostsConnection({ id }, args, { PenPalCachingAPI }) {
       const network = await PenPalCachingAPI.Networks.Get(id);

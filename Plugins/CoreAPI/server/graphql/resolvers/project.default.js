@@ -3,22 +3,13 @@ import { CachingDefaultResolvers } from "./common.js";
 export default {
   Project: {
     ...CachingDefaultResolvers("Projects", [
+      "id",
+      "customer",
       "name",
       "description",
       "dates",
       "scope"
-    ]),
-
-    async customer({ id }, args, { PenPalCachingAPI }) {
-      const { customer } = await PenPalCachingAPI.Projects.Get(id);
-      const customer_data = await PenPalCachingAPI.Customers.Get(customer);
-
-      if (customer_data === undefined) {
-        throw new Meteor.Error(404, `Customer not found for project ${id}`);
-      }
-
-      return { id: customer, ...customer_data };
-    }
+    ])
   },
 
   ProjectScope: {

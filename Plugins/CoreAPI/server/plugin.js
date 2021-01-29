@@ -96,9 +96,18 @@ const CoreAPIPlugin = {
     };
 
     PenPal.API.Services = {
-      Upsert: API.upsertServices,
-      Remove: API.removeServices,
-      Get: API.getServices
+      Get: API.getService,
+      GetMany: API.getServices,
+      GetPaginationInfo: API.getServicesPaginationInfo,
+      GetManyByHostID: API.getServicesByHost,
+      GetManyByNetworkID: API.getServicesByNetwork,
+      GetManyByProjectID: API.getServicesByProject,
+      Insert: API.insertService,
+      InsertMany: API.insertServices,
+      Remove: API.removeService,
+      RemoveMany: API.removeServices,
+      Update: API.updateService,
+      UpdateMany: API.updateServices
     };
 
     // This builds a unique set of wrapped functions that can utilize the dataloader utility in
@@ -152,18 +161,19 @@ const CoreAPIPlugin = {
               return results;
             } else if (options !== undefined) {
               // Deterministic stringify of the options to use as a key in the get_many_pagination_options_id_cache
+              const keys_string = stable_stringify(keys);
               const options_string = stable_stringify(options);
+              const cache_key = `${keys_string}:::${options_string}`;
 
               let results = [];
-              let cached_ids =
-                get_many_pagination_options_id_cache[options_string];
+              let cached_ids = get_many_pagination_options_id_cache[cache_key];
 
               if (cached_ids === undefined) {
                 // Mark this with a flag to indicate that it's loading to avoid race conditions. The await
                 // later in this block will yield execution on the event loop, potentially allowing other
                 // default resolvers to call this function with the same options string, but we only need to
                 // execute one of them.
-                get_many_pagination_options_id_cache[options_string] = true;
+                get_many_pagination_options_id_cache[cache_key] = true;
 
                 // There's no simple way to use the cache when doing pagination, so use the underlying DataStore
                 // functionality to do so when options are passed in and then store the IDs in the pagination options cache
@@ -173,17 +183,16 @@ const CoreAPIPlugin = {
                   api_dataloader.clear(result.id).prime(result.id, result);
                 }
 
-                get_many_pagination_options_id_cache[
-                  options_string
-                ] = results.map((result) => result.id);
+                get_many_pagination_options_id_cache[cache_key] = results.map(
+                  (result) => result.id
+                );
               } else {
                 // This will repeatedly yield to the event loop waiting for the get_many_pagination_options_id_cache gets results
                 // from the PenPal API
                 while (cached_ids === true) {
                   // Yield to event loop for 10 ms
                   await PenPal.Utils.AsyncNOOP(10);
-                  cached_ids =
-                    get_many_pagination_options_id_cache[options_string];
+                  cached_ids = get_many_pagination_options_id_cache[cache_key];
                 }
 
                 results = await api_dataloader.loadMany(cached_ids);

@@ -1,155 +1,226 @@
 import PenPal from "meteor/penpal";
-import { Mongo } from "meteor/mongo";
 import _ from "lodash";
 
-export async function upsertServices(args) {
-  let toUpdate = [];
-  let toInsert = [];
-  let orArray = [];
-  _.each(args.services, service => {
-    if (service.id) {
-      toUpdate.push(service);
-    } else {
-      orArray.push({
-        $and: [
-          { port: service.port },
-          { protocol: service.protocol },
-          { hostID: service.hostID },
-          { projectID: args.projectID }
-        ]
-      });
-    }
-  });
-  let searchDoc = {
-    $or: orArray
-  };
-  let existingRecords = PenPal.DataStore.fetch(
+import { required_field, isTestData } from "./common.js";
+
+import { addServicesToHost } from "./hosts.js";
+//import { services as mockServices } from "../test/mock-services.json";
+//import { newServiceHooks, deletedServiceHooks, updatedServiceHooks } from "./hooks.js";
+
+// -----------------------------------------------------------
+
+export const getService = async (service_id, options) => {
+  const is_test = isTestData(service_id);
+  return is_test
+    ? _.find(mockServices, (service) => service.id === service_id)
+    : await PenPal.DataStore.fetchOne(
+        "CoreAPI",
+        "Services",
+        {
+          id: service_id
+        },
+        options
+      );
+};
+
+export const getServices = async (service_ids, options) => {
+  const is_test = isTestData(service_ids);
+  return is_test
+    ? _.map(service_ids, (id) =>
+        _.find(mockServices, (service) => service.id === id)
+      )
+    : await PenPal.DataStore.fetch(
+        "CoreAPI",
+        "Services",
+        {
+          id: { $in: service_ids }
+        },
+        options
+      );
+};
+
+export const getServicesPaginationInfo = async (service_ids = [], options) => {
+  return await PenPal.DataStore.getPaginationInfo(
     "CoreAPI",
     "Services",
-    searchDoc
+    { id: { $in: service_ids } },
+    options
   );
-  let updatedRecords = [];
-  // short circuit check if all new projects...
-  if (existingRecords.length === 0) {
-    // all projects are new
-    toInsert = args.services;
-  } else if (existingRecords.length === args.services.length) {
-    // all projects are updates
-    toUpdate = args.services;
-  } else {
-    // mix of new and old... what we need to do is find which of the included projects were already present...
-    // make array of project names from the returned existingRecords...
-    let existingServices = [];
-    _.each(existingRecords, existingService => {
-      existingServices.push(existingService.hostID);
-    });
-    _.each(args.services, service => {
-      if (existingServices.includes(service.hostID)) {
-        toUpdate.push(service);
-      } else {
-        toInsert.push(service);
-      }
-    });
+};
+
+export const getServicesByProject = async (project_id, options) => {
+  const result = await PenPal.DataStore.fetch(
+    "CoreAPI",
+    "Services",
+    {
+      project: project_id
+    },
+    options
+  );
+
+  return result;
+};
+
+export const getServicesByNetwork = async (network_id, options) => {
+  const result = await PenPal.DataStore.fetch(
+    "CoreAPI",
+    "Services",
+    {
+      network: network_id
+    },
+    options
+  );
+
+  return result;
+};
+
+export const getServicesByHost = async (host_id, options) => {
+  const result = await PenPal.DataStore.fetch(
+    "CoreAPI",
+    "Services",
+    {
+      host: host_id
+    },
+    options
+  );
+
+  return result;
+};
+
+// -----------------------------------------------------------
+
+const default_service = {};
+
+export const insertService = async (service) => {
+  return await insertServices([service]);
+};
+
+export const insertServices = async (services) => {
+  const rejected = [];
+  const _accepted = [];
+  const accepted = [];
+
+  for (let service of services) {
+    try {
+      required_field(service, "host", "insertion");
+      required_field(service, "project", "insertion");
+      required_field(service, "name", "insertion");
+
+      const _service = { ...service, ...default_service };
+      _accepted.push(_service);
+    } catch (e) {
+      rejected.push({ service, error: e });
+    }
   }
 
-  // if we have net-new add them...
-  if (toInsert.length > 0) {
-    _.each(toInsert, service => {
-      service.projectID = args.projectID;
-    });
-    let res = await PenPal.DataStore.insertMany(
+  if (_accepted.length > 0) {
+    let new_service_ids = await PenPal.DataStore.insertMany(
       "CoreAPI",
       "Services",
-      toInsert
+      _accepted
     );
-    _.each(res.insertedIds, (k, v) => {
-      updatedRecords.push(k);
-    });
+
+    const new_services = _.zipWith(
+      new_service_ids,
+      _accepted,
+      ({ id }, _service) => ({
+        id,
+        ..._service
+      })
+    );
+
+    const host_new_services = _.groupBy(new_services, "host");
+    for (let host_id in host_new_services) {
+      if (host_id !== undefined) {
+        console.log(
+          `Adding ${host_new_services[host_id].length} services to network ${host_id}`
+        );
+        await addServicesToHost(
+          host_id,
+          host_new_services[host_id].map(({ id }) => id)
+        );
+      }
+    }
+
+    accepted.push(...new_services);
   }
 
-  // if we have ones to update update them....
-  _.each(toUpdate, service => {
-    // this is the project to add
-    // and this is the existing db entry
-    let storedService = {};
-    let foundService = false;
-    _.each(existingRecords, existingService => {
-      if (!foundService) {
-        if (
-          existingService.hostID === service.hostID &&
-          existingService.port === service.port &&
-          existingService.protocol === service.protocol
-        ) {
-          storedService = existingService;
-          foundService = true;
-        }
-      }
-    });
-    // at this point we have the host data to add and the existing host data.... need to diff the objects to figure out what fields need to be set....
-    // ok so merge will work but make it so that we can't remove fields... need to find out way to intelligently find the difference and adjust accordingly...
-    let mergedObject = _.merge(storedService, service);
-    let ID = mergedObject._id;
-    delete mergedObject._id;
-    let res = PenPal.DataStore.update(
+  if (accepted.length > 0) {
+    const new_service_ids = accepted.map(({ id }) => id);
+    //newServiceHooks(services[0].project, new_service_ids);
+  }
+
+  return { accepted, rejected };
+};
+
+// -----------------------------------------------------------
+
+export const updateService = async (service) => {
+  return await updateServices([service]);
+};
+
+export const updateServices = async (services) => {
+  const rejected = [];
+  const _accepted = [];
+  const accepted = [];
+
+  for (let service of services) {
+    try {
+      required_field(service, "id", "update");
+      _accepted.push(service);
+    } catch (e) {
+      rejected.push({ service, error: e });
+    }
+  }
+
+  let matched_services = await PenPal.DataStore.fetch("CoreAPI", "Services", {
+    id: { $in: _accepted.map((service) => service.id) }
+  });
+
+  if (matched_services.length !== _accepted.length) {
+    // Find the unknown IDs
+    console.error('Implement updateServices "service not found" functionality');
+  }
+
+  for (let { id, ...service } of _accepted) {
+    // TODO: Needs some work, but I'd prefer to update the datastore layer than here
+    let res = await PenPal.DataStore.update(
       "CoreAPI",
       "Services",
-      { _id: ID },
-      mergedObject
+      { id },
+      { $set: service }
     );
-    if (res > 0) updatedRecords.push(ID);
+
+    if (res > 0) accepted.push({ id, ...service });
+  }
+
+  if (accepted.length > 0) {
+    //updatedServiceHooks(accepted);
+  }
+
+  return { accepted, rejected };
+};
+
+// -----------------------------------------------------------
+
+export const removeService = async (service_id) => {
+  return await removeServices([service_id]);
+};
+
+export const removeServices = async (service_ids) => {
+  // Get all the service data for hooks so the deleted service hook has some info for notifications and such
+  let services = await PenPal.DataStore.fetch("CoreAPI", "Services", {
+    id: { $in: service_ids }
   });
 
-  // TODO - Transactions?
-  return {
-    status: "Services Updated",
-    was_success: true,
-    affected_records: updatedRecords
-  };
-}
-
-export async function removeServices(args) {
-  const response = {
-    status: "Error During Removal",
-    was_success: false,
-    affected_records: []
-  };
-
-  let idArray = [];
-  _.each(args.servicesIDs, serviceId => {
-    idArray.push(serviceId);
+  let res = await PenPal.DataStore.delete("CoreAPI", "Services", {
+    id: { $in: service_ids }
   });
 
-  let res = PenPal.DataStore.delete("CoreAPI", "Services", {
-    _id: { $in: idArray }
-  });
   if (res > 0) {
-    response.status = "Successfully removed records";
-    response.was_success = true;
-    response.affected_records = args.serviceIDs;
-  } else if (res === 0) {
-    response.status = "No records affected";
-    response.was_success = true;
-    response.affected_records = [];
+    //deletedServiceHooks(services);
+    return true;
   }
 
-  return response;
-}
-
-export async function getServices(args) {
-  let servicesToReturn = [];
-  if (args.id) {
-    servicesToReturn = PenPal.DataStore.fetch("CoreAPI", "Services", {
-      _id: new Mongo.ObjectID(args.id)
-    });
-  } else {
-    servicesToReturn = PenPal.DataStore.fetch("CoreAPI", "Services", {
-      projectID: args.projectID
-    });
-  }
-  _.each(servicesToReturn, service => {
-    service.id = service._id._str;
-  });
-  return typeof args.id !== "undefined"
-    ? servicesToReturn[0]
-    : servicesToReturn;
-}
+  return false;
+};
