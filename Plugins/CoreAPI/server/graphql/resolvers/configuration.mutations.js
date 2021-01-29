@@ -35,14 +35,5 @@ export default {
         };
       }
     }
-  },
-  // TODO: Update these for the new API functionality
-  async upsertServices(root, args, context) {
-    let res = PenPal.API.Services.Upsert(args);
-    return res;
-  },
-  async removeServices(root, args, context) {
-    let res = PenPal.API.Services.Remove(args);
-    return res;
   }
 };

@@ -19,8 +19,6 @@ const parseMasscan = async (project_id, jsonData) => {
 
   let parsedJson = hjson.parse(jsonData.toString());
 
-  console.log("[.] Masscan results:", JSON.stringify(parsedJson, null, 4));
-
   const ips = _.reduce(
     parsedJson,
     (result, value) => {
@@ -48,17 +46,28 @@ const parseMasscan = async (project_id, jsonData) => {
     hosts
   );
 
-  console.log(`Inserted: ${JSON.stringify(inserted)}`);
-  console.log(`Updated: ${JSON.stringify(updated)}`);
-  console.log(`Rejected: ${JSON.stringify(rejected)}`);
+  // 2. Add services per host...
+  for (let host of inserted.accepted) {
+    const services =
+      ips[host.ip_address]?.ports?.map((port_info) => ({
+        host: host.id,
+        network: host.network,
+        project: host.project,
+        name: "Masscan Host Discovery Result",
+        ip_protocol: port_info.proto,
+        port: port_info.port,
+        status: port_info.status,
+        ttl: port_info.ttl
+      })) ?? [];
+    let {
+      inserted: services_inserted,
+      updated: services_updated,
+      rejected: services_rejected
+    } = await PenPal.API.Services.InsertMany(services);
+  }
 
-  // 2. Get IP -> hostID mapping
-  //let hostRecords = await PenPal.API.Hosts.Get({
-  //  project_id: project_id,
-  //  hostIDs: ids
-  //});
+  // TODO: Check out updated and rejected
 
-  // 3. Create proper services insertion for each host and insert...
   //let servicesArray = [];
   //_.each(hostRecords, (host) => {
   //  _.each(ips[host.ipv4].ports, (foundPort) => {

@@ -53,4 +53,18 @@ export {
   removeNetworks
 } from "./networks.js";
 
-export { upsertServices, removeServices, getServices } from "./services.js";
+export {
+  getService,
+  getServices,
+  getServicesPaginationInfo,
+  getServicesByProject,
+  getServicesByNetwork,
+  getServicesByHost,
+  insertService,
+  insertServices,
+  updateService,
+  updateServices,
+  upsertServices,
+  removeService,
+  removeServices
+} from "./services.js";

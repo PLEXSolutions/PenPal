@@ -160,6 +160,12 @@ export const insertHosts = async (hosts) => {
 
 // -----------------------------------------------------------
 
+export const addServicesToHost = async (host_id, service_ids) => {
+  const host = await getHost(host_id);
+  host.services.push(...service_ids);
+  await updateHost({ id: host_id, services: host.services });
+};
+
 export const updateHost = async (host) => {
   return await updateHosts([host]);
 };

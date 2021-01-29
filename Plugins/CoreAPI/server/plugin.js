@@ -96,9 +96,18 @@ const CoreAPIPlugin = {
     };
 
     PenPal.API.Services = {
-      Upsert: API.upsertServices,
-      Remove: API.removeServices,
-      Get: API.getServices
+      Get: API.getService,
+      GetMany: API.getServices,
+      GetPaginationInfo: API.getServicesPaginationInfo,
+      GetManyByHostID: API.getServicesByHost,
+      GetManyByNetworkID: API.getServicesByNetwork,
+      GetManyByProjectID: API.getServicesByProject,
+      Insert: API.insertService,
+      InsertMany: API.insertServices,
+      Remove: API.removeService,
+      RemoveMany: API.removeServices,
+      Update: API.updateService,
+      UpdateMany: API.updateServices
     };
 
     // This builds a unique set of wrapped functions that can utilize the dataloader utility in
