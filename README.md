@@ -10,12 +10,18 @@ PenPal is an automation and reporting all-in-one tool that is meant to enable Cy
      - [x] Projects
      - [x] Hosts
      - [x] Networks (have many hosts)
-     - [ ] Services (ports, etc)
+     - [x] Services (ports, etc)
      - [ ] Vulnerabilities
      - [ ] Credentials
      - [ ] Files
      - [ ] Notes
      - [ ] Audit trails
+ - [ ] User Interface
+     - [ ] Pluggable Dashboard
+     - [x] Projects Summary Page
+     - [ ] Project Details Page
+     - [ ] Notetaking
+     - [ ] .... other things and stuff
  - [x] DataStore abstraction layer
  - [ ] DataStore Adapters
      - [x] Mongo Adapter
