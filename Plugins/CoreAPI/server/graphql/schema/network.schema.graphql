@@ -1,6 +1,7 @@
 "A logical grouping of hosts"
 type Network implements Annotatable & Auditable {
   id: ID!
+  project: Project!
   "The network address (e.g. 10.0.0.0)"
   subnet: IPSubnet!
   "The domain associated with this network (e.g. acme.com)"

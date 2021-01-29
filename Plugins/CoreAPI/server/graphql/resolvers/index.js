@@ -11,11 +11,11 @@ import customer_query_resolvers from "./customer.queries.js";
 import host_default_resolvers from "./host.default";
 import host_mutation_resolvers from "./host.mutations.js";
 import network_default_resolvers from "./network.default.js";
-import network_service_default_resolvers from "./network-service.default.js";
 import project_default_resolvers from "./project.default.js";
 import project_mutation_resolvers from "./project.mutations.js";
 import project_query_resolvers from "./project.queries.js";
 import service_default_resolvers from "./service.default.js";
+import network_service_default_resolvers from "./service-network.default.js";
 import scalar_resolvers from "./scalars.js";
 
 export default {

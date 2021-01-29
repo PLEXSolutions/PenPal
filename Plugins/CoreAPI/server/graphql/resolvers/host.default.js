@@ -3,21 +3,17 @@ import { CachingDefaultResolvers } from "./common.js";
 export default {
   Host: {
     ...CachingDefaultResolvers("Hosts", [
+      "id",
+      "project",
+      "network",
       "ip_address",
       "mac_address",
       "hostnames"
     ]),
 
-    async network({ id }, args, { PenPalCachingAPI }) {
+    async servicesConnection({ id }, args, { PenPalCachingAPI }) {
       const host = await PenPalCachingAPI.Hosts.Get(id);
-      return host.network === undefined
-        ? null
-        : await PenPalCachingAPI.Networks.Get(host.network);
-    },
-
-    async project({ id }, args, { PenPalCachingAPI }) {
-      const { project } = await PenPalCachingAPI.Hosts.Get(id);
-      return await PenPalCachingAPI.Projects.Get(project);
+      return { services: host.services, args };
     }
   },
 
