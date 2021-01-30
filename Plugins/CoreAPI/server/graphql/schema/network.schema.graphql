@@ -29,6 +29,8 @@ type NetworkEdge {
 type NetworksConnection {
   edges: [NetworkEdge]!
   networks: [Network]!
+  "This connection is actually a way to access the hosts for *all* of the networks simultaneously. It can be used to get a total count of hosts for a set of networks, or to just get a list of hosts for a set of networks"
+  hostsConnection: HostsConnection!
   pageInfo: PageInfo!
   totalCount: Int!
 }

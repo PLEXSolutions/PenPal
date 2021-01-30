@@ -87,6 +87,19 @@ export const getServicesByHost = async (host_id, options) => {
   return result;
 };
 
+export const getServicesByHosts = async (host_ids, options) => {
+  const result = await PenPal.DataStore.fetch(
+    "CoreAPI",
+    "Services",
+    {
+      host: { $in: host_ids }
+    },
+    options
+  );
+
+  return result;
+};
+
 // -----------------------------------------------------------
 
 const default_service = {};
@@ -132,9 +145,6 @@ export const insertServices = async (services) => {
     const host_new_services = _.groupBy(new_services, "host");
     for (let host_id in host_new_services) {
       if (host_id !== undefined) {
-        console.log(
-          `Adding ${host_new_services[host_id].length} services to network ${host_id}`
-        );
         await addServicesToHost(
           host_id,
           host_new_services[host_id].map(({ id }) => id)

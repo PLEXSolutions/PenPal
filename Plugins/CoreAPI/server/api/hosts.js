@@ -74,6 +74,19 @@ export const getHostsByNetwork = async (network_id, options) => {
   return result;
 };
 
+export const getHostsByNetworks = async (network_ids, options) => {
+  const result = await PenPal.DataStore.fetch(
+    "CoreAPI",
+    "Hosts",
+    {
+      network: { $in: network_ids }
+    },
+    options
+  );
+
+  return result;
+};
+
 // -----------------------------------------------------------
 
 const default_host = {

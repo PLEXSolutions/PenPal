@@ -25,18 +25,18 @@ export default {
   },
 
   ProjectsConnection: {
-    async edges({ args }, _, { PenPalCachingAPI }) {
+    async edges({ args = {} }, _, { PenPalCachingAPI }) {
       const projects = await PenPalCachingAPI.Project.GetMany([], args);
       return projects.map((project) => ({ cursor: project.id, node: project }));
       return result;
     },
 
-    async projects({ args }, _, { PenPalCachingAPI }) {
+    async projects({ args = {} }, _, { PenPalCachingAPI }) {
       const projects = await PenPalCachingAPI.Projects.GetMany([], args);
       return projects;
     },
 
-    async pageInfo({ args }, _, { PenPalCachingAPI }) {
+    async pageInfo({ args = {} }, _, { PenPalCachingAPI }) {
       const {
         startCursor,
         startCursorOffset,
@@ -55,7 +55,7 @@ export default {
       };
     },
 
-    async totalCount({ args }, _, { PenPalCachingAPI }) {
+    async totalCount({ args = {} }, _, { PenPalCachingAPI }) {
       const { totalCount } = await PenPalCachingAPI.Projects.GetPaginationInfo(
         [],
         args

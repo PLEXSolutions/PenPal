@@ -36,6 +36,8 @@ type HostEdge {
 type HostsConnection {
   edges: [HostEdge]!
   hosts: [Host]!
+  "This connection is actually a way to access the services for *all* of the hosts simultaneously. It can be used to get a total count of services for a set of hosts, or to just get a list of services for a set of hosts"
+  servicesConnection: ServicesConnection!
   pageInfo: PageInfo!
   totalCount: Int!
 }

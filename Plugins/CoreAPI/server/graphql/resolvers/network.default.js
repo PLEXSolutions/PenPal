@@ -27,6 +27,14 @@ export default {
       return networks;
     },
 
+    async hostsConnection({ networks: network_ids }, _, { PenPalCachingAPI }) {
+      // TODO: This is possibly terribly inefficient, but it works for now
+      const hosts = (
+        await PenPalCachingAPI.Hosts.GetManyByNetworkIDs(network_ids)
+      ).map((host) => host.id);
+      return { hosts };
+    },
+
     async pageInfo({ networks: network_ids, args }, _, { PenPalCachingAPI }) {
       const {
         startCursor,
