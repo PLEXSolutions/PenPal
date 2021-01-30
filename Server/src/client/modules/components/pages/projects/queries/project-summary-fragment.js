@@ -15,9 +15,18 @@ export const ProjectFields = `
     }
     scope {
       hostsConnection {
+        servicesConnection {
+          totalCount
+        }
         totalCount
       }
       networksConnection {
+        hostsConnection {
+          servicesConnection {
+            totalCount
+          }
+          totalCount
+        }
         totalCount
       }
     }

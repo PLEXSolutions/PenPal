@@ -67,11 +67,45 @@ const TablePaginationActions = ({ count, page, rowsPerPage, onChangePage }) => {
   );
 };
 
-const useStyles2 = makeStyles({
+const useStyles2 = makeStyles((theme) => ({
   table: {
     minWidth: 500
-  }
-});
+  },
+  statContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginRight: theme.spacing(1.5),
+    marginLeft: theme.spacing(1.5)
+  },
+  statTitle: {},
+  statTopBottom: {
+    display: "flex",
+    flexDirection: "column"
+  },
+  statTop: {},
+  summaryContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    marginRight: theme.spacing(1.5),
+    marginLeft: theme.spacing(1.5)
+  },
+  summaryTitle: {
+    width: 130,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    marginRight: theme.spacing(2)
+  },
+  summaryTopBottom: {
+    display: "flex",
+    flexDirection: "column"
+  },
+  summaryTop: {}
+}));
 
 const ProjectsViewTableView = ({
   page,
@@ -100,14 +134,63 @@ const ProjectsViewTableView = ({
         <TableBody>
           {projects.map((project) => (
             <TableRow key={project.id}>
-              <TableCell component="th" scope="row">
-                {project.name}
+              <TableCell
+                component="th"
+                scope="row"
+                style={{ padding: 0, height: 52 }}
+              >
+                <div className={classes.summaryContainer}>
+                  <div className={classes.summaryTitle}>{project.name}</div>
+                  <div className={classes.summaryTopBottom}>
+                    <div className={classes.summaryTop}>
+                      Customer: {project.customer.name}
+                    </div>
+                    <div className={classes.summaryBottom}>
+                      {project.description} - Start Date:{" "}
+                      {project.dates.start ?? "None"}
+                    </div>
+                  </div>
+                </div>
               </TableCell>
-              <TableCell style={{ width: 150 }} align="right">
-                {project.scope.hostsConnection.totalCount} public hosts
+              <TableCell style={{ width: 200, padding: 0 }} align="right">
+                <div className={classes.statContainer}>
+                  <div className={classes.statTitle}>Public Hosts</div>
+                  <div className={classes.statTopBottom}>
+                    <div className={classes.statTop}>
+                      {project.scope.hostsConnection.totalCount} Hosts
+                    </div>
+                    <div className={classes.statBottom}>
+                      {
+                        project.scope.hostsConnection.servicesConnection
+                          .totalCount
+                      }{" "}
+                      Services
+                    </div>
+                  </div>
+                </div>
               </TableCell>
-              <TableCell style={{ width: 150 }} align="right">
-                {project.scope.networksConnection.totalCount} networks
+              <TableCell style={{ width: 200, padding: 0 }} align="right">
+                <div className={classes.statContainer}>
+                  <div className={classes.statTitle}>
+                    {project.scope.networksConnection.totalCount} Networks
+                  </div>
+                  <div className={classes.statTopBottom}>
+                    <div className={classes.statTop}>
+                      {
+                        project.scope.networksConnection.hostsConnection
+                          .totalCount
+                      }{" "}
+                      Hosts
+                    </div>
+                    <div className={classes.statBottom}>
+                      {
+                        project.scope.networksConnection.hostsConnection
+                          .servicesConnection.totalCount
+                      }{" "}
+                      Services
+                    </div>
+                  </div>
+                </div>
               </TableCell>
             </TableRow>
           ))}

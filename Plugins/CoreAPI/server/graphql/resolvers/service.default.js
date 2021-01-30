@@ -11,7 +11,7 @@ export default {
   },
 
   ServicesConnection: {
-    async edges({ hosts: host_ids, args }, _, { PenPalCachingAPI }) {
+    async edges({ services: service_ids, args = {} }, _, { PenPalCachingAPI }) {
       const services = await PenPalCachingAPI.Services.GetMany(
         service_ids,
         args
@@ -20,7 +20,11 @@ export default {
       return result;
     },
 
-    async services({ services: service_ids, args }, _, { PenPalCachingAPI }) {
+    async services(
+      { services: service_ids, args = {} },
+      _,
+      { PenPalCachingAPI }
+    ) {
       const services = await PenPalCachingAPI.Services.GetMany(
         service_ids,
         args
@@ -28,7 +32,11 @@ export default {
       return services;
     },
 
-    async pageInfo({ services: service_ids, args }, _, { PenPalCachingAPI }) {
+    async pageInfo(
+      { services: service_ids, args = {} },
+      _,
+      { PenPalCachingAPI }
+    ) {
       const {
         startCursor,
         startCursorOffset,
@@ -47,7 +55,11 @@ export default {
       };
     },
 
-    async totalCount({ services: service_ids, args }, _, { PenPalCachingAPI }) {
+    async totalCount(
+      { services: service_ids, args = {} },
+      _,
+      { PenPalCachingAPI }
+    ) {
       const { totalCount } = await PenPalCachingAPI.Services.GetPaginationInfo(
         service_ids,
         args

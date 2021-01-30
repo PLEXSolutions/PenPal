@@ -87,6 +87,19 @@ export const getServicesByHost = async (host_id, options) => {
   return result;
 };
 
+export const getServicesByHosts = async (host_ids, options) => {
+  const result = await PenPal.DataStore.fetch(
+    "CoreAPI",
+    "Services",
+    {
+      host: { $in: host_ids }
+    },
+    options
+  );
+
+  return result;
+};
+
 // -----------------------------------------------------------
 
 const default_service = {};

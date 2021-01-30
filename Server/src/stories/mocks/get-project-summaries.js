@@ -19,9 +19,18 @@ const projects = _.range(PROJECT_COUNT).map((i) => ({
   },
   scope: {
     hostsConnection: {
+      servicesConnection: {
+        totalCount: Math.ceil(Math.random() * 100)
+      },
       totalCount: Math.ceil(Math.random() * 10)
     },
     networksConnection: {
+      hostsConnection: {
+        servicesConnection: {
+          totalCount: Math.ceil(Math.random() * 300)
+        },
+        totalCount: Math.ceil(Math.random() * 30)
+      },
       totalCount: Math.ceil(Math.random() * 10)
     }
   }
