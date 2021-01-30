@@ -145,9 +145,6 @@ export const insertServices = async (services) => {
     const host_new_services = _.groupBy(new_services, "host");
     for (let host_id in host_new_services) {
       if (host_id !== undefined) {
-        console.log(
-          `Adding ${host_new_services[host_id].length} services to network ${host_id}`
-        );
         await addServicesToHost(
           host_id,
           host_new_services[host_id].map(({ id }) => id)
