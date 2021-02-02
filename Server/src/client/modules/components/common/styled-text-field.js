@@ -1,13 +1,13 @@
 import React, { useState } from "react";
+import { Components, registerComponent } from "meteor/penpal";
 import _ from "lodash";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import { grey, indigo } from "@material-ui/core/colors";
 import TextField from "@material-ui/core/TextField";
 
-import { Components, registerComponent } from "../../components.js";
 import { borderRadius, textFieldWidth } from "./styled-common.js";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   text_field_form_control: {
     "label + &": {
       marginTop: 24

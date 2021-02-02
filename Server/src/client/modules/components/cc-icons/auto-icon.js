@@ -1,12 +1,12 @@
 import React from "react";
+import { registerComponent, Components } from "meteor/penpal";
 import _ from "lodash";
-import { registerComponent, Components } from "../../components.js";
 
 const _check = (os_name, query) => _.includes(os_name, query);
 
 const AutoOSIcon = ({ os_name, width = 40, height = 40 }) => {
   const lower_os_name = os_name.toLowerCase().replace(" ", "");
-  const check = query => _check(lower_os_name, query);
+  const check = (query) => _check(lower_os_name, query);
 
   switch (true) {
     case check("windows 10"):

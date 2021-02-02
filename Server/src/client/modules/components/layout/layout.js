@@ -1,4 +1,13 @@
 import React, { useState, useEffect } from "react";
+import {
+  Components,
+  registerComponent,
+  Hooks,
+  Routes,
+  getRoute,
+  Constants,
+  hasRole
+} from "meteor/penpal";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import Drawer from "@material-ui/core/Drawer";
@@ -36,16 +45,11 @@ import cx from "classnames";
 
 import { matchPath } from "react-router";
 import { Switch, Route, useLocation } from "react-router-dom";
-import { Components, registerComponent } from "../../components.js";
-import { getRoute } from "../../routes.js";
-import Hooks from "../../hooks.js";
-import { CONSTANTS, hasRole } from "../../../../lib/common.js";
 const { useAccount } = Hooks;
 
 const drawerWidth = 240;
-const routeNames = ["dashboard", "projects", "", "configuration"];
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
     width: "100%",
@@ -206,9 +210,9 @@ const useStyles = makeStyles(theme => ({
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  let activeRoutePrettyName = "Dashboard";
-  const routes = routeNames.map(routeName => {
-    const route = routeName === "" ? null : getRoute(routeName);
+  let activeRoutePrettyName = "";
+  const routes = Routes.map((_route) => {
+    const route = _route.name === "" ? null : _route;
     if (!!matchPath(location.pathname, route?.path)) {
       activeRoutePrettyName = route.prettyName;
     }
@@ -323,7 +327,7 @@ const Layout = ({ children }) => {
         {isSm || !open ? null : <div className={classes.overlay} />}
         <div className={classes.container}>
           <Switch>
-            {routes.map(route => {
+            {routes.map((route) => {
               if (route === null) return null;
               const Component = Components[route.componentName];
               return (
@@ -365,7 +369,7 @@ const AdminPanel = ({ visible = false }) => {
     setActionIndexOpen(-1);
     setTimeout(() => handleAdminPanelClose(), 50);
   };
-  const handle_modal_open = action_index => {
+  const handle_modal_open = (action_index) => {
     setActionIndexOpen(action_index);
     handleAdminPanelClose();
   };

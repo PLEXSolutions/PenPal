@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
+import { Components, registerComponent } from "meteor/penpal";
 import { BrowserRouter } from "react-router-dom";
 import { SnackbarProvider } from "notistack";
-import { ApolloProvider } from '@apollo/client';
+import { ApolloProvider } from "@apollo/client";
 import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 import moment from "moment";
 import MomentUtils from "@date-io/moment";
 moment.locale("en");
 
 import apolloInit from "./apollo-init.js";
-import { Components, registerComponent } from "../components.js";
 
 const removeLoadingDiv = () => {
   document.getElementById("loading").remove();

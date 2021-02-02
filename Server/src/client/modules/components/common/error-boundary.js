@@ -1,8 +1,7 @@
 import React from "react";
 import { Meteor } from "meteor/meteor";
+import { Components, registerComponent } from "meteor/penpal";
 import { serializeError } from "serialize-error";
-
-import { registerComponent, Components } from "../../components.js";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {

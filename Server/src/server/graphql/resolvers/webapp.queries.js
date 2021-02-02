@@ -1,7 +1,7 @@
 import { Meteor } from "meteor/meteor";
+import { Constants } from "meteor/penpal";
 import _ from "lodash";
 
-import { CONSTANTS } from "/lib/common.js";
 import { restrictToRole, restrictToLoggedIn } from "./common.js";
 
 export default {
@@ -12,7 +12,7 @@ export default {
   },
 
   async getUsers(root, { filter: { active, pending } = {} }, { user }) {
-    restrictToRole(user, CONSTANTS.ROLE.ADMIN);
+    restrictToRole(user, Constants.Role.Admin);
 
     const query = {};
 

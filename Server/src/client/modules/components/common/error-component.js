@@ -1,10 +1,9 @@
 import React from "react";
+import { Components, registerComponent } from "meteor/penpal";
 
 import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
-
-import { registerComponent, Components } from "../../components.js";
 
 const useStyles = makeStyles({
   container: {

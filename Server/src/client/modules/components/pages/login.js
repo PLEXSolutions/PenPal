@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Components, registerComponent, Hooks } from "meteor/penpal";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -15,8 +16,6 @@ import { makeStyles } from "@material-ui/core/styles";
 
 import ReactCardFlip from "react-card-flip";
 
-import { registerComponent, Components } from "../../components.js";
-import Hooks from "../../hooks.js";
 const { useAccount } = Hooks;
 
 // https://www.pexels.com/photo/business-computer-connection-data-1054397/
@@ -39,7 +38,7 @@ const Copyright = () => {
   );
 };
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     height: "100vh"
   },
@@ -94,9 +93,9 @@ const SignupForm = ({ showLoginForm }) => {
     email.length === 0 ||
     password.length === 0;
 
-  const handle_email_change = event => setEmail(event.target.value);
-  const handle_password_change = event => setPassword(event.target.value);
-  const handle_password2_change = event => setPassword2(event.target.value);
+  const handle_email_change = (event) => setEmail(event.target.value);
+  const handle_password_change = (event) => setPassword(event.target.value);
+  const handle_password2_change = (event) => setPassword2(event.target.value);
   const handle_signup_click = async () => {
     setSigningUp(true);
     const success = await signup(email, password);
@@ -197,8 +196,8 @@ const LoginForm = ({ showSignupForm }) => {
   const login_disabled =
     loggingIn || email.length === 0 || password.length === 0;
 
-  const handle_email_change = event => setEmail(event.target.value);
-  const handle_password_change = event => setPassword(event.target.value);
+  const handle_email_change = (event) => setEmail(event.target.value);
+  const handle_password_change = (event) => setPassword(event.target.value);
   const handle_login_click = async () => {
     setLoggingIn(true);
     await login(email, password);
@@ -274,11 +273,11 @@ const Login = () => {
   const classes = useStyles();
   const [showSignupPage, setShowSignupPage] = useState(false);
 
-  const _showSignupPage = event => {
+  const _showSignupPage = (event) => {
     event.preventDefault();
     setShowSignupPage(true);
   };
-  const _showLoginPage = event => {
+  const _showLoginPage = (event) => {
     event.preventDefault();
     setShowSignupPage(false);
   };

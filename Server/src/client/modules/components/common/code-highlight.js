@@ -1,9 +1,8 @@
 import React, { useEffect } from "react";
+import { registerComponent, Components } from "meteor/penpal";
 import "clipboard"; // Load before prism so prism can use it
 import "./prism.js"; // Loads as a global
 import "./prism.css";
-
-import { registerComponent } from "../../components.js";
 
 Prism.plugins.NormalizeWhitespace.setDefaults({
   "remove-trailing": true,

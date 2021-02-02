@@ -1,16 +1,14 @@
-// Load all components
-import "./modules/index.js";
-
 // Import settings
 import "./settings.js";
 
 // Now render stuff
 import { Meteor } from "meteor/meteor";
+import PenPal, { Components } from "meteor/penpal";
 import React from "react";
 import { render } from "react-dom";
-import { Components } from "./modules/components.js";
 
 // Render the root component
-Meteor.startup(() => {
+Meteor.startup(async () => {
+  await PenPal.loadPlugins();
   render(<Components.Root />, document.getElementById("app"));
 });

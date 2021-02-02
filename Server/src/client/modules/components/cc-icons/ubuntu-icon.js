@@ -1,6 +1,5 @@
 import React from "react";
-
-import { registerComponent, Components } from "../../components.js";
+import { registerComponent, Components } from "meteor/penpal";
 
 import SOURCE from "./ubuntu-icon-src.js";
 const ICON_NAME = "UbuntuIcon";

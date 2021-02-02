@@ -47,6 +47,7 @@ const parseMasscan = async (project_id, jsonData) => {
   );
 
   // 2. Add services per host...
+  let services_count = 0;
   for (let host of inserted.accepted) {
     const services =
       ips[host.ip_address]?.ports?.map((port_info) => ({
@@ -59,12 +60,16 @@ const parseMasscan = async (project_id, jsonData) => {
         status: port_info.status,
         ttl: port_info.ttl
       })) ?? [];
-    let {
-      inserted: services_inserted,
-      updated: services_updated,
-      rejected: services_rejected
-    } = await PenPal.API.Services.InsertMany(services);
+
+    if (services.length > 0) {
+      services_count += services.length;
+      await PenPal.API.Services.InsertMany(services);
+    }
   }
+
+  console.log(
+    `[+] Masscan inserted ${inserted.accepted.length} hosts, ${services_count} services`
+  );
 
   // TODO: Check out updated and rejected
 

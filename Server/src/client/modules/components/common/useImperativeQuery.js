@@ -1,6 +1,6 @@
 import React from "react";
+import { registerHook } from "meteor/penpal";
 import { useApolloClient } from "@apollo/client";
-import { registerHook } from "../../hooks.js";
 
 const useImperativeQuery = (query) => {
   const client = useApolloClient();
