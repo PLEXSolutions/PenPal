@@ -36,7 +36,7 @@ module.exports = ({ config }) => {
     new webpack.ProvidePlugin({
       // mock global variables
       Meteor: path.resolve(__dirname, "./mocks/Meteor"),
-      Mongo: path.resolve(__dirname, "./mocks/Mongo"),
+      Mongo: path.resolve(__dirname, "./mocks/Mongo")
     })
   );
 
@@ -61,13 +61,6 @@ module.exports = ({ config }) => {
         options: {
           // those package will be preserved, we provide a mock instead
           preserve: ["meteor/apollo", "meteor/server-render", "meteor/penpal"]
-        }
-      },
-      {
-        loader: path.resolve(__dirname, "./loaders/starter-example-loader"),
-        options: {
-          packagesDir: path.resolve(__dirname, "../packages"),
-          environment: "client"
         }
       }
     ]

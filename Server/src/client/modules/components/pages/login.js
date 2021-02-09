@@ -45,10 +45,7 @@ const useStyles = makeStyles((theme) => ({
   image: {
     backgroundImage: `url(${BACKGROUND_IMAGE})`,
     backgroundRepeat: "no-repeat",
-    backgroundColor:
-      theme.palette.type === "light"
-        ? theme.palette.grey[50]
-        : theme.palette.grey[900],
+    backgroundColor: "transparent",
     backgroundSize: "cover",
     backgroundPosition: "center",
 
