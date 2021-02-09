@@ -1,7 +1,6 @@
 import React, { useState } from "react";
+import { Components, registerComponent } from "meteor/penpal";
 import { KeyboardDatePicker } from "@material-ui/pickers";
-
-import { Components, registerComponent } from "../../components.js";
 
 const StyledDateField = ({
   margin = "normal",

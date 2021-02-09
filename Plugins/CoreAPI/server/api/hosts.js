@@ -150,9 +150,6 @@ export const insertHosts = async (hosts) => {
     const network_new_hosts = _.groupBy(new_hosts, "network");
     for (let network_id in network_new_hosts) {
       if (network_id !== undefined) {
-        console.log(
-          `Adding ${network_new_hosts[network_id].length} hosts to network ${network_id}`
-        );
         await addHostsToNetwork(
           network_id,
           network_new_hosts[network_id].map(({ id }) => id)

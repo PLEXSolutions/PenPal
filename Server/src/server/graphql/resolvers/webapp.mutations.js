@@ -1,8 +1,8 @@
 import { Meteor } from "meteor/meteor";
+import { Constants } from "meteor/penpal";
 import { Accounts } from "meteor/accounts-base";
 import { Random } from "meteor/random";
 
-import { CONSTANTS } from "/lib/common.js";
 import { restrictToRole } from "./common.js";
 
 // ----------------------------------------------------------
@@ -32,9 +32,9 @@ const _signup = async (email, password) => {
   ) {
     // If we are the first user, become an admin
     if (is_first_user) {
-      user_settings.roles.push(CONSTANTS.ROLE.ADMIN);
+      user_settings.roles.push(Constants.Role.Admin);
     } else {
-      user_settings.roles.push(CONSTANTS.ROLE.USER);
+      user_settings.roles.push(Constants.Role.User);
     }
   } else {
     user_settings.enabled = false;
@@ -94,18 +94,18 @@ const notImplemented = () => {
   throw new Meteor.Error(500, "Not yet implemented");
 };
 
-const _sendVerificationEmail = async email => {
+const _sendVerificationEmail = async (email) => {
   notImplemented();
 };
 
-const _verifyEmail = async token => {
+const _verifyEmail = async (token) => {
   notImplemented();
 };
 
 // ----------------------------------------------------------
 // Helper Functions
 
-const loggedInError = userId => {
+const loggedInError = (userId) => {
   if (userId !== undefined) {
     throw new Meteor.Error(500, "User is already logged in");
   }
@@ -148,7 +148,7 @@ export default {
     { user_id, update: { roles, enabled } = {} },
     { user }
   ) {
-    restrictToRole(user, CONSTANTS.ROLE.ADMIN);
+    restrictToRole(user, Constants.Role.Admin);
 
     const updated_user = await Meteor.users.findOne({ _id: user_id });
     if (updated_user === undefined) {

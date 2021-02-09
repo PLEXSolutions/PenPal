@@ -1,12 +1,12 @@
 import React, { useState } from "react";
+import { Components, registerComponent } from "meteor/penpal";
 import _ from "lodash";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 
-import { Components, registerComponent } from "../../components.js";
 import { borderRadius } from "./styled-common.js";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     fontSize: "0.9rem",
     paddingTop: 8,
@@ -15,7 +15,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const StyledButton = props => {
+const StyledButton = (props) => {
   const classes = useStyles();
 
   const buttonProps = _.merge(

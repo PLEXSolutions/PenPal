@@ -27,12 +27,12 @@ const cleanOldNodes = async () => {
 
     let processes = [
       spawn(`rm /home/node/.n8n/custom/*`, {
-        stdio: ["ignore", "ignore", "inherit"],
+        stdio: ["ignore", "ignore", "ignore"],
         shell: true,
         cwd: N8N_DIR
       }),
       spawn(`for d in ./*/; do rm -rf $d; done`, {
-        stdio: ["ignore", "ignore", "inherit"],
+        stdio: ["ignore", "ignore", "ignore"],
         shell: true,
         cwd: N8N_NODES_DIR
       })

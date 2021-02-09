@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Components, registerComponent, Hooks } from "meteor/penpal";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -15,11 +16,9 @@ import { makeStyles } from "@material-ui/core/styles";
 
 import ReactCardFlip from "react-card-flip";
 
-import { registerComponent, Components } from "../../components.js";
-import Hooks from "../../hooks.js";
 const { useAccount } = Hooks;
 
-// https://www.pexels.com/photo/business-computer-connection-data-1054397/
+// https://www.pexels.com/photo/modern-computer-in-data-center-4597280/
 // free to use without attribution
 const BACKGROUND_IMAGE = "/images/landing-page-background.jpg";
 
@@ -39,7 +38,7 @@ const Copyright = () => {
   );
 };
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     height: "100vh"
   },
@@ -51,7 +50,12 @@ const useStyles = makeStyles(theme => ({
         ? theme.palette.grey[50]
         : theme.palette.grey[900],
     backgroundSize: "cover",
-    backgroundPosition: "center"
+    backgroundPosition: "center",
+
+    "&> p": {
+      position: "relative",
+      zIndex: -1
+    }
   },
   paper: {
     margin: theme.spacing(8, 4),
@@ -94,9 +98,9 @@ const SignupForm = ({ showLoginForm }) => {
     email.length === 0 ||
     password.length === 0;
 
-  const handle_email_change = event => setEmail(event.target.value);
-  const handle_password_change = event => setPassword(event.target.value);
-  const handle_password2_change = event => setPassword2(event.target.value);
+  const handle_email_change = (event) => setEmail(event.target.value);
+  const handle_password_change = (event) => setPassword(event.target.value);
+  const handle_password2_change = (event) => setPassword2(event.target.value);
   const handle_signup_click = async () => {
     setSigningUp(true);
     const success = await signup(email, password);
@@ -197,8 +201,8 @@ const LoginForm = ({ showSignupForm }) => {
   const login_disabled =
     loggingIn || email.length === 0 || password.length === 0;
 
-  const handle_email_change = event => setEmail(event.target.value);
-  const handle_password_change = event => setPassword(event.target.value);
+  const handle_email_change = (event) => setEmail(event.target.value);
+  const handle_password_change = (event) => setPassword(event.target.value);
   const handle_login_click = async () => {
     setLoggingIn(true);
     await login(email, password);
@@ -274,11 +278,11 @@ const Login = () => {
   const classes = useStyles();
   const [showSignupPage, setShowSignupPage] = useState(false);
 
-  const _showSignupPage = event => {
+  const _showSignupPage = (event) => {
     event.preventDefault();
     setShowSignupPage(true);
   };
-  const _showLoginPage = event => {
+  const _showLoginPage = (event) => {
     event.preventDefault();
     setShowSignupPage(false);
   };
@@ -286,7 +290,9 @@ const Login = () => {
   return (
     <Grid container component="main" className={classes.root}>
       <CssBaseline />
-      <Grid item xs={false} md={5} className={classes.image}></Grid>
+      <Grid item xs={false} md={5} className={classes.image}>
+        <p>Login page photo Here</p>
+      </Grid>
       <Grid item xs={12} md={7} component={Paper} elevation={6} square>
         <ReactCardFlip
           containerStyle={{ width: "100%", height: "100%" }}

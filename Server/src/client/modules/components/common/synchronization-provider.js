@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
+import { Components, registerComponent, registerHook } from "meteor/penpal";
 import useInterval from "@use-it/interval";
-
-import { Components, registerComponent } from "../../components.js";
-import { registerHook } from "../../hooks.js";
 
 const SynchronizationContext = createContext({});
 

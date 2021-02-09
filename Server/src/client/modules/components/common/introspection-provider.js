@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { Components, registerComponent, registerHook } from "meteor/penpal";
 import { useQuery } from "@apollo/client";
-
-import { Components, registerComponent } from "../../components.js";
-import { registerHook } from "../../hooks.js";
 
 import IntrospectionQuery from "./introspection-provider-gql.js";
 

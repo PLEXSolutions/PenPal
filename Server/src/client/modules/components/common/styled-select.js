@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Components, registerComponent } from "meteor/penpal";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import { grey, indigo } from "@material-ui/core/colors";
 import TextField from "@material-ui/core/TextField";
@@ -10,10 +11,9 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import cx from "classnames";
 import { v4 as uuidv4 } from "uuid";
 
-import { Components, registerComponent } from "../../components.js";
 import { borderRadius } from "./styled-common.js";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   select: {
     minWidth: 200,
     background: "white",
@@ -96,7 +96,7 @@ const StyledSelect = ({
   const handleOpen = () => setIsOpen(true);
   const handleClose = () => setIsOpen(false);
 
-  const iconComponent = props => {
+  const iconComponent = (props) => {
     return <ExpandMoreIcon className={cx(props.className, classes.icon)} />;
   };
 

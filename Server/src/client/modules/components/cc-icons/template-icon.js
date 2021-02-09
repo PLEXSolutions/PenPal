@@ -1,8 +1,7 @@
 import React from "react";
+import { registerComponent, Components } from "meteor/penpal";
 
-import { registerComponent, Components } from "../../components.js";
-
-import SOURCE from "./-icon-src.js";
+//import SOURCE from "./-icon-src.js";
 const ICON_NAME = "Icon";
 
 export const IconAttribution = {

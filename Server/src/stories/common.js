@@ -1,13 +1,15 @@
 import React from "react";
+import path from "path";
 
-// Now import to appropriately add all correct components
-import "../client/modules/components/index.js";
-import { Components } from "../client/modules/components.js";
+import { registerStorybookMocks } from "meteor/penpal";
+import mocks from "./mocks";
+registerStorybookMocks("Server", mocks);
+
+import { Components, StorybookMocks } from "meteor/penpal";
 
 // Testable components
 import { SnackbarProvider, useSnackbar } from "notistack";
 import { MockedProvider } from "@apollo/client/testing";
-import mocks from "./mocks";
 import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 import moment from "moment";
 import MomentUtils from "@date-io/moment";
@@ -15,7 +17,7 @@ moment.locale("en");
 
 export const SetupProviders = ({ children }) => (
   <SnackbarProvider maxSnacks={3}>
-    <MockedProvider mocks={mocks} addTypename={false}>
+    <MockedProvider mocks={StorybookMocks} addTypename={false}>
       <MuiPickersUtilsProvider
         libInstance={moment}
         utils={MomentUtils}

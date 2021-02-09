@@ -1,10 +1,17 @@
-import { check, Match } from "meteor/check";
 import _ from "lodash";
 import { mergeTypeDefs } from "@graphql-tools/merge";
+import {
+  Constants as _Constants,
+  isFunction,
+  check_manifest,
+  check_plugin
+} from "./common.js";
+export const Constants = _Constants;
 
 // ----------------------------------------------------------------------------
 
 const PenPal = {};
+PenPal.Constants = Constants;
 PenPal.RegisteredPlugins = {};
 PenPal.LoadedPlugins = {};
 PenPal.Utils = {};
@@ -20,62 +27,7 @@ PenPal.Utils.AsyncNOOP = async () => {
 
 // ----------------------------------------------------------------------------
 
-PenPal.Utils.isFunction = (obj) =>
-  !!(obj && obj.constructor && obj.call && obj.apply);
-
-// ----------------------------------------------------------------------------
-
-const check_manifest = ({ name, version, dependsOn }) => {
-  let manifest_accept = true;
-
-  const try_check = (value, type, repr_value, repr_type) => {
-    try {
-      check(value, type);
-    } catch (e) {
-      console.log(`Manifest.${repr_value} must be of type ${repr_type}`);
-      manifest_accept = false;
-    }
-  };
-
-  try_check(name, String, "name", "String");
-  try_check(version, String, "version", "String");
-  try_check(dependsOn, [String], "dependsOn", "[String]");
-
-  return manifest_accept;
-};
-
-// ----------------------------------------------------------------------------
-
-const check_plugin = (plugin) => {
-  let plugin_accept = true;
-
-  const try_check = (value, type, repr_value, repr_type) => {
-    try {
-      check(value, type);
-    } catch (e) {
-      console.log(`Plugin.${repr_value} must be of type ${repr_type}`);
-      plugin_accept = false;
-    }
-  };
-
-  try_check(
-    plugin.loadPlugin,
-    Match.Where(PenPal.Utils.isFunction),
-    "loadPlugin",
-    "Function"
-  );
-
-  try_check(
-    plugin.startupHook,
-    Match.Optional(Match.Where(PenPal.Utils.isFunction)),
-    "startupHook",
-    "Function"
-  );
-
-  return plugin_accept;
-};
-
-// ----------------------------------------------------------------------------
+PenPal.Utils.isFunction = isFunction;
 
 PenPal.registerPlugin = (manifest, plugin) => {
   if (!check_manifest(manifest) || !check_plugin(plugin)) {

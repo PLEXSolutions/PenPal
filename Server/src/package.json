@@ -30,14 +30,12 @@
         "classnames": "^2.2.6",
         "clipboard": "^2.0.6",
         "dataloader": "^2.0.0",
-        "faker": "^4.1.0",
+        "faker": "^5.3.1",
         "file-saver": "^2.0.2",
         "glob": "^7.1.6",
         "graphql": "^15.0.0",
         "graphql-middleware": "^4.0.2",
         "graphql-scalars": "^1.1.3",
-        "graphql-voyager": "1.0.0-rc.31",
-        "gql-query-builder": "^3.5.0",
         "hjson": "^3.2.1",
         "iconv-lite": "^0.6.0",
         "lodash": "^4.17.15",
@@ -70,11 +68,6 @@
         "core-js": "^3.6.5",
         "scrap-meteor-loader": "^0.0.1",
         "storybook-react-router": "1.0.8"
-    },
-    "meteor": {
-        "mainModule": {
-            "client": "client/main.js"
-        }
     },
     "private": true
 }

@@ -1,8 +1,8 @@
 import React from "react";
 import { storiesOf } from "@storybook/react";
 
-import { Components } from "../client/modules/components.js";
-import { SetupProviders } from "./common.js";
+import { Components } from "meteor/penpal";
+import { SetupProviders } from "stories/common.js";
 
 // Layout
 /* --------------------------------------------- */

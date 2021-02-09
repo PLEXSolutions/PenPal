@@ -1,11 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { Components, registerComponent, registerHook } from "meteor/penpal";
 import { Accounts } from "meteor/accounts-base";
 import { useMutation, useQuery, useApolloClient } from "@apollo/client";
 import { useSnackbar } from "notistack";
 
 import { storeLoginToken, getLoginToken, resetStore } from "./store.js";
-import { Components, registerComponent } from "../../components.js";
-import { registerHook } from "../../hooks.js";
 
 import {
   AUTHENTICATE_WITH_PASSWORD,
