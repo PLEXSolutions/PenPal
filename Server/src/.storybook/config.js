@@ -15,10 +15,40 @@ import { addDecorator, configure } from "@storybook/react";
 Standard Config
 
 */
+
+// -----------------------------------------------------------------------
+
+function importAll(r) {
+  r.keys().forEach(r);
+}
+
+// https://github.com/webpack/webpack/issues/6093
+// Performance is pretty bad right now, likely due to above issue
+
+// Import all of the client code to initialize the Components
+importAll(
+  require.context(
+    "../client", // context folder
+    true, // include subdirectories
+    /^.*\.js$/ // RegExp
+  )
+);
+
+// Import all of the client code to initialize the Components
+importAll(
+  require.context(
+    "../plugins", // context folder
+    true, // include subdirectories
+    /^.*client\/.*\.js$/ // RegExp
+  )
+);
+
+// -----------------------------------------------------------------------
+
 // automatically import all files ending in *.stories.js
-const req = require.context("../stories", true, /.stories.js$/);
+const req = require.context("..", true, /.*stories\/.*.stories.js$/);
 function loadStories() {
-  req.keys().forEach(filename => req(filename));
+  req.keys().forEach((filename) => req(filename));
 }
 
 /*

@@ -21,22 +21,33 @@ module.exports = ({ config }) => {
       "meteor/server-render": path.resolve(
         __dirname,
         "./mocks/meteor-server-render"
-      )
+      ),
+      "meteor/penpal": path.resolve(
+        __dirname,
+        "../packages/penpal/penpal-client.js"
+      ),
+      plugins: path.resolve(__dirname, "../plugins/"),
+      stories: path.resolve(__dirname, "../stories/")
     }
   };
+
   // Mock global variables
   config.plugins.push(
     new webpack.ProvidePlugin({
       // mock global variables
       Meteor: path.resolve(__dirname, "./mocks/Meteor"),
       Mongo: path.resolve(__dirname, "./mocks/Mongo"),
-      _: "underscore"
     })
   );
 
-  // force the config to use local node_modules instead the modules from Vulcan install
+  // force the config to use local node_modules
   // Should not be modified
   config.resolve.modules.push(path.resolve(__dirname, "../node_modules"));
+
+  // Add the node modules from the PenPal meteor package
+  config.resolve.modules.push(
+    path.resolve(__dirname, "../packages/penpal/.npm/package/node_modules")
+  );
 
   // handle meteor packages
   // Add your custom loaders here if necessary
@@ -49,7 +60,7 @@ module.exports = ({ config }) => {
         loader: "scrap-meteor-loader",
         options: {
           // those package will be preserved, we provide a mock instead
-          preserve: ["meteor/apollo", "meteor/server-render"]
+          preserve: ["meteor/apollo", "meteor/server-render", "meteor/penpal"]
         }
       },
       {

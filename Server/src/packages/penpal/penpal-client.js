@@ -151,4 +151,19 @@ PenPal.loadPlugins = async () => {
   }
 };
 
+// ----------------------------------------------------------------------------
+
+const registeredMocks = {};
+export const StorybookMocks = [];
+export const registerStorybookMocks = (plugin_name, mocks) => {
+  if (registeredMocks[plugin_name]) {
+    return;
+  }
+
+  registeredMocks[plugin_name] = true;
+  StorybookMocks.push(...mocks);
+};
+
+// ----------------------------------------------------------------------------
+
 export default PenPal;

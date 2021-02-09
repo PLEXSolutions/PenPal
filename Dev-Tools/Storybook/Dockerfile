@@ -21,7 +21,10 @@ RUN curl -o /usr/local/bin/gosu -SL "https://github.com/tianon/gosu/releases/dow
     && rm /usr/local/bin/gosu.asc \
     && chmod +x /usr/local/bin/gosu
 
-# Create an unpriv user for meteor to run as
+# Install npm-recursive-install for merging of package.json dependencies
+RUN npm install -g recursive-install
+
+# Create an unpriv user for node to run as
 RUN groupadd -r node
 RUN useradd --no-log-init -r -u $UID -g node node
 RUN cp -rT /etc/skel /home/node

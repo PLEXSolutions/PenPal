@@ -18,7 +18,7 @@ import ReactCardFlip from "react-card-flip";
 
 const { useAccount } = Hooks;
 
-// https://www.pexels.com/photo/business-computer-connection-data-1054397/
+// https://www.pexels.com/photo/modern-computer-in-data-center-4597280/
 // free to use without attribution
 const BACKGROUND_IMAGE = "/images/landing-page-background.jpg";
 
@@ -50,7 +50,12 @@ const useStyles = makeStyles((theme) => ({
         ? theme.palette.grey[50]
         : theme.palette.grey[900],
     backgroundSize: "cover",
-    backgroundPosition: "center"
+    backgroundPosition: "center",
+
+    "&> p": {
+      position: "relative",
+      zIndex: -1
+    }
   },
   paper: {
     margin: theme.spacing(8, 4),
@@ -285,7 +290,9 @@ const Login = () => {
   return (
     <Grid container component="main" className={classes.root}>
       <CssBaseline />
-      <Grid item xs={false} md={5} className={classes.image}></Grid>
+      <Grid item xs={false} md={5} className={classes.image}>
+        <p>Login page photo Here</p>
+      </Grid>
       <Grid item xs={12} md={7} component={Paper} elevation={6} square>
         <ReactCardFlip
           containerStyle={{ width: "100%", height: "100%" }}
