@@ -5,6 +5,7 @@ import { registerStorybookMocks } from "meteor/penpal";
 import mocks from "./mocks";
 registerStorybookMocks("Server", mocks);
 
+import "../.storybook/require_all_files.js";
 import { Components, StorybookMocks } from "meteor/penpal";
 
 // Testable components

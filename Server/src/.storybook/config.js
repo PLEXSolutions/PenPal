@@ -18,7 +18,6 @@ Standard Config
 
 // -----------------------------------------------------------------------
 
-const builtin_context = require.context("../client", true, /.*\.js$/);
 const stories_context = require.context(
   "..",
   true,
@@ -26,7 +25,6 @@ const stories_context = require.context(
 );
 
 function loadStories() {
-  builtin_context.keys().forEach((filename) => builtin_context(filename));
   stories_context.keys().forEach((filename) => stories_context(filename));
 }
 
