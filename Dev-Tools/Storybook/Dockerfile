@@ -3,11 +3,23 @@ FROM debian:buster-slim
 ARG UID=1000
 
 RUN apt-get update
-RUN apt-get install curl -y
+RUN apt-get install curl wget -y
 
 # Install node.js
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
 RUN apt-get install git-core build-essential openssl libssl-dev procps entr nodejs python sudo -y
+
+# Install fswatch
+WORKDIR /tmp
+RUN wget https://github.com/emcrisostomo/fswatch/releases/download/1.14.0/fswatch-1.14.0.tar.gz
+RUN tar xvzf fswatch-1.14.0.tar.gz
+WORKDIR /tmp/fswatch-1.14.0
+RUN ./configure
+RUN make
+RUN make install
+RUN ldconfig
+WORKDIR /tmp
+RUN rm -rf fswatch*
 
 # Install npm
 RUN curl -L https://npmjs.org/install.sh | sh
@@ -40,7 +52,7 @@ WORKDIR /app
 
 # Note that the docker build context needs to be in the parent directory of this file
 COPY --chown=node:node Server/src/package.json /app/package.json
-RUN npm install
+RUN npm install --force
 
 # Now copy all of the src into /app
 # Note that the docker build context needs to be in the parent directory of this file
