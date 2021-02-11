@@ -25,6 +25,7 @@ services:
         command: npm run storybook
         volumes:
             - penpal-storybook-npm-cache:/home/node/.npm
+              #- ./Server/src:/app
             - ./Server/src/client/:/app/client:consistent
             - ./Server/src/server/:/app/server:consistent
             - ./Server/src/stories/:/app/stories:consistent

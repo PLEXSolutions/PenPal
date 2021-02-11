@@ -1,6 +1,4 @@
 import React from "react";
-import { storiesOf } from "@storybook/react";
-import { action } from "@storybook/addon-actions";
 
 import { Components } from "meteor/penpal";
 
@@ -15,16 +13,18 @@ read -p "What is your name? " name
 echo "Hello, \${name}!"
 `;
 
-const code_highlight = storiesOf("UI/Code Highlighting", module);
-
-code_highlight.add("PowerShell", () => (
+export const Powershell = () => (
   <div>
     <Components.CodeHighlight code={powershell} language="PowerShell" />
   </div>
-));
+);
 
-code_highlight.add("Bash", () => (
+export const Bash = () => (
   <div>
     <Components.CodeHighlight code={bash} language="Bash" />
   </div>
-));
+);
+
+export default {
+  title: "UI/Code Highlight"
+};

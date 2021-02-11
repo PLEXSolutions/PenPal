@@ -288,7 +288,7 @@ const Login = () => {
     <Grid container component="main" className={classes.root}>
       <CssBaseline />
       <Grid item xs={false} md={5} className={classes.image}>
-        <p>Login page photo Here</p>
+        <p>Login page photo here</p>
       </Grid>
       <Grid item xs={12} md={7} component={Paper} elevation={6} square>
         <ReactCardFlip
