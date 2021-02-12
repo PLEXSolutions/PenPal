@@ -2,7 +2,6 @@ import React from "react";
 import path from "path";
 
 import { registerStorybookMocks } from "meteor/penpal";
-
 import mocks from "./mocks";
 registerStorybookMocks("Server", mocks);
 
