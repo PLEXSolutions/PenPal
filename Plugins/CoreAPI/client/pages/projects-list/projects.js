@@ -21,15 +21,15 @@ import ClearIcon from "@material-ui/icons/Clear";
 import {
   Icon as CardViewIcon,
   Name as CardViewName
-} from "./projects/views-card-view.js";
+} from "./views-card-view.js";
 import {
   Icon as TableViewIcon,
   Name as TableViewName
-} from "./projects/views-table-view.js";
+} from "./views-table-view.js";
 import {
   Icon as TimelineViewIcon,
   Name as TimelineViewName
-} from "./projects/views-timeline-view.js";
+} from "./views-timeline-view.js";
 
 const useStyles = makeStyles((theme) => ({
   root: {

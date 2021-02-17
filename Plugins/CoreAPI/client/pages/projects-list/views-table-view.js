@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Components, registerComponent } from "meteor/penpal";
+import { useHistory } from "react-router-dom";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -70,6 +71,28 @@ const useStyles2 = makeStyles((theme) => ({
   table: {
     minWidth: 500
   },
+  clickable: {
+    cursor: "pointer",
+    transform: "scale(1)",
+    zIndex: 1,
+
+    "&:after": {
+      content: '""',
+      display: "block",
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      background: "rgba(0, 0, 0, 0.05)",
+      opacity: 0,
+      zIndex: 1000
+    },
+
+    "&:hover:after": {
+      opacity: 1
+    }
+  },
   statContainer: {
     display: "flex",
     flexDirection: "row",
@@ -115,6 +138,11 @@ const ProjectsViewTableView = ({
   projectSummaries: { projects, totalCount }
 }) => {
   const classes = useStyles2();
+  const history = useHistory();
+
+  const navToProject = (id) => {
+    history.push(`/projects/${id}`);
+  };
 
   const emptyRows = pageSize - Math.min(pageSize, projects.length);
 
@@ -132,7 +160,11 @@ const ProjectsViewTableView = ({
       <Table className={classes.table}>
         <TableBody>
           {projects.map((project) => (
-            <TableRow key={project.id}>
+            <TableRow
+              key={project.id}
+              className={classes.clickable}
+              onClick={() => navToProject(project.id)}
+            >
               <TableCell
                 component="th"
                 scope="row"
