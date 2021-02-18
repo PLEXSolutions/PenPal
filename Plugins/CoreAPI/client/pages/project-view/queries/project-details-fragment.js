@@ -19,9 +19,6 @@ export const ProjectDetails = `
           id
           ip_address
           mac_address
-          project {
-            id
-          }
         }
         totalCount
       }
@@ -33,9 +30,7 @@ export const ProjectDetails = `
           	hosts {
               id
               ip_address
-              network {
-                subnet
-              }
+              mac_address
             }
             totalCount
           }

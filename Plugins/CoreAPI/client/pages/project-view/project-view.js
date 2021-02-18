@@ -1,26 +1,47 @@
 import React, { useState, useEffect } from "react";
 import { Components, registerComponent } from "meteor/penpal";
+import { useSnackbar } from "notistack";
+import { makeStyles } from "@material-ui/core/styles";
 
 import { useQuery } from "@apollo/client";
 import GetProjectDetails from "./queries/get-project-details.js";
 
+const useStyles = makeStyles((theme) => ({
+  container: {
+    width: "100%",
+    height: "100%",
+    overflowY: "auto"
+  }
+}));
+
 const ProjectView = ({ project_id }) => {
-  const {
-    loading,
-    error,
-    data: { getProject: project_details } = {}
-  } = useQuery(GetProjectDetails, {
-    pollInterval: 15000,
-    variables: {
-      id: project_id
+  const { enqueueSnackbar } = useSnackbar();
+  const classes = useStyles();
+
+  const { loading, error, data: { getProject: project } = {} } = useQuery(
+    GetProjectDetails,
+    {
+      //pollInterval: 15000,
+      variables: {
+        id: project_id
+      }
     }
-  });
+  );
 
   if (loading) {
-    return "Project Details loading...";
+    return null;
   }
 
-  return JSON.stringify(project_details);
+  if (error) {
+    enqueueSnackbar(error.message, { variant: "error" });
+    return null;
+  }
+
+  return (
+    <div className={classes.container}>
+      <Components.ProjectViewTitleBar project={project} />
+    </div>
+  );
 };
 
 registerComponent("ProjectView", ProjectView);

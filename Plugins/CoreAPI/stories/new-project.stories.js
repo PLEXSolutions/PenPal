@@ -12,7 +12,14 @@ export const Workflow = () => (
 
 export const Step1SelectCustomer = () => (
   <SetupProviders>
-    <div style={{ width: 1000, height: 600, border: "1px solid black" }}>
+    <div
+      style={{
+        width: 1000,
+        height: 600,
+        border: "1px solid black",
+        background: "white"
+      }}
+    >
       <Components.NewProjectWorkflowSelectCustomer customers={[]} />
     </div>
   </SetupProviders>
@@ -28,7 +35,14 @@ export const Step2DetailsAndScope = () => {
 
   return (
     <SetupProviders>
-      <div style={{ width: 1000, height: 600, border: "1px solid black" }}>
+      <div
+        style={{
+          width: 1000,
+          height: 600,
+          border: "1px solid black",
+          background: "white"
+        }}
+      >
         <Components.NewProjectWorkflowProjectDetails
           projectName={projectName}
           setProjectName={setProjectName}
@@ -62,7 +76,14 @@ export const Step3Review = () => {
 
   return (
     <SetupProviders>
-      <div style={{ width: 1000, height: 600, border: "1px solid black" }}>
+      <div
+        style={{
+          width: 1000,
+          height: 600,
+          border: "1px solid black",
+          background: "white"
+        }}
+      >
         <Components.NewProjectWorkflowReview
           customers={customers}
           selectedCustomer={selectedCustomer}
