@@ -12,7 +12,8 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     left: 0,
     right: 0,
-    padding: theme.spacing(2)
+    padding: theme.spacing(2),
+    marginBottom: theme.spacing(2)
   },
   project_name: {
     fontSize: 30,
@@ -35,7 +36,7 @@ const ProjectViewTitleBar = ({ project }) => {
   const classes = useStyles();
 
   return (
-    <Paper square className={classes.container}>
+    <Paper className={classes.container}>
       <div className={classes.project_name}>{project.name}</div>
       <div className={classes.project_description}>{project.description}</div>
       <div className={classes.flex} />

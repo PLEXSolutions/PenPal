@@ -20,6 +20,9 @@ export const ProjectDetails = `
           ip_address
           mac_address
         }
+        servicesConnection {
+          totalCount
+        }
         totalCount
       }
       networksConnection(first:5) {
@@ -32,8 +35,17 @@ export const ProjectDetails = `
               ip_address
               mac_address
             }
+            servicesConnection {
+              totalCount
+            }
             totalCount
           }
+        }
+        hostsConnection {
+          servicesConnection {
+            totalCount
+          }
+          totalCount
         }
         totalCount
       }

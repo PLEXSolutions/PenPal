@@ -40,6 +40,7 @@ const ProjectView = ({ project_id }) => {
   return (
     <div className={classes.container}>
       <Components.ProjectViewTitleBar project={project} />
+      <Components.ProjectViewDataContainer project={project} />
     </div>
   );
 };

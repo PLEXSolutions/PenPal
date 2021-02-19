@@ -16,6 +16,36 @@ export const TitleBar = () => (
   </SetupProviders>
 );
 
+export const DataContainer = () => (
+  <SetupProviders>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        height: "100%"
+      }}
+    >
+      <Components.ProjectViewDataContainer project={project} />
+    </div>
+  </SetupProviders>
+);
+
+export const Dashboard = () => (
+  <SetupProviders>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        height: "100%"
+      }}
+    >
+      <Components.ProjectViewDashboard project={project} />
+    </div>
+  </SetupProviders>
+);
+
 export default {
   title: "PenPal/CoreAPI/Project View"
 };

@@ -29,6 +29,9 @@ const networks = [
     subnet: "192.168.2.0/24",
     hostsConnection: {
       hosts: network_1_hosts,
+      servicesConnection: {
+        totalCount: 0
+      },
       totalCount: network_1_hosts.length
     }
   }
@@ -50,10 +53,19 @@ export const project = {
   scope: {
     hostsConnection: {
       hosts: hosts,
+      servicesConnection: {
+        totalCount: 0
+      },
       totalCount: hosts.length
     },
     networksConnection: {
       networks: networks,
+      hostsConnection: {
+        servicesConnection: {
+          totalCount: 0
+        },
+        totalCount: network_1_hosts.length
+      },
       totalCount: networks.length
     }
   }
