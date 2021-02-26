@@ -10,18 +10,19 @@ const useStyles = makeStyles((theme) => ({
   container: {
     width: "100%",
     height: "100%",
-    overflowY: "auto"
+    display: "flex",
+    flexDirection: "column"
   }
 }));
 
-const ProjectView = ({ project_id }) => {
+const ProjectView = ({ project_id, disable_polling = false }) => {
   const { enqueueSnackbar } = useSnackbar();
   const classes = useStyles();
 
   const { loading, error, data: { getProject: project } = {} } = useQuery(
     GetProjectDetails,
     {
-      //pollInterval: 15000,
+      pollInterval: disable_polling ? 0 : 15000,
       variables: {
         id: project_id
       }

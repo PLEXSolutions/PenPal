@@ -6,7 +6,7 @@ import { project } from "./mocks/get-project-details.js";
 
 export const FullPage = () => (
   <SetupProviders>
-    <Components.Project project_id={"1234"} />
+    <Components.ProjectView project_id={"1234"} disable_polling={true} />
   </SetupProviders>
 );
 
@@ -43,6 +43,18 @@ export const Dashboard = () => (
     >
       <Components.ProjectViewDashboard project={project} />
     </div>
+  </SetupProviders>
+);
+
+export const Hosts = () => (
+  <SetupProviders>
+    <Components.ProjectViewHosts project={project} />
+  </SetupProviders>
+);
+
+export const Networks = () => (
+  <SetupProviders>
+    <Components.ProjectViewNetworks project={project} />
   </SetupProviders>
 );
 

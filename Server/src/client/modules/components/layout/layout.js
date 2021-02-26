@@ -167,7 +167,9 @@ const useStyles = makeStyles((theme) => ({
   },
   container: {
     flex: 1,
-    padding: theme.spacing(4)
+    padding: theme.spacing(2),
+    overflow: "hidden",
+    overflowY: "auto"
   },
   paper: {
     padding: theme.spacing(2),

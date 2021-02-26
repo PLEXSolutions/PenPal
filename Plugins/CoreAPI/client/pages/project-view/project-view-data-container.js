@@ -7,38 +7,32 @@ import Tab from "@material-ui/core/Tab";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
 
-const tabs = [
-  {
-    title: "Dashboard",
-    content: Components.ProjectViewDashboard
-  },
-  {
-    title: "Hosts",
-    content: () => "Hosts"
-  },
-  {
-    title: "Networks",
-    content: () => "Networks"
-  }
-];
-
 const useStyles = makeStyles((theme) => ({
   root: {
-    flexGrow: 1,
+    flex: 1,
     width: "100%",
-    background: "transparent"
+    background: "transparent",
+    display: "flex",
+    flexDirection: "column",
+    overflowY: "auto"
   },
   tab_bar: {
     paddingLeft: 4,
     paddingRight: 4
   },
   tab_panel: {
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2)
+    marginTop: theme.spacing(2),
+    flex: 1,
+    overflowY: "auto"
+  },
+  tab_container: {
+    flex: 1,
+    display: "flex",
+    overflowY: "auto"
   }
 }));
 
-const TabPanel = (props) => {
+export const TabPanel = (props) => {
   const classes = useStyles();
   const { children, value, index, ...other } = props;
 
@@ -49,7 +43,7 @@ const TabPanel = (props) => {
       {...other}
       className={classes.tab_panel}
     >
-      {value === index && <Typography>{children}</Typography>}
+      {value === index ? children : null}
     </div>
   );
 };
@@ -61,6 +55,21 @@ const ProjectViewDataContainer = ({ project }) => {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
+
+  const tabs = [
+    {
+      title: "Dashboard",
+      content: Components.ProjectViewDashboard
+    },
+    {
+      title: "Hosts",
+      content: Components.ProjectViewHosts
+    },
+    {
+      title: "Networks",
+      content: Components.ProjectViewNetworks
+    }
+  ];
 
   return (
     <div className={classes.root}>
@@ -78,11 +87,13 @@ const ProjectViewDataContainer = ({ project }) => {
           ))}
         </Tabs>
       </Paper>
-      {tabs.map(({ content: Content }, i) => (
-        <TabPanel value={value} index={i}>
-          <Content project={project} />
-        </TabPanel>
-      ))}
+      <div className={classes.tab_container}>
+        {tabs.map(({ content: Content }, i) => (
+          <TabPanel value={value} index={i} key={i}>
+            <Content project={project} />
+          </TabPanel>
+        ))}
+      </div>
     </div>
   );
 };
